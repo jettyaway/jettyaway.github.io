@@ -182,6 +182,8 @@ ls -l ${DIR}/bigdata-storm/*/target/*jar-with-dependencies.jar | awk  &#39;{prin
 done
 </code></pre>
 
+<span id="more"></span><!-- more -->
+
 <p><strong>预期结果</strong> :目录下有多少个fat jar 就循环执行ssh 多少次<br/>
 <strong>时间结果</strong>：只循环了一次<br/>
 <strong>分析</strong>:</p>

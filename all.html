@@ -169,24 +169,6 @@ ls -l ${DIR}/bigdata-storm/*/target/*jar-with-dependencies.jar | awk  &#39;{prin
 done
 </code></pre>
 
-<p><strong>预期结果</strong> :目录下有多少个fat jar 就循环执行ssh 多少次<br/>
-<strong>时间结果</strong>：只循环了一次<br/>
-<strong>分析</strong>:</p>
-
-<blockquote>
-<p>while中使用重定向机制，file1文件中的信息都已经读入并重定向给了整个while语句,所以当我们在while循环中再一次调用read语句，就会读取到下一条记录，但是，因为ssh会读取存在的缓存，调用完ssh语句后，输入缓存中已经都被读完了，当read语句再读的时候当然也就读不到纪录，循环也就退出了。</p>
-</blockquote>
-
-<p><strong>解决方法：</strong> 对ssh使用-n 参数 或者 输入重定向，而防止它去读while的缓存，或者使用for循环避免使用重定向的方式</p>
-
-<pre><code class="language-java">ssh -np 22 admin@10.6.0.94 &quot;${command}&quot;
-</code></pre>
-
-<p>-n 解释如下</p>
-
-<blockquote>
-<p>-n      Redirects stdin from /dev/null (actually, prevents reading from stdin).  This must be used when ssh is run in the background.  A common trick is to use this to run X11 programs on a remote machine.  For example, ssh -n shadows.cs.hut.fi emacs &amp; will start an emacs on shadows.cs.hut.fi, and the X11 connection will be automatically forwarded over an encrypted channel.  The ssh program will be put in the background.  (This does not work if ssh needs to ask for a password or passphrase; see also the -f option.)</p>
-</blockquote>
 
                         
                       </div>
@@ -194,7 +176,7 @@ done
                 </a>
                 <div class="read-more clearfix">
                   <div class="more-left left">
-                  
+                   <a href="15441960974362.html">Read more</a>&nbsp;&nbsp; 
                     <span class="date">2018/12/7</span>
                     <span>posted in&nbsp;</span> 
           				  

@@ -4,7 +4,7 @@
   <title><![CDATA[IT framer]]></title>
   <link href="http://www.blacklight.xin/atom.xml" rel="self"/>
   <link href="http://www.blacklight.xin/"/>
-  <updated>2018-12-07T23:24:19+08:00</updated>
+  <updated>2018-12-07T23:27:49+08:00</updated>
   <id>http://www.blacklight.xin/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -50,6 +50,8 @@ ls -l ${DIR}/bigdata-storm/*/target/*jar-with-dependencies.jar | awk  &#39;{prin
   scp &quot;${filePath}&quot; &quot;admin@10.6.0.94:${TARGET_DIR}/${dirName}&quot;
 done
 </code></pre>
+
+<span id="more"></span><!-- more -->
 
 <p><strong>预期结果</strong> :目录下有多少个fat jar 就循环执行ssh 多少次<br/>
 <strong>时间结果</strong>：只循环了一次<br/>
