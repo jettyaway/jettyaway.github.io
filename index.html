@@ -129,6 +129,89 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="15441960974362.html">
+                
+                  <h1>shell 在while中使用ssh的问题</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>执行如下脚本:</p>
+
+<pre><code>#!/bin/bash
+source /etc/profile
+
+DIR=$1
+
+if [ -z &quot;$DIR&quot;  ];then
+   echo &quot;DIR can not be empty.&quot;
+   exit 10
+fi
+
+BRANCH_NAME=$2
+if [ &quot;${BRANCH_NAME}&quot; != &quot;storm&quot; ];then
+   echo &quot;will exit 0.not build&quot;
+   exit 0
+fi
+
+TARGET_DIR=&quot;/home/admin/pro&quot;
+
+ls -l ${DIR}/bigdata-storm/*/target/*jar-with-dependencies.jar | awk  &#39;{print $NF}&#39; | while read -r filePath;do
+  echo &quot;filePath:${filePath}&quot;
+  fileName=`basename $filePath`
+  dirName=`basename $filePath &quot;.jar&quot;`
+  echo &quot;fileName:${fileName}&quot;
+  echo &quot;dirName:${dirName}&quot;
+  #command=&quot;${TARGET_DIR}/run.sh ${fileName}&quot;
+  command=&quot;mkdir -p &#39;${TARGET_DIR}/${dirName}&#39;&quot;
+  ssh -p 22 admin@10.6.0.94 &quot;${command}&quot;
+  scp &quot;${filePath}&quot; &quot;admin@10.6.0.94:${TARGET_DIR}/${dirName}&quot;
+done
+</code></pre>
+
+<p><strong>预期结果</strong> :目录下有多少个fat jar 就循环执行ssh 多少次<br/>
+<strong>时间结果</strong>：只循环了一次<br/>
+<strong>分析</strong>:</p>
+
+<blockquote>
+<p>while中使用重定向机制，file1文件中的信息都已经读入并重定向给了整个while语句,所以当我们在while循环中再一次调用read语句，就会读取到下一条记录，但是，因为ssh会读取存在的缓存，调用完ssh语句后，输入缓存中已经都被读完了，当read语句再读的时候当然也就读不到纪录，循环也就退出了。</p>
+</blockquote>
+
+<p><strong>解决方法：</strong> 对ssh使用-n 参数 或者 输入重定向，而防止它去读while的缓存，或者使用for循环避免使用重定向的方式</p>
+
+<pre><code class="language-java">ssh -np 22 admin@10.6.0.94 &quot;${command}&quot;
+</code></pre>
+
+<p>-n 解释如下</p>
+
+<blockquote>
+<p>-n      Redirects stdin from /dev/null (actually, prevents reading from stdin).  This must be used when ssh is run in the background.  A common trick is to use this to run X11 programs on a remote machine.  For example, ssh -n shadows.cs.hut.fi emacs &amp; will start an emacs on shadows.cs.hut.fi, and the X11 connection will be automatically forwarded over an encrypted channel.  The ssh program will be put in the background.  (This does not work if ssh needs to ask for a password or passphrase; see also the -f option.)</p>
+</blockquote>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/12/7</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='shell.html'>shell</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="15011626313885.html">
                 
                   <h1>java double 精度问题</h1>
@@ -3309,6 +3392,12 @@ Markdown 的語法有個主要的目的：用來作為一種網路內容的<em>�
 	      
 		      
 			      <li class="post">
+			        <a href="15441960974362.html">shell 在while中使用ssh的问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="15011626313885.html">java double 精度问题</a>
 			      </li>
 		     
@@ -3328,12 +3417,6 @@ Markdown 的語法有個主要的目的：用來作為一種網路內容的<em>�
 		      
 			      <li class="post">
 			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
 			      </li>
 		     
 		  
