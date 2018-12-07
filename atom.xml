@@ -1,0 +1,3715 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[IT framer]]></title>
+  <link href="http://www.blacklight.xin/atom.xml" rel="self"/>
+  <link href="http://www.blacklight.xin/"/>
+  <updated>2018-12-07T22:11:50+08:00</updated>
+  <id>http://www.blacklight.xin/</id>
+  <author>
+    <name><![CDATA[]]></name>
+    
+  </author>
+  <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[java double 精度问题]]></title>
+    <link href="http://www.blacklight.xin/15011626313885.html"/>
+    <updated>2017-07-27T21:37:11+08:00</updated>
+    <id>http://www.blacklight.xin/15011626313885.html</id>
+    <content type="html"><![CDATA[
+<p>标题     在Java中实现浮点数的精确计算    AYellow（原作） 修改<br/><br/>
+关键字     Java 浮点数 精确计算<br/><br/>
+问题的提出：<br/>
+如果我们编译运行下面这个程序会看到什么？</p>
+
+<span id="more"></span><!-- more -->
+
+<pre><code class="language-java">public class Test{
+    public static void main(String args[]){
+        System.out.println(0.05+0.01);
+        System.out.println(1.0-0.42);
+        System.out.println(4.015*100);
+        System.out.println(123.3/100);
+    }
+};
+</code></pre>
+
+<p>你没有看错！结果确实是<br/>
+0.060000000000000005<br/>
+0.5800000000000001<br/>
+401.49999999999994<br/>
+1.2329999999999999<br/>
+Java中的简单浮点数类型float和double不能够进行运算。不光是Java，在其它很多编程语言中也有这样的问题。在大多数情况下，计算的结果是准确的，但是多试几次（可以做一个循环）就可以试出类似上面的错误。现在终于理解为什么要有BCD码了。<br/>
+这个问题相当严重，如果你有9.999999999999元，你的计算机是不会认为你可以购买10元的商品的。<br/>
+在有的编程语言中提供了专门的货币类型来处理这种情况，但是Java没有。现在让我们看看如何解决这个问题。</p>
+
+<p>四舍五入<br/>
+我们的第一个反应是做四舍五入。Math类中的round方法不能设置保留几位小数，我们只能象这样（保留两位）：</p>
+
+<pre><code class="language-java">public double round(double value){
+    return Math.round(value*100)/100.0;
+}
+</code></pre>
+
+<p>非常不幸，上面的代码并不能正常工作，给这个方法传入4.015它将返回4.01而不是4.02，如我们在上面看到的</p>
+
+<p>** 4.015*100=401.49999999999994 **</p>
+
+<p>因此如果我们要做到精确的四舍五入，不能利用简单类型做任何运算<br/>
+java.text.DecimalFormat也不能解决这个问题：<br/>
+System.out.println(new java.text.DecimalFormat(&quot;0.00&quot;).format(4.025));<br/>
+输出是4.02</p>
+
+<p>BigDecimal<br/>
+在《Effective Java》这本书中也提到这个原则，float和double只能用来做科学计算或者是工程计算，在商业计算中我们要用 java.math.BigDecimal。BigDecimal一共有4个够造方法，我们不关心用BigInteger来够造的那两个，那么还有两个，它们是：</p>
+
+<pre><code class="language-java">BigDecimal(double val) 
+          Translates a double into a BigDecimal. 
+BigDecimal(String val) 
+          Translates the String repre sentation of a BigDecimal into a BigDecimal.
+</code></pre>
+
+<p>上面的API简要描述相当的明确，而且通常情况下，上面的那一个使用起来要方便一些。我们可能想都不想就用上了，会有什么问题呢？等到出了问题的时候，才发现上面哪个够造方法的详细说明中有这么一段：<br/>
+Note: the results of this constructor can be somewhat unpredictable. One might assume that new BigDecimal(.1) is exactly equal to .1, but it is actually equal to .1000000000000000055511151231257827021181583404541015625. This is so because .1 cannot be represented exactly as a double (or, for that matter, as a binary fraction of any finite length). Thus, the long value that is being passed in to the constructor is not exactly equal to .1, appearances nonwithstanding. <br/>
+The (String) constructor, on the other hand, is perfectly predictable: new BigDecimal(&quot;.1&quot;) is exactly equal to .1, as one would expect. Therefore, it is generally recommended that the (String) constructor be used in preference to this one.<br/>
+原来我们如果需要精确计算，非要用String来够造BigDecimal不可！在《Effective Java》一书中的例子是用String来够造BigDecimal的，但是书上却没有强调这一点，这也许是一个小小的失误吧。</p>
+
+<p>解决方案<br/>
+现在我们已经可以解决这个问题了，原则是使用BigDecimal并且一定要用String来够造。<br/>
+但是想像一下吧，如果我们要做一个加法运算，需要先将两个浮点数转为String，然后够造成BigDecimal，在其中一个上调用add方法，传入另一个作为参数，然后把运算的结果（BigDecimal）再转换为浮点数。你能够忍受这么烦琐的过程吗？下面我们提供一个工具类Arith来简化操作。它提供以下静态方法，包括加减乘除和四舍五入：<br/>
+public static double add(double v1,double v2)<br/>
+public static double sub(double v1,double v2)<br/>
+public static double mul(double v1,double v2)<br/>
+public static double div(double v1,double v2)<br/>
+public static double div(double v1,double v2,int scale)<br/>
+public static double round(double v,int scale)<br/>
+附录<br/>
+源文件Arith.java：</p>
+
+<pre><code class="language-java">import java.math.BigDecimal;
+/**
+ * 由于Java的简单类型不能够精确的对浮点数进行运算，这个工具类提供精
+ * 确的浮点数运算，包括加减乘除和四舍五入。
+ */
+public class Arith{
+    //默认除法运算精度
+    private static final int DEF_DIV_SCALE = 10;
+    //这个类不能实例化
+    private Arith(){
+    }
+ 
+    /**
+     * 提供精确的加法运算。
+     * @param v1 被加数
+     * @param v2 加数
+     * @return 两个参数的和
+     */
+    public static double add(double v1,double v2){
+        BigDecimal b1 = new BigDecimal(Double.toString(v1));
+        BigDecimal b2 = new BigDecimal(Double.toString(v2));
+        return b1.add(b2).doubleValue();
+    }
+    /**
+     * 提供精确的减法运算。
+     * @param v1 被减数
+     * @param v2 减数
+     * @return 两个参数的差
+     */
+    public static double sub(double v1,double v2){
+        BigDecimal b1 = new BigDecimal(Double.toString(v1));
+        BigDecimal b2 = new BigDecimal(Double.toString(v2));
+        return b1.subtract(b2).doubleValue();
+    } 
+    /**
+     * 提供精确的乘法运算。
+     * @param v1 被乘数
+     * @param v2 乘数
+     * @return 两个参数的积
+     */
+    public static double mul(double v1,double v2){
+        BigDecimal b1 = new BigDecimal(Double.toString(v1));
+        BigDecimal b2 = new BigDecimal(Double.toString(v2));
+        return b1.multiply(b2).doubleValue();
+    }
+ 
+    /**
+     * 提供（相对）精确的除法运算，当发生除不尽的情况时，精确到
+     * 小数点以后10位，以后的数字四舍五入。
+     * @param v1 被除数
+     * @param v2 除数
+     * @return 两个参数的商
+     */
+    public static double div(double v1,double v2){
+        return div(v1,v2,DEF_DIV_SCALE);
+    }
+ 
+    /**
+     * 提供（相对）精确的除法运算。当发生除不尽的情况时，由scale参数指
+     * 定精度，以后的数字四舍五入。
+     * @param v1 被除数
+     * @param v2 除数
+     * @param scale 表示表示需要精确到小数点以后几位。
+     * @return 两个参数的商
+     */
+    public static double div(double v1,double v2,int scale){
+        if(scale&lt;0){
+            throw new IllegalArgumentException(
+                &quot;The scale must be a positive integer or zero&quot;);
+        }
+        BigDecimal b1 = new BigDecimal(Double.toString(v1));
+        BigDecimal b2 = new BigDecimal(Double.toString(v2));
+        return b1.divide(b2,scale,BigDecimal.ROUND_HALF_UP).doubleValue();
+    }
+ 
+    /**
+     * 提供精确的小数位四舍五入处理。
+     * @param v 需要四舍五入的数字
+     * @param scale 小数点后保留几位
+     * @return 四舍五入后的结果
+     */
+    public static double round(double v,int scale){
+        if(scale&lt;0){
+            throw new IllegalArgumentException(
+                &quot;The scale must be a positive integer or zero&quot;);
+        }
+        BigDecimal b = new BigDecimal(Double.toString(v));
+        BigDecimal one = new BigDecimal(&quot;1&quot;);
+        return b.divide(one,scale,BigDecimal.ROUND_HALF_UP).doubleValue();
+    }
+}; ﻿
+
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[docker 常用命令]]></title>
+    <link href="http://www.blacklight.xin/14967618384549.html"/>
+    <updated>2017-06-06T23:10:38+08:00</updated>
+    <id>http://www.blacklight.xin/14967618384549.html</id>
+    <content type="html"><![CDATA[
+<p>1.容器互联</p>
+
+<p>docker run -dt -p88:80 --name web3 --link web2:l_web nginx:v2</p>
+
+<p>2.启动容器<br/>
+docker run --name web2 -d -p 81:80 nginx:v2</p>
+
+<p>3.执行容器命令<br/>
+docker exec -it webserver bash</p>
+
+<p>4.进入容器<br/>
+docker attach 36454d9d5a1c</p>
+
+<p>5.所有镜像<br/>
+docker images</p>
+
+<p>6.正在运行的容器</p>
+
+<p>docker ps （docker ps -a 所有容器）</p>
+
+<p>7.docker history nginx</p>
+
+<p>8.</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[使用 Dockerfile 定制镜像]]></title>
+    <link href="http://www.blacklight.xin/14965523697004.html"/>
+    <updated>2017-06-04T12:59:29+08:00</updated>
+    <id>http://www.blacklight.xin/14965523697004.html</id>
+    <content type="html"><![CDATA[
+<p>镜像的定制实际上就是定制每一层所添加的配置、文件。如果我们可以把每一层修改、安装、构建、操作的命令都写入一个脚本，用这个脚本来构建、定制镜像，那么之前提及的无法重复的问题、镜像构建透明性的问题、体积的问题就都会解决。这个脚本就是 Dockerfile。</p>
+
+<p>Dockerfile 是一个文本文件，其内包含了一条条的指令(Instruction)，每一条指令构建一层，因此每一条指令的内容，就是描述该层应当如何构建。</p>
+
+<p>还以之前定制 nginx 镜像为例，这次我们使用 Dockerfile 来定制。</p>
+
+<p>在一个空白目录中，建立一个文本文件，并命名为 Dockerfile:</p>
+
+<pre><code>$ mkdir mynginx
+$ cd mynginx
+$ touch Dockerfile
+</code></pre>
+
+<p>其内容为:</p>
+
+<pre><code>FROM nginx
+RUN echo &#39;&lt;h1&gt;Hello, Docker!&lt;/h1&gt;&#39; &gt; /usr/share/nginx/html/index.html
+
+</code></pre>
+
+<h2 id="toc_0">FROM 指定基础镜像</h2>
+
+<p>所谓定制镜像，那一定是以一个镜像为基础，在其上进行定制。就像我们之前运行了一个 nginx 镜像的容器，再进行修改一样，基础镜像是必须指定的。而 FROM 就是指定基础镜像，因此一个 Dockerfile 中 FROM 是必备的指令，并且必须是第一条指令。</p>
+
+<p>在 Docker Hub1 上有非常多的高质量的官方镜像， 有可以直接拿来使用的服务类的镜像，如 nginx、redis、mongo、mysql、httpd、php、tomcat 等； 也有一些方便开发、构建、运行各种语言应用的镜像，如 node、openjdk、python、ruby、golang 等。 可以在其中寻找一个最符合我们最终目标的镜像为基础镜像进行定制。 如果没有找到对应服务的镜像，官方镜像中还提供了一些更为基础的操作系统镜像，如 ubuntu、debian、centos、fedora、alpine 等，这些操作系统的软件库为我们提供了更广阔的扩展空间。</p>
+
+<p>除了选择现有镜像为基础镜像外，Docker 还存在一个特殊的镜像，名为 scratch。这个镜像是虚拟的概念，并不实际存在，它表示一个空白的镜像</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[shell十三问之8: $(())与$()还有${}差在哪？]]></title>
+    <link href="http://www.blacklight.xin/14962015887709.html"/>
+    <updated>2017-05-31T11:33:08+08:00</updated>
+    <id>http://www.blacklight.xin/14962015887709.html</id>
+    <content type="html"><![CDATA[
+<hr/>
+
+<p>我们上一章介绍了()与{}的不同，<br/>
+这次让我们扩展一下，看看更多的变化：<br/>
+\(()与\){}又是啥玩意儿呢？</p>
+
+<p>在bash shell中, <code>$()</code>与``(反引号)都是用来做<br/>
+<code>命令替换</code>(command substitution)的。</p>
+
+<p>所谓的<code>命令替换</code>与我们第五章学过的变量替换差不多，<br/>
+都是用来<code>重组命令行</code>：<br/>
+完成 `` 或者<code>$()</code>里面的<br/>
+命令，将其结果替换出来，<br/>
+再重组命令行。</p>
+
+<span id="more"></span><!-- more -->
+
+<p>例如：</p>
+
+<pre><code>$ echo the last sunday is $(date -d &quot;last sunday&quot; +%Y-%m-%d)
+</code></pre>
+
+<p>如此便可方便得到上一个星期天的日期了...<sup>_^</sup></p>
+
+<p>在操作上， 用\(()或\`\`都无所谓,<br/>
+只是我个人比较喜欢用\)(),理由是：</p>
+
+<ol>
+<li><p>``(反引号)很容易与&#39;&#39;(单引号)搞混乱，尤其对初学者来说。<br/>
+有时在一些奇怪的字形显示中，两种符号是一模一样的(只取两点)。<br/>
+当然了有经验的朋友还是一眼就能分辨两者。只是，若能更好的避免混乱，<br/>
+又何乐而不为呢？ <sup>_^</sup></p></li>
+<li><p>在多次的复合替换中， ``需要额外的转义(escape, )处理，而$()则比较直观。<br/>
+例如，一个错误的使用的例子：</p></li>
+</ol>
+
+<pre><code>    command1 `command2 `command3` `
+</code></pre>
+
+<p>原来的本意是要在command2 `command3` ,<br/>
+先将command3替换出来给command2处理，<br/>
+然后再将command2的处理结果，给command1来处理。<br/>
+然而真正的结果在命令行中却是分成了`command2`与 ``。</p>
+
+<p>正确的输入应该如下：</p>
+
+<pre><code>    command1 `command2 \`command3\` `
+</code></pre>
+
+<p>要不然换成$()就没有问题了：</p>
+
+<pre><code>    command1 $(commmand2 $(command3))
+</code></pre>
+
+<p>只要你喜欢，做多少层的替换都没有问题 ~~~<sup>_^</sup></p>
+
+<p>不过，\(()并不是没有弊端的...<br/>
+首先，\`\`基本上可用在所有的unix shell中使用，<br/>
+若写成 shell script，其移植性比较高。<br/>
+而\)()并不是每一种shell都能使用，我只能说，<br/>
+若你用bash2的话，肯定没问题... <sup>_^</sup></p>
+
+<p>接下来，再让我们看看\({}吧...它其实就是用来做<br/>
+变量替换用的啦。<br/>
+一般情况下，\)var与\({var}并没有啥不一样。<br/>
+但是用\){}会比较精准的界定变量名称的范围，<br/>
+比方说:</p>
+
+<pre><code>$ A=B
+$ echo $AB
+</code></pre>
+
+<p>原本是打算先将\(A的结果替换出来，<br/>
+然后在其后补一个字母B；<br/>
+但命令行上，<br/>
+真正的结果却是替换变量名称为AB的值出来...<br/>
+若使用\){}就没有问题了：</p>
+
+<pre><code>$ A=B
+$ echo ${A}B
+$ BB
+</code></pre>
+
+<p>不过，假如你只看到<code>${}</code>只能用来界定变量名称的话，<br/>
+那你就实在太小看bash了。</p>
+
+<p>为了完整起见，我这里再用一些例子加以说明<code>${}</code>的一些<br/>
+特异功能：<br/>
+假设我们定义了一个变量file为：</p>
+
+<pre><code>file=/dir1/dir2/dir3/my.file.txt
+</code></pre>
+
+<p>我们可以用<code>${}</code>分别替换获得不同的值：</p>
+
+<h4 id="toc_0">1. shell字符串的非贪婪(最小匹配)左删除</h4>
+
+<hr/>
+
+<pre><code class="language-shell">${file#*/}  #其值为：dir1/dir2/dir3/my.file.txt
+</code></pre>
+
+<p>拿掉第一个<code>/</code>及其左边的字符串，其结果为：<br/>
+<code>dir1/dir2/dir3/my.file.txt</code> 。<br/>
+<code>shell<br/>
+${file#*.}  #其值为：file.txt<br/>
+</code><br/>
+拿掉第一个<code>.</code>及其左边的字符串，其结果为：<br/>
+<code>file.txt</code> 。</p>
+
+<h4 id="toc_1">2. shell字符串的贪婪(最大匹配)左删除：</h4>
+
+<hr/>
+
+<pre><code>${file##*/} #其值为：my.file.txt
+</code></pre>
+
+<p>拿掉最后一个<code>/</code>及其左边的字符串，其结果为：</p>
+
+<p><code>my.file.txt</code></p>
+
+<pre><code>${file##*.} #其值为：txt
+</code></pre>
+
+<p>拿掉最后一个<code>.</code>及其左边的字符串，其结果为：<br/>
+<code>txt</code></p>
+
+<h4 id="toc_2">3. shell字符串的非贪婪(最小匹配)右删除：</h4>
+
+<hr/>
+
+<pre><code>${file%/*}  #其值为：/dir1/dir2/dir3
+</code></pre>
+
+<p>拿掉最后一个<code>/</code>及其右边的字符串，其结果为：<br/>
+<code>/dir1/dir2/dir3</code>。</p>
+
+<pre><code>${file%.*}  #其值为：/dir1/dir2/dir3/my.file
+</code></pre>
+
+<p>拿掉最后一个<code>.</code>及其右边的字符串，其结果为：<br/>
+<code>/dir1/dir2/dir3/my.file</code>。</p>
+
+<h4 id="toc_3">4. shell字符串的贪婪(最大匹配)右删除：</h4>
+
+<hr/>
+
+<pre><code>${file%%/*}  #其值为：其值为空。
+</code></pre>
+
+<p>拿掉第一个<code>/</code>及其右边的字符串，其结果为：<br/>
+空串。</p>
+
+<pre><code>${file%%.*}  #其值为：/dir1/dir2/dir3/my。
+</code></pre>
+
+<p>拿掉第一个<code>.</code>及其右边的字符串，其结果为：<br/>
+/dir1/dir2/dir3/my。</p>
+
+<blockquote>
+<p><strong>Tips:</strong></p>
+
+<p>记忆方法：</p>
+
+<p><code>#</code>是去掉左边(在键盘上<code>#</code>在<code>$</code>的左边);</p>
+
+<p><code>%</code>是去掉右边(在键盘上<code>%</code>在<code>$</code>的右边);</p>
+
+<p>单个符号是最小匹配;</p>
+
+<p>两个符号是最大匹配;</p>
+</blockquote>
+
+<h4 id="toc_4">5. shell字符串取子串：</h4>
+
+<hr/>
+
+<pre><code> ${file:0:5} #提取最左边的5个字符：/dir1
+ ${file:5:5} #提取第5个字符及其右边的5个字符:/dir2
+</code></pre>
+
+<p>shell字符串取子串的格式：<code>${s:pos:length}</code>,<br/>
+取字符串s的子串：从pos位置开始的字符(包括该字符)的长度为length的的子串;<br/>
+其中pos为子串的首字符，在s中位置；<br/>
+length为子串的长度;</p>
+
+<blockquote>
+<p><strong>Note:</strong> 字符串中字符的起始编号为0.</p>
+</blockquote>
+
+<h4 id="toc_5">6. shell字符串变量值的替换：</h4>
+
+<hr/>
+
+<pre><code>${file/dir/path}  #将第一个dir替换为path：/path1/dir2/dir3/my.file.txt
+${file//dir/path} #将全部的dir替换为path：/path1/path2/path3/my.file.txt
+</code></pre>
+
+<p>shell字符串变量值的替换格式：</p>
+
+<ul>
+<li><p>首次替换：<br/>
+<code>${s/src_pattern/dst_pattern}</code> 将字符串s中的第一个src_pattern替换为dst_pattern。</p></li>
+<li><p>全部替换：<br/>
+<code>${s//src_pattern/dst_pattern}</code> 将字符串s中的所有出现的src_pattern替换为dst_pattern.</p></li>
+</ul>
+
+<h4 id="toc_6">7. ${}还可针对变量的不同状态(没设定、空值、非空值)进行赋值：</h4>
+
+<hr/>
+
+<ul>
+<li><p><code>${file-my.file.txt}</code> #如果file没有设定，则使用<br/>
+使用my.file.txt作为返回值, 否则返回${file};(空值及非空值时，不作处理。);</p></li>
+<li><p><code>${file:-my.file.txt}</code> #如果file没有设定或者\({file}为空值, 均使用my.file.txt作为其返回值，否则，返回\){file}.(${file} 为非空值时，不作处理);</p></li>
+<li><p><code>${file+my.file.txt}</code> #如果file已设定(为空值或非空值), 则使用my.file.txt作为其返回值，否则不作处理。(未设定时，不作处理);</p></li>
+<li><p><code>${file:+my.file.txt}</code> #如果${file}为非空值, 则使用my.file.txt作为其返回值，否则，(未设定或者为空值时)不作处理。</p></li>
+<li><p><code>${file=my.file.txt}</code> #如果file为设定，则将file赋值为my.file.txt，同时将\({file}作为其返回值；否则，file已设定(为空值或非空值)，则返回\){file}。</p></li>
+<li><p><code>${file:=my.file.txt}</code> #如果file未设定或者\({file}为空值, 则my.file.txt作为其返回值，<br/>
+同时，将\){file}赋值为my.file.txt，否则，(非空值时)不作处理。</p></li>
+<li><p><code>${file?my.file.txt}</code> #如果file没有设定，则将my.file.txt输出至STDERR, 否侧，<br/>
+已设定(空值与非空值时)，不作处理。</p></li>
+<li><p><code>${file:?my.file.txt}</code> #若果file未设定或者为空值，则将my.file.txt输出至STDERR，否则，<br/>
+非空值时，不作任何处理。</p></li>
+</ul>
+
+<blockquote>
+<p><strong>Tips:</strong></p>
+
+<p>以上的理解在于，你一定要分清楚，<code>unset</code>与<code>null</code>以及non-null这三种状态的赋值；<br/>
+一般而言，与null有关，若不带<code>:</code>, null不受影响；<br/>
+若带 <code>:</code>, 则连null值也受影响。</p>
+</blockquote>
+
+<h4 id="toc_7">8. 计算shell字符串变量的长度：<code>${#var}</code></h4>
+
+<hr/>
+
+<pre><code> ${#file}  #其值为27, 因为/dir1/dir2/dir3/my.file.txt刚好为27个字符。
+</code></pre>
+
+<h4 id="toc_8">9. bash数组(array)的处理方法</h4>
+
+<hr/>
+
+<p>接下来，为大家介绍一下bash的数组(array)的处理方法。<br/>
+一般而言, <code>A=&quot;a b c def&quot;</code><br/>
+这样的变量只是将<code>$A</code>替换为一个字符串，<br/>
+但是改为 <code>A=(a b c def)</code>,<br/>
+则是将<code>$A</code>定义为数组....</p>
+
+<h5 id="toc_9">1). 数组替换方法可参考如下方法：</h5>
+
+<pre><code>${A[@]} #方法一
+${A[*]} #方法二
+</code></pre>
+
+<p>以上两种方法均可以得到：a b c def, 即数组的全部元素。</p>
+
+<h5 id="toc_10">2). 访问数组的成员:</h5>
+
+<pre><code>${A[0]}
+</code></pre>
+
+<p>其中，<code>${A[0]}</code>可得到a, 即数组A的第一个元素，<br/>
+而 <code>${A[1]}</code>则为数组A的第二元素，依次类推。</p>
+
+<h5 id="toc_11">3). 数组的length：</h5>
+
+<pre><code>${#A[@]} #方法一
+${#A[*]} #方法二
+</code></pre>
+
+<p>以上两种方法均可以得到数组的长度: 4, 即数组的所有元素的个数。</p>
+
+<p>回忆一下，针对字符串的长度计算，使用<code>${#str_var}</code>;<br/>
+我们同样可以将该方法应用于数组的成员:</p>
+
+<pre><code>${#A[0]}
+</code></pre>
+
+<p>其中，<code>${#A[0]}</code>可以得到：1，即数组A的第一个元素(a)的长度;<br/>
+同理，<code>${#A[3]}</code>可以得到: 3, 即数组A的第4个元素(def)的长度。</p>
+
+<h5 id="toc_12">4). 数组元素的重新赋值：</h5>
+
+<pre><code>A[3]=xyz
+</code></pre>
+
+<p>将数组A的第四个元素重新定义为xyz。</p>
+
+<blockquote>
+<p><strong>Tips:</strong></p>
+
+<p>诸如此类的...</p>
+
+<p>能够善用bash的\(()与\){}可以大大提高及<br/>
+简化shell在变量上的处理能力哦~~~<sup>_^</sup></p>
+</blockquote>
+
+<h4 id="toc_13">10. $(())作用:</h4>
+
+<hr/>
+
+<p>好了，最后为大家介绍<code>$(())</code>的用途吧：<br/>
+<strong><code>$(())</code>是用来作整数运算的</strong>。</p>
+
+<p>在bash中， <code>$(())</code>的整数运算符号大致有这些：</p>
+
+<ul>
+<li> +- *  /    #分别为&quot;加、减、乘、除&quot;。</li>
+<li> %            #余数运算,(模数运算)</li>
+<li> &amp; | ^ !      #分别为&quot;AND、OR、XOR、NOT&quot;运算。</li>
+</ul>
+
+<p>例如：</p>
+
+<pre><code>$ a=5; b=7; c=2;
+$ echo $(( a + b * c ))
+19
+$ echo $(( (a + b)/c ))
+6
+$ echo $(( (a * b) % c ))
+1
+</code></pre>
+
+<p>在<code>$(())</code>中的变量名称,<br/>
+可以在其前面加 <code>$</code>符号来替换，<br/>
+也可以不用，如：<br/>
+<code>$(( $a + $b * $c ))</code> 也可以得到19的结果。</p>
+
+<p>此外，<code>$(())</code>还可作不同进制(如二进制、八进制、十六进制)的运算，<br/>
+只是输出结果均为十进制的。</p>
+
+<pre><code>echo $(( 16#2a )) #输出结果为：42，(16进制的2a)
+</code></pre>
+
+<p>以一个实用的例子来看看吧 :<br/>
+假如当前的umask是022,那么新建文件的权限即为：</p>
+
+<pre><code>$ umask 022
+$ echo &quot;obase=8; $(( 8#666 &amp; (8#777 ^ 8#$(umask)) ))&quot; | bc
+644
+</code></pre>
+
+<p>事实上，单纯用<code>(())</code>也可以重定义变量值，或作testing：</p>
+
+<pre><code>a=5; ((a++)) #可将$a 重定义为6
+a=5; ((a--)) #可将$a 重定义为4
+a=5; b=7; ((a&lt; b)) #会得到0 (true)返回值。
+</code></pre>
+
+<p>常见的用于<code>(())</code>的测试符号有如下这些：</p>
+
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>符号名称</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>&lt;</td>
+<td>小于号</td>
+</tr>
+<tr>
+<td>&gt;</td>
+<td>大于号</td>
+</tr>
+<tr>
+<td>&lt;=</td>
+<td>小于或等于</td>
+</tr>
+<tr>
+<td>&gt;=</td>
+<td>大于或等于</td>
+</tr>
+<tr>
+<td>==</td>
+<td>等于</td>
+</tr>
+<tr>
+<td>!=</td>
+<td>不等于</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote>
+<p><strong>Note:</strong></p>
+
+<p>使用<code>(())</code>作整数测试时，<br/>
+请不要跟<code>[]</code>的整数测试搞混乱了。</p>
+
+<p>更多的测试，我们将于第10章为大家介绍。</p>
+</blockquote>
+
+<p>怎样？ 好玩吧... <sup>_^</sup></p>
+
+<p>okay,这次暂时说这么多...</p>
+
+<p>上面的介绍，并没有详列每一种可用的状态，<br/>
+更多的，就请读者参考手册文件(man)吧...</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[flume-ng源码分析-核心组件分析]]></title>
+    <link href="http://www.blacklight.xin/14961334971521.html"/>
+    <updated>2017-05-30T16:38:17+08:00</updated>
+    <id>http://www.blacklight.xin/14961334971521.html</id>
+    <content type="html"><![CDATA[
+<p>从第一篇分析可知,flume中所有的组件都会实现LifecycleAware 接口。该接口定义如下：</p>
+
+<pre><code class="language-java">public interface LifecycleAware {
+  public void start();
+  public void stop();
+  public LifecycleState getLifecycleState();
+}
+</code></pre>
+
+<p>在组件启动的时候会调用start方法，当有异常时调用stop方法。getLifecycleState 方法返回该组件的状态。包含 <strong>IDLE, START, STOP, ERROR;</strong> </p>
+
+<p>当在组件开发中需要配置一些属性的时候可以实现<strong>Configurable</strong>接口</p>
+
+<pre><code class="language-java">public interface Configurable {
+  public void configure(Context context);
+
+}
+</code></pre>
+
+<p>下面开始分析Agent中各个组件的实现</p>
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">source 实现</h2>
+
+<h2 id="toc_1">source定义</h2>
+
+<pre><code class="language-java">public interface Source extends LifecycleAware, NamedComponent {
+ public void setChannelProcessor(ChannelProcessor channelProcessor);
+ public ChannelProcessor getChannelProcessor();
+}
+</code></pre>
+
+<p>可以看到Source 继承了LifecycleAware 接口，并且提供了<strong>ChannelProcessor</strong>的getter和setter方法,channelProcessor在<strong>常用架构篇中</strong>降到提供了日志过滤链,和channel选择的功能。所以Source的逻辑应该都在LifecycleAware中的start,stop方法中.</p>
+
+<h2 id="toc_2">source创建</h2>
+
+<p>在<strong>启动篇</strong>中，我们讲到了flume是如何启动的。大致流程就是读取配置文件,生成flume的各种组件,执行各个组件的start()方法。在<strong>getConfiguration()</strong>方法中调用了<strong>loadSources()</strong>方法。<br/>
+可以看到在loadSources方法中如何创建Source的</p>
+
+<pre><code class="language-java">private void loadSources(AgentConfiguration agentConf,
+      Map&lt;String, ChannelComponent&gt; channelComponentMap,
+      Map&lt;String, SourceRunner&gt; sourceRunnerMap)
+      throws InstantiationException {
+
+    Set&lt;String&gt; sourceNames = agentConf.getSourceSet();//获取所有的Source
+    Map&lt;String, ComponentConfiguration&gt; compMap =agentConf.getSourceConfigMap(); //获取所有Source对应的配置
+    for (String sourceName : sourceNames) {
+      ComponentConfiguration comp = compMap.get(sourceName);//获取该source对应的配置
+      if(comp != null) {
+        SourceConfiguration config = (SourceConfiguration) comp; //转化为source配置
+
+        Source source = sourceFactory.create(comp.getComponentName(),
+            comp.getType());//通过sourceFactory 创建source
+        try {
+          Configurables.configure(source, config);//配置组件的其他属性
+          Set&lt;String&gt; channelNames = config.getChannels()//获取该source的所有channel名称
+          List&lt;Channel&gt; sourceChannels = new ArrayList&lt;Channel&gt;();
+          for (String chName : channelNames) {//遍历所有的额channle，如果该channel已经实例化过了并且在channelComponentMap中已经存储了，那么将该channel放入sourceChannels
+            ChannelComponent channelComponent = channelComponentMap.get(chName);
+            if(channelComponent != null) {
+              sourceChannels.add(channelComponent.channel);
+            }
+          }
+          if(sourceChannels.isEmpty()) {//如果这个source没有关联到任何channel那么直接抛出异常
+            String msg = String.format(&quot;Source %s is not connected to a &quot; +
+                &quot;channel&quot;,  sourceName);
+            throw new IllegalStateException(msg);
+          }
+          //以下创建出ChannelProcessor并且配置其他属性
+          ChannelSelectorConfiguration selectorConfig =
+              config.getSelectorConfiguration();
+
+          ChannelSelector selector = ChannelSelectorFactory.create(
+              sourceChannels, selectorConfig);
+
+          ChannelProcessor channelProcessor = new ChannelProcessor(selector);
+          Configurables.configure(channelProcessor, config);
+
+          source.setChannelProcessor(channelProcessor);//设置channelSelector
+          sourceRunnerMap.put(comp.getComponentName(),
+              SourceRunner.forSource(source));//将改source，以及对应的SourceRunner放入SourceRunnerMap中
+          for(Channel channel : sourceChannels) {//遍历改source所有的channel并且将改source添加到该channel的Component中
+            ChannelComponent channelComponent = Preconditions.
+                checkNotNull(channelComponentMap.get(channel.getName()),
+                    String.format(&quot;Channel %s&quot;, channel.getName()));
+            channelComponent.components.add(sourceName);
+          }
+        } catch (Exception e) {
+          String msg = String.format(&quot;Source %s has been removed due to an &quot; +
+              &quot;error during configuration&quot;, sourceName);
+          LOGGER.error(msg, e);
+        }
+      }
+    }
+    ......
+</code></pre>
+
+<p>从上面的分析中可以看出，Source是后SourceFactory创建的，创建之后绑定到SourceRunner中，并且在SourceRunner中启动了Source。<br/>
+  SourceFactory只有一个实现DefaultSourceFactory。创建Source过程如下:</p>
+
+<pre><code class="language-java">  public Source create(String name, String type) throws FlumeException {
+    Preconditions.checkNotNull(name, &quot;name&quot;);
+    Preconditions.checkNotNull(type, &quot;type&quot;);
+    logger.info(&quot;Creating instance of source {}, type {}&quot;, name, type);
+    Class&lt;? extends Source&gt; sourceClass = getClass(type);//通过对应的类型找到对应的class
+    try {
+      Source source = sourceClass.newInstance();//直接创建实例
+      source.setName(name);
+      return source;
+    } catch (Exception ex) {
+      throw new FlumeException(&quot;Unable to create source: &quot; + name
+          +&quot;, type: &quot; + type + &quot;, class: &quot; + sourceClass.getName(), ex);
+    }
+  }
+</code></pre>
+
+<p>在创建重，通过type来或者source类的class。在getClass方法中，首先会去找type对应类型的class。在SourceType中定义的。如果没有找到，则直接获得配置的类全路径。最后通过Class.forName(String)获取class对象。</p>
+
+<p>source提供了两种方式类获取数据:轮训拉去和事件驱动</p>
+
+<p><img src="media/14961334971521/14961359396630.jpg" alt="" style="width:811px;"/></p>
+
+<p>PollableSource 提供的默认实现如下：<br/>
+<img src="media/14961334971521/14962066716627.jpg" alt="" style="width:776px;"/></p>
+
+<p>比如KafkaSource 利用Kafka的ConsumerApi，主动去拉去数据。</p>
+
+<p>EventDrivenSource 提供的默认实现如下</p>
+
+<p><img src="media/14961334971521/14962068696930.jpg" alt=""/></p>
+
+<p>如HttpSource，NetcatSource就是事件驱动的，所谓事件驱动也就是被动等待。在HttpSource中内置了一个Jetty server，并且设置FlumeHTTPServlet 作为handler去处理数据。</p>
+
+<h2 id="toc_3">source的启动</h2>
+
+<p>从上面的分析中知道，在启动flume读取配置文件时,会将所有的组件封装好，然后再启动。对于Source而言,封装成了SourceRunner,通过SourceRunner间接启动Source。</p>
+
+<pre><code class="language-java">public static SourceRunner forSource(Source source) {
+    SourceRunner runner = null;
+
+    if (source instanceof PollableSource) {//判断该source是否为PollableSource
+      runner = new PollableSourceRunner();
+      ((PollableSourceRunner) runner).setSource((PollableSource) source);
+    } else if (source instanceof EventDrivenSource) {//判断该source是否为EventDrivenSource
+      runner = new EventDrivenSourceRunner();
+      ((EventDrivenSourceRunner) runner).setSource((EventDrivenSource) source);
+    } else {//否则抛出异常
+      throw new IllegalArgumentException(&quot;No known runner type for source &quot;
+          + source);
+    }
+    return runner;
+  }
+</code></pre>
+
+<p>从上面可以看出SourceRunner 默认提供两种实现，PollableSourceRunner,EventDrivenSource.分别对应PollableSource 和EventDrivenSource。</p>
+
+<h3 id="toc_4">查看PollableSourceRunner是如何启动的</h3>
+
+<pre><code class="language-java">@Override
+  public void start() {
+    PollableSource source = (PollableSource) getSource();
+    ChannelProcessor cp = source.getChannelProcessor();
+    cp.initialize();//初始化ChannelProcessor
+    source.start();//启动source组件
+
+    runner = new PollingRunner();//单独启动一个线程去轮询source
+
+    runner.source = source;
+    runner.counterGroup = counterGroup;
+    runner.shouldStop = shouldStop;
+
+    runnerThread = new Thread(runner);
+    runnerThread.setName(getClass().getSimpleName() + &quot;-&quot; + 
+        source.getClass().getSimpleName() + &quot;-&quot; + source.getName());
+    runnerThread.start();
+
+    lifecycleState = LifecycleState.START;//设置状态为START
+  }
+</code></pre>
+
+<p>在PollableSourceRunner中我们看到单独启动一个线程去执行PollingRunner,这个线程的作用就是不断的去轮询。查看PollingRunner的实现</p>
+
+<pre><code class="language-java">@Override
+    public void run() {
+      logger.debug(&quot;Polling runner starting. Source:{}&quot;, source);
+
+      while (!shouldStop.get()) {//没有停止，那就继续吧
+        counterGroup.incrementAndGet(&quot;runner.polls&quot;);
+
+        try {
+        //真正的拉去逻辑在source process()方法中，调用该方法进行拉去数据,并且
+        //判断返回状态是否为BACKOFF(失败补偿),如果是那么等待時間超时之后就会重试
+          if (source.process().equals(PollableSource.Status.BACKOFF)) {
+            counterGroup.incrementAndGet(&quot;runner.backoffs&quot;);
+
+            Thread.sleep(Math.min(
+                counterGroup.incrementAndGet(&quot;runner.backoffs.consecutive&quot;)
+                * backoffSleepIncrement, maxBackoffSleep));
+          } else {
+            counterGroup.set(&quot;runner.backoffs.consecutive&quot;, 0L);
+          }
+        } catch (InterruptedException e) {
+          logger.info(&quot;Source runner interrupted. Exiting&quot;);
+          counterGroup.incrementAndGet(&quot;runner.interruptions&quot;);
+        } ......
+      }
+
+      logger.debug(&quot;Polling runner exiting. Metrics:{}&quot;, counterGroup);
+    }
+</code></pre>
+
+<p>比如KafkaSource ,它的逻辑就在process方法中，</p>
+
+<pre><code class="language-java">          // get next message
+          MessageAndMetadata&lt;byte[], byte[]&gt; messageAndMetadata = it.next();
+          kafkaMessage = messageAndMetadata.message();
+          kafkaKey = messageAndMetadata.key();
+
+          // Add headers to event (topic, timestamp, and key)
+          headers = new HashMap&lt;String, String&gt;();
+          headers.put(KafkaSourceConstants.TIMESTAMP,
+                  String.valueOf(System.currentTimeMillis()));
+          headers.put(KafkaSourceConstants.TOPIC, topic);
+          
+</code></pre>
+
+<h3 id="toc_5">EventDrivenSourceRunner</h3>
+
+<pre><code>@Override
+  public void start() {
+    Source source = getSource();//获取source
+    ChannelProcessor cp = source.getChannelProcessor();//获取source对应的ChannelProcessor
+    cp.initialize();//初始化channelprocessor
+    source.start();//启动source
+    lifecycleState = LifecycleState.START;//标记状态为START
+  }
+</code></pre>
+
+<p>可以看到EventDrivenSourceRunner和PollableSourceRunnner 启动流程大致相同,只是PollableSourceRunner会额外启动一个线程去轮询source。</p>
+
+<h2 id="toc_6">channel的实现</h2>
+
+<p>source 获取到数据后，会交给channelProcessor处理，发送到channel。最后由sink消费掉。<br/>
+所以channel是source，sink实现异步化的关键。</p>
+
+<p>channelProcessor 中两格重要的成员</p>
+
+<pre><code class="language-java">  private final ChannelSelector selector;//channel选择器
+  private final InterceptorChain interceptorChain; //过滤链
+</code></pre>
+
+<p>InterceptorChain 是有多个Interceptor组成,并且实现了Interceptor接口</p>
+
+<pre><code>public class InterceptorChain implements Interceptor {
+     private List&lt;Interceptor&gt; interceptors;
+}
+</code></pre>
+
+<p>Interceptor.java</p>
+
+<pre><code class="language-java">public interface Interceptor {
+  public void initialize();// 做一些处理话工作
+  public Event intercept(Event event);//拦截单个event并且返回
+  public List&lt;Event&gt; intercept(List&lt;Event&gt; events);//批量拦截event
+  public void close();
+    public interface Builder extends Configurable {
+    public Interceptor build();
+  }//用来创建特定的Interceptor
+}
+</code></pre>
+
+<p>Interceptor定义了一些处理Event的接口，再Event处理之后都会返回改Envent</p>
+
+<p>从source的分析中我们可以知道,如果是PollableSourceRunner会调用source 中的process()方法。如果是EventDrivenSourceRunner，就会用特定的方法来获取source，比如httpSource 利用FlumeHTTPServlet来接受消息</p>
+
+<pre><code class="language-java">try {
+        events = handler.getEvents(request);//从请求中获取event
+      ...
+            try {
+        getChannelProcessor().processEventBatch(events);//通过ChanneProcess进行的processEventBatch方法进行批量处理
+      } catch (ChannelException ex) {
+</code></pre>
+
+<p>比如KafkaSource 是PollableSourceRunner 那么会调用KafkaSource中的process()方法。</p>
+
+<pre><code class="language-java">public Status process() throws EventDeliveryException {
+   ...
+   
+   // get next message
+          MessageAndMetadata&lt;byte[], byte[]&gt; messageAndMetadata = it.next();
+          kafkaMessage = messageAndMetadata.message();
+          kafkaKey = messageAndMetadata.key();
+
+          // Add headers to event (topic, timestamp, and key)
+          headers = new HashMap&lt;String, String&gt;();
+          headers.put(KafkaSourceConstants.TIMESTAMP,
+                  String.valueOf(System.currentTimeMillis()));
+          headers.put(KafkaSourceConstants.TOPIC, topic);
+          if (kafkaKey != null) {
+            headers.put(KafkaSourceConstants.KEY, new String(kafkaKey));
+          }
+          ......
+          event = EventBuilder.withBody(kafkaMessage, headers);
+          eventList.add(event);
+          ......
+          
+        if()......  
+        getChannelProcessor().processEventBatch(eventList);//交给channelProcessor处理
+        counter.addToEventAcceptedCount(eventList.size());
+        ...
+      }
+}
+
+</code></pre>
+
+<p>从以上分析不管source是轮询还是事件驱动的，都会触发ChannelProcessor中的processEvent或者ProcesEventBatch方法</p>
+
+<pre><code class="language-java">public void processEventBatch(List&lt;Event&gt; events) {
+    events = interceptorChain.intercept(events);//调用Interceptor处理events
+    
+    List&lt;Channel&gt; reqChannels = selector.getRequiredChannels(event);//获取必须成功处理的Channel ,写失败了必须回滚source
+    List&lt;Channel&gt; optChannels = selector.getOptionalChannels(event);//获取非必须成功处理的channel，写失败了就忽略
+    
+    
+    // 這裡分析處理必須成功channel的情況。非必須的channel處理情況一樣
+    for (Channel reqChannel : reqChannelQueue.keySet()) {
+      Transaction tx = reqChannel.getTransaction();//获取该channel上的事务
+      Preconditions.checkNotNull(tx, &quot;Transaction object must not be null&quot;);
+      try {
+        tx.begin();//开始事务
+
+        List&lt;Event&gt; batch = reqChannelQueue.get(reqChannel);//获取events
+
+        for (Event event : batch) {
+          reqChannel.put(event);//处理Channel
+        }
+
+        tx.commit();//提交事务
+      } catch (Throwable t) {
+        tx.rollback();//发生异常回滚
+        if (t instanceof Error) {
+          LOG.error(&quot;Error while writing to required channel: &quot; +
+              reqChannel, t);
+          throw (Error) t;
+        } else {
+          throw new ChannelException(&quot;Unable to put batch on required &quot; +
+              &quot;channel: &quot; + reqChannel, t);
+        }
+      } finally {
+        if (tx != null) {
+          tx.close();//关闭事务
+        }
+      }
+    }
+}
+</code></pre>
+
+<p>最后就是ChannelSelector ，flume默认提供两种实现多路复用和复制。多路复用选择器可以根据header中的值而选择不同的channel，复制就会把event复制到多个channel中。flume默认是复制选择器。</p>
+
+<p><img src="media/14961334971521/14962112541107.jpg" alt="" style="width:315px;"/></p>
+
+<p>同样Selector的创建也是通过ChannelSelectorFactory创建的.</p>
+
+<pre><code class="language-java"> 
+ public static ChannelSelector create(List&lt;Channel&gt; channels,
+      ChannelSelectorConfiguration conf) {
+    String type = ChannelSelectorType.REPLICATING.toString();
+    if (conf != null){
+      type = conf.getType();
+    }
+    ChannelSelector selector = getSelectorForType(type);
+    selector.setChannels(channels);
+    Configurables.configure(selector, conf);
+    return selector;
+  }
+</code></pre>
+
+<p>默认提供复制选择器，如果配置文件中配置了选择器那么就从配置文件中获取。</p>
+
+<p>上面看到在processEventBatch 方法中调用channel的put方法。channel中提供了基本的<br/>
+ put和take方法来实现Event的流转。</p>
+
+<pre><code class="language-java"> public interface Channel extends LifecycleAware, NamedComponent {
+  public void put(Event event) throws ChannelException;//向channel中存放
+  public Event take() throws ChannelException;//消费event
+  public Transaction getTransaction();//获取事务
+}
+</code></pre>
+
+<p>flume提供的默认channel如下图所示:<br/>
+ <img src="media/14961334971521/14962117376319.jpg" alt=""/></p>
+
+<h2 id="toc_7">sink的实现</h2>
+
+<h3 id="toc_8">sink定义：</h3>
+
+<pre><code class="language-java">public interface Sink extends LifecycleAware, NamedComponent {
+  public void setChannel(Channel channel);
+  public Channel getChannel();
+  public Status process() throws EventDeliveryException;
+  public static enum Status {
+    READY, BACKOFF
+  }
+}
+</code></pre>
+
+<p>提供了channel的setter,getter方法。process方法用来消费。并返回状态READY,BACKOFF</p>
+
+<h3 id="toc_9">sink的创建</h3>
+
+<pre><code class="language-java">SinkConfiguration config = (SinkConfiguration) comp;
+ Sink sink = sinkFactory.create(comp.getComponentName(),
+ comp.getType());
+</code></pre>
+
+<p>sink的创建也是通过sinkFactory</p>
+
+<pre><code class="language-java">public Sink create(String name, String type) throws FlumeException {
+    Preconditions.checkNotNull(name, &quot;name&quot;);
+    Preconditions.checkNotNull(type, &quot;type&quot;);
+    logger.info(&quot;Creating instance of sink: {}, type: {}&quot;, name, type);
+    Class&lt;? extends Sink&gt; sinkClass = getClass(type);//获取sink对应的类型的Class
+    try {
+      Sink sink = sinkClass.newInstance();//创建实例
+      sink.setName(name);
+      return sink;
+    } catch (Exception ex) {
+      throw new FlumeException(&quot;Unable to create sink: &quot; + name
+          + &quot;, type: &quot; + type + &quot;, class: &quot; + sinkClass.getName(), ex);
+    }
+  }
+</code></pre>
+
+<p>通过传入的type找到对应的Class 要是没有找到则直接通过Class.forNamae(String name)来创建</p>
+
+<p>sink还提供了分组功能。该功能由SinkGroup实现。在SinkGroup内部如何调度多个Sink，则交给SinkProcessor完成。</p>
+
+<h3 id="toc_10">sink的启动</h3>
+
+<p>和Source一样，flume也为Sink提供了SinkRunner来流转Sink<br/>
+在sinkRunner中</p>
+
+<pre><code class="language-java">public void start() {
+    SinkProcessor policy = getPolicy();
+    policy.start();//启动SinkProcessor
+    runner = new PollingRunner();//单独启动一个线程，从channel中消费数据
+    runner.policy = policy;
+    runner.counterGroup = counterGroup;
+    runner.shouldStop = new AtomicBoolean();
+    runnerThread = new Thread(runner);
+    runnerThread.setName(&quot;SinkRunner-PollingRunner-&quot; +
+        policy.getClass().getSimpleName());
+    runnerThread.start();
+    lifecycleState = LifecycleState.START;
+  }
+
+</code></pre>
+
+<p>sinkRunner中通过启动SinkProcessor 间接启动Sink，并且单独启动一个线程，不停地调用process()方法从channel中消费数据<br/>
+在SinkProcessor中，如果是DefaultSinkProcessor 那么直接调用sink.start()方法启动sink。如果是LoadBalancingSinkProcessor，FailoverSinkProcessor由于这两种处理器中包含多个Sink，所以会依次遍历sink 调用start()方法启动</p>
+
+<pre><code class="language-java">public void run() {
+      logger.debug(&quot;Polling sink runner starting&quot;);
+
+      while (!shouldStop.get()) {//判断是否停止
+        try {
+          if (policy.process().equals(Sink.Status.BACKOFF)) {//调用SinkProcessor的proces()方法进行处理
+            counterGroup.incrementAndGet(&quot;runner.backoffs&quot;);
+            Thread.sleep(Math.min(
+                counterGroup.incrementAndGet(&quot;runner.backoffs.consecutive&quot;)
+                * backoffSleepIncrement, maxBackoffSleep));
+          } else {
+            counterGroup.set(&quot;runner.backoffs.consecutive&quot;, 0L);
+          }
+        }
+      }
+    }
+</code></pre>
+
+<p>该线程会不停的执行SinkProcessor的process()方法，而SinkProcessor的process()方法会调用对应的Sink的process()方法。然后判断处理状态如果是失败补偿，那么等待超时时间后重试</p>
+
+<h3 id="toc_11">SinkGroup</h3>
+
+<pre><code class="language-java">public class SinkGroup implements Configurable, ConfigurableComponent {
+  List&lt;Sink&gt; sinks;
+  SinkProcessor processor;
+  SinkGroupConfiguration conf;
+  ......  
+}
+</code></pre>
+
+<p>SinkGroup中包含多个Sink,并且提供一个SinkProcessor来处理SinkGroup内部调度</p>
+
+<h3 id="toc_12">SinkProcessor</h3>
+
+<p>SinkProcessor 默认提供三种实现。DefaultSinkProcessor,LoadBalancingSinkProcessor,FailoverSinkProcessor</p>
+
+<p><img src="media/14961334971521/14962397506282.jpg" alt="" style="width:496px;"/></p>
+
+<p>DefaultSinkProcessor：默认实现，适用于单个sink<br/>
+LoadBalancingSinkProcessor：提供负载均衡<br/>
+FailoverSinkProcessor：提供故障转移</p>
+
+<h4 id="toc_13">DefaultSinkProcessor</h4>
+
+<pre><code class="language-java">public class DefaultSinkProcessor implements SinkProcessor,
+ConfigurableComponent {
+  private Sink sink;
+  private LifecycleState lifecycleState;
+
+  @Override
+  public void start() {
+    Preconditions.checkNotNull(sink, &quot;DefaultSinkProcessor sink not set&quot;);
+    sink.start();//启动sink
+    lifecycleState = LifecycleState.START;
+  }
+
+  @Override
+  public Status process() throws EventDeliveryException {
+    return sink.process();
+  }
+
+  @Override
+  public void setSinks(List&lt;Sink&gt; sinks) {
+    Preconditions.checkNotNull(sinks);
+    Preconditions.checkArgument(sinks.size() == 1, &quot;DefaultSinkPolicy can &quot;
+        + &quot;only handle one sink, &quot;
+        + &quot;try using a policy that supports multiple sinks&quot;);
+    sink = sinks.get(0);
+  }
+}
+</code></pre>
+
+<p>从上面可以看出DefaultSinkProcessor 只能处理一个Sink。在process方法中调用sink的方法。具体到某个具体的Sink，比如HDFSEventSink,那么就执行该sink的process方法</p>
+
+<p>接下来分析SinkProcessor中负载均衡和故障转移 是如何具体实现的。</p>
+
+<h4 id="toc_14">FailOverSinkProcessor 实现分析</h4>
+
+<p><strong>FailOverSinkProcessor</strong>  中process()方法实现如下:</p>
+
+<pre><code class="language-java">@Override
+  public Status process() throws EventDeliveryException {
+    Long now = System.currentTimeMillis();
+    while(!failedSinks.isEmpty() &amp;&amp; failedSinks.peek().getRefresh() &lt; now) {//检查失败队列是否有sink，并且队列中第一个sink过了失败补偿时间
+      FailedSink cur = failedSinks.poll();//从失败队列中获取第一个sink，并且在队列中删除
+      Status s;
+      try {
+        s = cur.getSink().process();//调用sink的process()方法进行处理
+        if (s  == Status.READY) {//如果状态是就绪
+          liveSinks.put(cur.getPriority(), cur.getSink());//将该sink放入存活队列
+          activeSink = liveSinks.get(liveSinks.lastKey());//重新赋值给activeSink
+          logger.debug(&quot;Sink {} was recovered from the fail list&quot;,
+                  cur.getSink().getName());
+        } else {//sink 处理失败
+          failedSinks.add(cur);//加入失败队列
+        }
+        return s;
+      } catch (Exception e) {
+        cur.incFails();//发生异常，增加失败次数
+        failedSinks.add(cur);//放入失败队列
+      }
+    }
+
+    //如果失败队列为空，或者失败队列中所有的sink都没有达到失败补偿时间，那么交给activeSink进行处理，
+    Status ret = null;
+    while(activeSink != null) {
+      try {
+        ret = activeSink.process();//交给activeSink 处理
+        return ret;
+      } catch (Exception e) {
+        logger.warn(&quot;Sink {} failed and has been sent to failover list&quot;,
+                activeSink.getName(), e);
+        activeSink = moveActiveToDeadAndGetNext();//如果activeSink处理失败，则把activeSink从存活队列中移动到失败队列中
+      }
+    }
+    throw new EventDeliveryException(&quot;All sinks failed to process, &quot; +
+        &quot;nothing left to failover to&quot;);
+  }
+</code></pre>
+
+<ul>
+<li>存活队列是一个SortMap<Key,Value> 其中key是sink的优先级。activeSink 默认取存活队列中的最后一个，存活队列是根据配置的sink优先级来排序的</li>
+<li><p>失败队列是一个优先队列,按照FailSink的refresh属性进行排序</p>
+
+<pre><code class="language-java">@Override
+public int compareTo(FailedSink arg0) {
+  return refresh.compareTo(arg0.refresh);
+}
+</code></pre>
+
+<p>refresh 属性，在FailSink创建时和sink 处理发生异常时 会触发调整<br/>
+refresh 调整策略 如下:</p>
+
+<pre><code class="language-java">private void adjustRefresh() {
+  refresh = System.currentTimeMillis()
+          + Math.min(maxPenalty, (1 &lt;&lt; sequentialFailures) * FAILURE_PENALTY);
+}
+</code></pre>
+
+<p>refresh 等于系统当前的毫秒加上最大等待时间(默认30s)和失败次数指数级增长值中最小的一个。FAILURE_PENALTY等1s;(1 &lt;&lt; sequentialFailures) * FAILURE_PENALTY)用于实现根据失败次数等待时间指数级递增。</p></li>
+</ul>
+
+<p>一个配置的failOver具体的例子:</p>
+
+<pre><code class="language-groovy">  host1.sinkgroups = group1
+  host1.sinkgroups.group1.sinks = sink1 sink2
+  host1.sinkgroups.group1.processor.type = failover
+  host1.sinkgroups.group1.processor.priority.sink1 = 5
+  host1.sinkgroups.group1.processor.priority.sink2 = 10
+  host1.sinkgroups.group1.processor.maxpenalty = 10000
+</code></pre>
+
+<h4 id="toc_15">LoadBalancingSinkProcessor实现分析</h4>
+
+<p>loadBalaneingSinkProcessor 用于实现sink的负载均衡，其功能通过SinkSelector实现。类似于ChannelSelector和Channel的关系</p>
+
+<p><img src="media/14961334971521/14965813235880.jpg" alt="" style="width:384px;"/></p>
+
+<p><img src="media/14961334971521/14965813925723.jpg" alt="" style="width:618px;"/></p>
+
+<p>SinkSelector中模式有三种实现<br/>
+ 1.固定顺序<br/>
+ 2.轮询<br/>
+ 3.随机</p>
+
+<p>LoadBalancingSinkProcessor 中使用均衡负载的方式</p>
+
+<pre><code class="language-java">  @Override
+  public Status process() throws EventDeliveryException {
+    Status status = null;
+    Iterator&lt;Sink&gt; sinkIterator = selector.createSinkIterator();//使用sinkSelector创建Sink迭代器。三种方式有各自不同的实现
+    while (sinkIterator.hasNext()) {//遍历Sink
+      Sink sink = sinkIterator.next();//获取sink
+      try {
+        status = sink.process();//调用sink处理
+        break;//如果处理成功那么本次负载均衡就算完成
+      } catch (Exception ex) {
+        selector.informSinkFailed(sink);//如果发生异常则通知SinkSelector，采用相应的补偿算法进行处理
+        LOGGER.warn(&quot;Sink failed to consume event. &quot;
+            + &quot;Attempting next sink if available.&quot;, ex);
+      }
+    }
+    if (status == null) {
+      throw new EventDeliveryException(&quot;All configured sinks have failed&quot;);
+    }
+    return status;
+  }
+</code></pre>
+
+<p>在上面的解释中，最大的两个疑惑就是</p>
+
+<ul>
+<li>这个Sink迭代器也就是createSinkIterator() 是如何实现的</li>
+<li><p>发生异常后SinkSelector的处理是如何实现的</p>
+
+<p>先来看createSinkIterator 的实现。首先看RoundRobinSinkSelector的实现</p>
+
+<p><img src="media/14961334971521/14965819912139.jpg" alt="" style="width:256px;"/></p>
+
+<p>如上图所示RoundRobinSinkSelector 内部包含一个OrderSelector的属性。</p>
+
+<pre><code class="language-java">private OrderSelector&lt;Sink&gt; selector;
+
+RoundRobinSinkSelector(boolean backoff){
+  selector = new RoundRobinOrderSelector&lt;Sink&gt;(backoff);
+}
+
+@Override
+public Iterator&lt;Sink&gt; createSinkIterator() {
+  return selector.createIterator();
+}
+</code></pre>
+
+<p>内部通过一个RoundRobinOrderSelector 来实现。查看起createIterator实现</p>
+
+<pre><code class="language-java">@Override
+public Iterator&lt;T&gt; createIterator() {
+List&lt;Integer&gt; activeIndices = getIndexList();//获取存活sink的索引
+int size = activeIndices.size();//存活sink的個數
+//如果下一個sink的位置超過了存活sin的個數，重新指向头
+if (nextHead &gt;= size) {
+  nextHead = 0;
+}
+int begin = nextHead++; //获取起始位置
+if (nextHead == activeIndices.size()) {//检查是否超过范围，超过了从头开始
+  nextHead = 0;
+}
+int[] indexOrder = new int[size];//创建一个数组，来存放访问的顺序
+for (int i = 0; i &lt; size; i++) {
+  indexOrder[i] = activeIndices.get((begin + i) % size);//用取模的方法实现轮询，每次都从上一个sink的下一个sink 索引开始，由begin控制
+}
+//indexOrder 是访问顺序，getObjects返回相关所有的sink
+return new SpecificOrderIterator&lt;T&gt;(indexOrder, getObjects());
+}
+</code></pre>
+
+<p>接下来看一下getIndexList 的实现</p>
+
+<pre><code class="language-java">protected List&lt;Integer&gt; getIndexList() {
+long now = System.currentTimeMillis();//当前时间
+
+List&lt;Integer&gt; indexList = new ArrayList&lt;Integer&gt;();//用来存放sink的索引
+
+int i = 0;
+for (T obj : stateMap.keySet()) {//获取所有sink
+  if (!isShouldBackOff() || stateMap.get(obj).restoreTime &lt; now) {
+     //如果没有开启退避，或者该sink 到失败补偿的时间，那么将改sink的索引放入IndexList
+    indexList.add(i);
+  }
+  i++;
+}
+return indexList;
+}
+</code></pre>
+
+<p>stateMap是一个LinkedHashMap<T,FailState>其中T在这里指的是Sink。<br/>
+如果没有开启了退避算法，那么会认为每个sink都是存活的，所有的sink都加到IndexList。否则等到了失败补偿时间才会加入到IndexList。可以通过processor.backoff = true配置开启</p>
+
+<p>最后分析一下当sink处理失败SinkSelector是如何处理的</p>
+
+<pre><code class="language-java">public void informFailure(T failedObject) {
+if (!shouldBackOff) {//如果没有开启退避算法，当然就不做任何处理
+  return;
+}
+FailureState state = stateMap.get(failedObject);//获取当前失败sink的状态对象
+long now = System.currentTimeMillis();//当前时间
+long delta = now - state.lastFail;//自从上次失败的经过的时间
+long lastBackoffLength = Math.min(maxTimeout, 1000 * (1 &lt;&lt; state.sequentialFails));//计算上一次退避等待的时间
+long allowableDiff = lastBackoffLength + CONSIDER_SEQUENTIAL_RANGE;
+if (allowableDiff &gt; delta) {//如果上次失败到现在最后退避时间后的一个小时内，并且是失败次数小于期望的退避次数限制，那么就增加state.sequentialFails 实际上就增加了退避的等待时间
+  if (state.sequentialFails &lt; EXP_BACKOFF_COUNTER_LIMIT) {
+    state.sequentialFails++;
+  }
+} else {
+  state.sequentialFails = 1;//否则就不再增加退避等待时间
+}
+state.lastFail = now;//更新最后失败时间
+state.restoreTime = now + Math.min(maxTimeout, 1000 * (1 &lt;&lt; state.sequentialFails));//更新退避等待时间
+}
+</code></pre>
+
+<p>CONSIDER_SEQUENTIAL_RANGE 是一个常量 只为1小时，EXP_BACKOFF_COUNTER_LIMIT 为期望最大的退避次数 值为16.如果上次失败到现在的是哪在上次退避等待时间超过一个小时后 或者 退避次数超过了EXP_BACKOFF_COUNTER_LIMIT 那么退避的等待时间将不再增加。</p></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[flume-ng源码分析-整体架构2【常用架构篇】]]></title>
+    <link href="http://www.blacklight.xin/14961128486144.html"/>
+    <updated>2017-05-30T10:54:08+08:00</updated>
+    <id>http://www.blacklight.xin/14961128486144.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">数据流模型</h2>
+
+<p><img src="media/14961128486144/14961138534005.jpg" alt=""/></p>
+
+<span id="more"></span><!-- more -->
+
+<p><strong>flume 中基本概念</strong> </p>
+
+<p>1.Event:一个流经Agent的基本数据单位;Event从Source流向Channel最后到Sink。实现了Event接口。在Event的流向中,可以设置可选的header参数。<br/>
+2.Agent:一个Agent表示一个拥有一些组件(source,channel,sink)的jvm进程。这些组件允许，Events从一个外部源,流向下一个目的地。<br/>
+3.flow:表示一个数据流向<br/>
+4.source:source 消费可以识别格式的Events。这些Events可以通过像web server的客户端发送。例如arvoSource 可以从client或者其他flume agent 接受arvoEvents.当Source接受到Events时，将它存储在一个或者多个Channel中<br/>
+5.Channel:是一个被动存储。他会存储接收到的Events直到这些Events被Sink消费掉。比如fileChannel，用贝本地文件系统作为后备存储；<br/>
+6.Sink:Sink消费channel中的数据。sink负责将Event从channel中移除，并且将Events放在外部存储如HDFS(这可以通过HDFSSINK实现)或者传送给下一个Flume agent中的source。因为Flume中有Channel的存在,在一个给定的Agent中source和sink可以异步的执行</p>
+
+<h2 id="toc_1">简单的日志收集</h2>
+
+<p>假设我们要收集ng的日志。我们可以按照以下的方案进行部署。</p>
+
+<p><img src="media/14961128486144/14961161955654.jpg" alt=""/></p>
+
+<p><strong>流程如下</strong></p>
+
+<p>1.每台websever 上部署一个flume agent<br/>
+2.使用tail 命令<br/>
+3.channel可以使用memorychannel<br/>
+4.sink统一写到es服务器中。前端使用kibana查询</p>
+
+<p>虽然上面的应用场景可以满足需求。但是缺点也是非常的明显</p>
+
+<p>1.各环节丢失数据的可能性较大（如果可以容忍数据丢失，则关系不大）<br/>
+2.每台webserver上部署一个flume agent，不利于维护。比如 sink还想往kafka写，那么所有的flume agent都需要更改。</p>
+
+<h2 id="toc_2">复杂的日志收集</h2>
+
+<p>先来看看Event在flume flow中的扭转流程:</p>
+
+<p>1.source 接收Event<br/>
+2.source 将Event传送给<strong>ChannelProcessor</strong><br/>
+3.在ChannelProcessor中收件会将event传递给<strong>InterceptorChain</strong>,InterceptorChain中包含多个Interceptor。Interceptor的概念就相当于java web开发中的servlet的概念。提供了一种修改或者删除Event的能力.比如Timestamp Interceptor 将会在Event的header中加入Event被处理的时间戳,key为timestamp。<br/>
+4.当Event被Interceptor处理后就会通过ChannelSelector 选择合适的channel，将Event发送到Channel中。<br/>
+flume中提供了两种方式 :<br/>
+* <strong>MultiplexingChannelSelector</strong> 多路复用选择器<br/>
+* <strong>ReplicatingChannelSelector</strong> 复制选择器</p>
+
+<p>5.sink从channel中消费数据，这里和source向channel中存放数据是异步的。所以sink，只需要监听和自己关联的channel的变化即可。对于sink,提供了三种策略:</p>
+
+<ul>
+<li><strong>DefaultSinkProcess</strong> ：失败了就失败了，稍后进行重试</li>
+<li><strong>LoadBalancingSinkProcessor</strong>:负载均衡，有RandomOrder,RoundRobin和FixedOrderSelector三种选择</li>
+<li><strong>FailoverSinkProcessor</strong>:给多个sink定义优先级，如果其中一个失败了，则发送到下一个优先级的Sink。如果执行过程中Sink抛出异常，那么将该Sink从存活的队列中移除。然后指数级时间重试。默认开始等待1s重试。最大等待时间是30s。当Sink恢复后将会加入存活的队列中。</li>
+</ul>
+
+<p>基于上面分析，可以基本画出flume event的基本流转</p>
+
+<p><img src="media/14961128486144/14961302820778.jpg" alt=""/></p>
+
+<p>基于第一种方式的搜集方式和Event数据流转的分析。如果我们需要采集日志，整体架构可以采用下面的方式进行部署。</p>
+
+<p><img src="media/14961128486144/14961289968437.jpg" alt=""/></p>
+
+<ul>
+<li>在收集层，agent和web server部署在同一台机器上。(这里我们也可以开发flume的Embedded agent)通过RPC将数据流入聚合层。这一层应该快速的将日志收集到聚合层。</li>
+<li>聚合层进行日志数据的聚合和收集，在这一层，可以做容错处理，如负债均衡或者failover.以提升可靠性。在这一层，数据量大时可以打开fileChannel，作为数据缓冲区，避免数据的丢失。以后主要的维护工作也主要在这一层上面。</li>
+<li>在存储层，一般会流向hdfs，kafka 以供离线和实时的数据分析。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[flume-ng 源码分析-整体架构1【启动篇】]]></title>
+    <link href="http://www.blacklight.xin/14953349711216.html"/>
+    <updated>2017-05-21T10:49:31+08:00</updated>
+    <id>http://www.blacklight.xin/14953349711216.html</id>
+    <content type="html"><![CDATA[
+<ul>
+<li>
+<a href="#toc_0">什么是flume</a>
+</li>
+<li>
+<a href="#toc_1">flume源码结构</a>
+</li>
+<li>
+<a href="#toc_3">flume启动脚本flume-ng分析</a>
+</li>
+<li>
+<a href="#toc_4">agent的启动分析Application.java</a>
+</li>
+<li>
+<a href="#toc_5">配置载入分析</a>
+</li>
+<li>
+<a href="#toc_6">flume如何获自定义的key</a>
+</li>
+<li>
+<a href="#toc_7">总结</a>
+</li>
+</ul>
+
+
+<h2 id="toc_0">什么是flume</h2>
+
+<p>Flume是Cloudera提供的一个高可用的，高可靠的，分布式的海量日志采集、聚合和传输的系统，Flume支持在日志系统中定制各类数据发送方，用于收集数据；同时，Flume提供对数据进行简单处理，并写到各种数据接受方（可定制）的能力。flume常用场景:log--&gt;flume--&gt;[hdfs,hbase,kafka],收集日志并落地到各种不同的存储，以供不同需求的计算。</p>
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_1">flume源码结构</h2>
+
+<p><img src="media/14953349711216/14953354121029.jpg" alt="" style="width:422px;"/></p>
+
+<blockquote>
+<p>主要模块介绍</p>
+</blockquote>
+
+<ul>
+<li><p><strong>flume-ng-core</strong></p>
+
+<p>flume的整个核心框架，包含了各个模块的接口以及逻辑关系实现。core下大部分代码都是source，channle，sink中</p></li>
+<li><p><strong>flume-ng-channels</strong></p>
+
+<p>里面包含了fileChannel,jdbcChannel,kafkaChannel,spillableMemoryChannel等通道实现</p></li>
+<li><p><strong>flume-ng-sinks</strong></p>
+
+<p>各种sink的实现,包括但不限于:hdfsSink,hiveSink,esSink,kafkaSink</p></li>
+<li><p><strong>flume-ng-sources</strong></p>
+
+<p>各种source的实现,包括但不限于:   jms,kafka,scirbe,twitter.其他source则在flume-ng-core模块中</p></li>
+<li><p><strong>flume-ng-node</strong></p>
+
+<p>实现flume的一些基本类。包括agent的main(Application).这也是我们的分析代码的入口类</p>
+
+<h2 id="toc_2">flume 逻辑结构</h2>
+
+<p><img src="media/14953349711216/14953368783609.jpg" alt="" style="width:487px;"/></p></li>
+</ul>
+
+<p>一个agent包含三个基本组件</p>
+
+<ul>
+<li>sourace</li>
+<li>channel</li>
+<li>sink</li>
+</ul>
+
+<h2 id="toc_3">flume启动脚本flume-ng分析</h2>
+
+<pre><code>######################################################################
+# constants flume常量的设定，不通环境执行不同的类
+######################################################################
+
+FLUME_AGENT_CLASS=&quot;org.apache.flume.node.Application&quot;
+FLUME_AVRO_CLIENT_CLASS=&quot;org.apache.flume.client.avro.AvroCLIClient&quot;
+FLUME_VERSION_CLASS=&quot;org.apache.flume.tools.VersionInfo&quot;
+FLUME_TOOLS_CLASS=&quot;org.apache.flume.tools.FlumeToolsMain&quot;
+</code></pre>
+
+<pre><code>######################################################################
+#真正启动flume,具体由$FLUME_APPLICATON_CLASS指定
+######################################################################
+run_flume() {
+  local FLUME_APPLICATION_CLASS
+
+  if [ &quot;$#&quot; -gt 0 ]; then
+    FLUME_APPLICATION_CLASS=$1
+    shift
+  else
+    error &quot;Must specify flume application class&quot; 1
+  fi
+
+  if [ ${CLEAN_FLAG} -ne 0 ]; then
+    set -x
+  fi
+  $EXEC $JAVA_HOME/bin/java $JAVA_OPTS $FLUME_JAVA_OPTS &quot;${arr_java_props[@]}&quot; -cp &quot;$FLUME_CLASSPATH&quot; \
+      -Djava.library.path=$FLUME_JAVA_LIBRARY_PATH &quot;$FLUME_APPLICATION_CLASS&quot; $*
+}
+</code></pre>
+
+<pre><code>##################################################
+# main 启动过程中用到的变量，都可以在启动的时指定
+# 如果不设置java堆空间大小，默认大小为20M,可以在flume.sh
+# 中进行设置
+##################################################
+
+# set default params
+FLUME_CLASSPATH=&quot;&quot;
+FLUME_JAVA_LIBRARY_PATH=&quot;&quot;
+JAVA_OPTS=&quot;-Xmx20m&quot;
+LD_LIBRARY_PATH=&quot;&quot;
+
+opt_conf=&quot;&quot;
+opt_classpath=&quot;&quot;
+opt_plugins_dirs=&quot;&quot;
+arr_java_props=()
+arr_java_props_ct=0
+opt_dryrun=&quot;&quot;
+
+mode=$1
+shift
+</code></pre>
+
+<pre><code>##################################################
+#最后根据不同参数启动不同的类，可以看到启动agent时,
+#执行的是flume-ng-node中Applicaton.java
+# finally, invoke the appropriate command
+##################################################
+if [ -n &quot;$opt_agent&quot; ] ; then
+  run_flume $FLUME_AGENT_CLASS $args
+elif [ -n &quot;$opt_avro_client&quot; ] ; then
+  run_flume $FLUME_AVRO_CLIENT_CLASS $args
+elif [ -n &quot;${opt_version}&quot; ] ; then
+  run_flume $FLUME_VERSION_CLASS $args
+elif [ -n &quot;${opt_tool}&quot; ] ; then
+  run_flume $FLUME_TOOLS_CLASS $args
+else
+  error &quot;This message should never appear&quot; 1
+fi
+</code></pre>
+
+<h2 id="toc_4">agent的启动分析Application.java</h2>
+
+<p>从上面的分析可以知道当我们启动一个Agent时，执行的是org.apache.flume.node.Application.</p>
+
+<p>看main函数的源码</p>
+
+<pre><code class="language-java"> Options options = new Options();
+
+      Option option = new Option(&quot;n&quot;, &quot;name&quot;, true, &quot;the name of this agent&quot;);
+      option.setRequired(true);
+      options.addOption(option);
+
+      option = new Option(&quot;f&quot;, &quot;conf-file&quot;, true,
+          &quot;specify a config file (required if -z missing)&quot;);
+      option.setRequired(false);
+      options.addOption(option);
+
+      option = new Option(null, &quot;no-reload-conf&quot;, false,
+          &quot;do not reload config file if changed&quot;);
+      options.addOption(option);
+
+      // Options for Zookeeper
+      option = new Option(&quot;z&quot;, &quot;zkConnString&quot;, true,
+          &quot;specify the ZooKeeper connection to use (required if -f missing)&quot;);
+      option.setRequired(false);
+      options.addOption(option);
+
+      option = new Option(&quot;p&quot;, &quot;zkBasePath&quot;, true,
+          &quot;specify the base path in ZooKeeper for agent configs&quot;);
+      option.setRequired(false);
+      options.addOption(option);
+
+      option = new Option(&quot;h&quot;, &quot;help&quot;, false, &quot;display help text&quot;);
+      options.addOption(option);
+
+      CommandLineParser parser = new GnuParser();
+      CommandLine commandLine = parser.parse(options, args);
+
+      if (commandLine.hasOption(&#39;h&#39;)) {
+        new HelpFormatter().printHelp(&quot;flume-ng agent&quot;, options, true);
+        return;
+      }
+
+      String agentName = commandLine.getOptionValue(&#39;n&#39;);
+      boolean reload = !commandLine.hasOption(&quot;no-reload-conf&quot;);
+      
+</code></pre>
+
+<p>主要是对名利行参数的校验和解析<br/>
+在我们启动Agent时，会指定，-n -f等一些参数<br/>
+继续往下看</p>
+
+<pre><code class="language-java">//是否包含zk配置
+if (commandLine.hasOption(&#39;z&#39;) || commandLine.hasOption(&quot;zkConnString&quot;)) {
+        isZkConfigured = true;
+      }
+      Application application = null;
+      if (isZkConfigured) {
+        // get options
+        String zkConnectionStr = commandLine.getOptionValue(&#39;z&#39;);
+        String baseZkPath = commandLine.getOptionValue(&#39;p&#39;);
+
+        if (reload) {//如果是需要重新加载（配置文件改变时）
+          EventBus eventBus = new EventBus(agentName + &quot;-event-bus&quot;);
+          List&lt;LifecycleAware&gt; components = Lists.newArrayList();
+          PollingZooKeeperConfigurationProvider zookeeperConfigurationProvider =
+            new PollingZooKeeperConfigurationProvider(
+              agentName, zkConnectionStr, baseZkPath, eventBus);
+          components.add(zookeeperConfigurationProvider);
+          application = new Application(components);
+          eventBus.register(application);
+        } else {//不需要检车配置文件的变更
+          StaticZooKeeperConfigurationProvider zookeeperConfigurationProvider =
+            new StaticZooKeeperConfigurationProvider(
+              agentName, zkConnectionStr, baseZkPath);
+          application = new Application();
+          application.handleConfigurationEvent(zookeeperConfigurationProvider
+            .getConfiguration());
+        }
+      }
+</code></pre>
+
+<p>从以上代码我们可以看出，当配置文件是配置的是zk上的路径时，如果需要reload，则会启动PollingZooKeeperConfigurationProvider，该类里面会监听zk的变化，再通过guava的EventBus(类似于观察者模式，<a href="https://github.com/google/guava/wiki/EventBusExplained">EventBus</a>)，传递消息.</p>
+
+<p><u><strong>注意</strong></u><br/>
+   此时只是将PollingZooKeeperConfigurationProvider加入components中,并没有正真的启动</p>
+
+<pre><code class="language-java">   private final List&lt;LifecycleAware&gt; components;
+</code></pre>
+
+<p>PollingZooKeeperConfigurationProvider 部分关键代码</p>
+
+<pre><code class="language-java">try {
+        agentNodeCache = new NodeCache(client, basePath + &quot;/&quot; + getAgentName());
+        agentNodeCache.start();
+        agentNodeCache.getListenable().addListener(new NodeCacheListener() {
+          @Override
+          public void nodeChanged() throws Exception {
+            refreshConfiguration();
+          }
+        });
+      } catch (Exception e) {
+        client.close();
+        throw e;
+      }
+</code></pre>
+
+<p>在zk node上设置listener，如果zk node有任何的变化则会触发refreshConfiguration方法</p>
+
+<pre><code class="language-java">private void refreshConfiguration() throws IOException {
+    LOGGER.info(&quot;Refreshing configuration from ZooKeeper&quot;);
+    byte[] data = null;
+    ChildData childData = agentNodeCache.getCurrentData();
+    if (childData != null) {
+      data = childData.getData();
+    }
+    flumeConfiguration = configFromBytes(data);
+    //发送时间消息，所有注册到该eventBus上的handler都会收到该事件
+    eventBus.post(getConfiguration());
+  }
+</code></pre>
+
+<hr/>
+
+<p>好了我们继续分析Application的代码。上面讲到了利用zk来做flume配置文件的代码。当然flume也支持本地文件的方式。代码如下：</p>
+
+<pre><code class="language-java">File configurationFile = new File(commandLine.getOptionValue(&#39;f&#39;));
+
+        /*
+         * The following is to ensure that by default the agent will fail on
+         * startup if the file does not exist.
+         */
+        if (!configurationFile.exists()) {
+          // If command line invocation, then need to fail fast
+          if (System.getProperty(Constants.SYSPROP_CALLED_FROM_SERVICE) ==
+            null) {
+            String path = configurationFile.getPath();
+            try {
+              path = configurationFile.getCanonicalPath();
+            } catch (IOException ex) {
+              logger.error(&quot;Failed to read canonical path for file: &quot; + path,
+                ex);
+            }
+            throw new ParseException(
+              &quot;The specified configuration file does not exist: &quot; + path);
+          }
+        }
+        List&lt;LifecycleAware&gt; components = Lists.newArrayList();
+
+        if (reload) {
+          EventBus eventBus = new EventBus(agentName + &quot;-event-bus&quot;);
+          PollingPropertiesFileConfigurationProvider configurationProvider =
+            new PollingPropertiesFileConfigurationProvider(
+              agentName, configurationFile, eventBus, 30);
+          components.add(configurationProvider);
+          application = new Application(components);
+          eventBus.register(application);
+        } else {
+          PropertiesFileConfigurationProvider configurationProvider =
+            new PropertiesFileConfigurationProvider(
+              agentName, configurationFile);
+          application = new Application();
+          application.handleConfigurationEvent(configurationProvider
+            .getConfiguration());
+        }
+      }
+</code></pre>
+
+<p>如果-f 指定的配置文件不存在，那么将快速失败，抛出异常。<br/>
+再判断配置文件发生改变时是否需要重新reload，套路和用zk保存配置文件一个道理<br/>
+如果需要动态加载配置文件，那么启动PollingPropertiesFileConfigurationProvider，每三十秒<br/>
+加载一次配置文件 </p>
+
+<hr/>
+
+<p>之后执行application.start()方法。让我们继续看start()方法</p>
+
+<pre><code class="language-java">private final LifecycleSupervisor supervisor;
+public synchronized void start() {
+    for(LifecycleAware component : components) {
+      supervisor.supervise(component,
+          new SupervisorPolicy.AlwaysRestartPolicy(), LifecycleState.START);
+    }
+  }
+</code></pre>
+
+<p>在start方法中遍历compents 执行supervisor.suervise()方法.</p>
+
+<p>在继续分析之前我们先看一下LifecycleSupervisor,PollingPropertiesFileConfigurationProvider 的类结构</p>
+
+<p><img src="media/14953349711216/14953484325272.jpg" alt="" style="width:517px;"/></p>
+
+<p><img src="media/14953349711216/14953484595334.jpg" alt="" style="width:291px;"/></p>
+
+<p>从以上两图中可以看出它们都实现了LifecycleAware接口。这个接口定义了flume组件的生命周期。LifecycleSupervisor提供了实现。</p>
+
+<p>LifecycleAware.java</p>
+
+<pre><code class="language-java">/**
+   * &lt;p&gt;
+   * Starts a service or component.
+   * &lt;/p&gt;
+   * &lt;p&gt;
+   * Implementations should determine the result of any start logic and effect
+   * the return value of {@link #getLifecycleState()} accordingly.
+   * &lt;/p&gt;
+   *
+   * @throws LifecycleException
+   * @throws InterruptedException
+   */
+  public void start();
+
+  /**
+   * &lt;p&gt;
+   * Stops a service or component.
+   * &lt;/p&gt;
+   * &lt;p&gt;
+   * Implementations should determine the result of any stop logic and effect
+   * the return value of {@link #getLifecycleState()} accordingly.
+   * &lt;/p&gt;
+   *
+   * @throws LifecycleException
+   * @throws InterruptedException
+   */
+  public void stop();
+
+  /**
+   * &lt;p&gt;
+   * Return the current state of the service or component.
+   * &lt;/p&gt;
+   */
+  public LifecycleState getLifecycleState();
+</code></pre>
+
+<p>让我们继续分析LifecycleSupervisor.supervise()方法</p>
+
+<pre><code class="language-java">public synchronized void supervise(LifecycleAware lifecycleAware,
+      SupervisorPolicy policy, LifecycleState desiredState) {
+    if(this.monitorService.isShutdown()
+        || this.monitorService.isTerminated()
+        || this.monitorService.isTerminating()){
+      throw new FlumeException(&quot;Supervise called on &quot; + lifecycleAware + &quot; &quot; +
+          &quot;after shutdown has been initiated. &quot; + lifecycleAware + &quot; will not&quot; +
+          &quot; be started&quot;);
+    }
+
+    Preconditions.checkState(!supervisedProcesses.containsKey(lifecycleAware),
+        &quot;Refusing to supervise &quot; + lifecycleAware + &quot; more than once&quot;);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug(&quot;Supervising service:{} policy:{} desiredState:{}&quot;,
+          new Object[] { lifecycleAware, policy, desiredState });
+    }
+
+    Supervisoree process = new Supervisoree();
+    process.status = new Status();
+
+    process.policy = policy;
+    process.status.desiredState = desiredState;
+    process.status.error = false;
+
+    MonitorRunnable monitorRunnable = new MonitorRunnable();
+    monitorRunnable.lifecycleAware = lifecycleAware;
+    monitorRunnable.supervisoree = process;
+    monitorRunnable.monitorService = monitorService;
+
+    supervisedProcesses.put(lifecycleAware, process);
+
+    ScheduledFuture&lt;?&gt; future = monitorService.scheduleWithFixedDelay(
+        monitorRunnable, 0, 3, TimeUnit.SECONDS);
+    monitorFutures.put(lifecycleAware, future);
+  }
+</code></pre>
+
+<p>在上面的代码中创建了一个MonitorRunnable对象,通过jdk的scheduleWithFixedDelay进行定时调用,每次执行完成延迟3秒调度。</p>
+
+<p>再看monitorRunable中的内容 <br/>
+run 方法中部分内容</p>
+
+<pre><code class="language-java">if (!lifecycleAware.getLifecycleState().equals(
+              supervisoree.status.desiredState)) {
+
+            logger.debug(&quot;Want to transition {} from {} to {} (failures:{})&quot;,
+                new Object[] { lifecycleAware, supervisoree.status.lastSeenState,
+                    supervisoree.status.desiredState,
+                    supervisoree.status.failures });
+
+            switch (supervisoree.status.desiredState) {
+              case START:
+                try {
+                  lifecycleAware.start();
+                } catch (Throwable e) {
+                  logger.error(&quot;Unable to start &quot; + lifecycleAware
+                      + &quot; - Exception follows.&quot;, e);
+                  if (e instanceof Error) {
+                    // This component can never recover, shut it down.
+                    supervisoree.status.desiredState = LifecycleState.STOP;
+                    try {
+                      lifecycleAware.stop();
+                      logger.warn(&quot;Component {} stopped, since it could not be&quot;
+                          + &quot;successfully started due to missing dependencies&quot;,
+                          lifecycleAware);
+                    } catch (Throwable e1) {
+                      logger.error(&quot;Unsuccessful attempt to &quot;
+                          + &quot;shutdown component: {} due to missing dependencies.&quot;
+                          + &quot; Please shutdown the agent&quot;
+                          + &quot;or disable this component, or the agent will be&quot;
+                          + &quot;in an undefined state.&quot;, e1);
+                      supervisoree.status.error = true;
+                      if (e1 instanceof Error) {
+                        throw (Error) e1;
+                      }
+                      // Set the state to stop, so that the conf poller can
+                      // proceed.
+                    }
+                  }
+                  supervisoree.status.failures++;
+                }
+                break;
+              case STOP:
+                try {
+                  lifecycleAware.stop();
+                } catch (Throwable e) {
+                  logger.error(&quot;Unable to stop &quot; + lifecycleAware
+                      + &quot; - Exception follows.&quot;, e);
+                  if (e instanceof Error) {
+                    throw (Error) e;
+                  }
+                  supervisoree.status.failures++;
+                }
+                break;
+              default:
+                logger.warn(&quot;I refuse to acknowledge {} as a desired state&quot;,
+                    supervisoree.status.desiredState);
+            }
+
+            if (!supervisoree.policy.isValid(lifecycleAware, supervisoree.status)) {
+              logger.error(
+                  &quot;Policy {} of {} has been violated - supervisor should exit!&quot;,
+                  supervisoree.policy, lifecycleAware);
+            }
+          }
+</code></pre>
+
+<p>首先因为monitorRunnbale对象时重复调用的，所以在run方法中作了一个状态判断，当该组件的状态不等于期望的状态时继续往下执行，否则什么都不做。这样避免重复启动。当组件第一次被启动的时候，组件本身的状态是IDEL，而desired state 是START，此时就会执行组件的start方法。</p>
+
+<p>总结一下启动的时序图</p>
+
+<p><img src="media/14953349711216/14953507745459.jpg" alt="" style="width:741px;"/></p>
+
+<p>比如启动PollingPropertiesFileConfigurationProvider组件，这个组件的作用就是定时去获取flume的配置。那么会调用PollingPropertiesFileConfigurationProvider的start方法。</p>
+
+<p>下面以PollingPropertiesFileConfigurationProvider为列 分析flume的配置时如何动态载入的。</p>
+
+<h2 id="toc_5">配置载入分析</h2>
+
+<p>从上面分析得知，启动PollingPropertiesFileConfigurationProvider ,则执行该组件的start方法。查看start方法如下</p>
+
+<pre><code> @Override
+  public void start() {
+    LOGGER.info(&quot;Configuration provider starting&quot;);
+
+    Preconditions.checkState(file != null,
+        &quot;The parameter file must not be null&quot;);
+
+    executorService = Executors.newSingleThreadScheduledExecutor(
+            new ThreadFactoryBuilder().setNameFormat(&quot;conf-file-poller-%d&quot;)
+                .build());
+
+    FileWatcherRunnable fileWatcherRunnable =
+        new FileWatcherRunnable(file, counterGroup);
+
+    executorService.scheduleWithFixedDelay(fileWatcherRunnable, 0, interval,
+        TimeUnit.SECONDS);
+
+    lifecycleState = LifecycleState.START;
+
+    LOGGER.debug(&quot;Configuration provider started&quot;);
+  }
+</code></pre>
+
+<p>在start方法中单独启动一个线程，执行FileWatcherRunnable,并设置状态为START</p>
+
+<p>继续看fileWatcher</p>
+
+<pre><code class="language-java">public void run() {
+      LOGGER.debug(&quot;Checking file:{} for changes&quot;, file);
+
+      counterGroup.incrementAndGet(&quot;file.checks&quot;);
+
+      long lastModified = file.lastModified();
+
+      if (lastModified &gt; lastChange) {
+        LOGGER.info(&quot;Reloading configuration file:{}&quot;, file);
+
+        counterGroup.incrementAndGet(&quot;file.loads&quot;);
+
+        lastChange = lastModified;
+
+        try {
+          eventBus.post(getConfiguration());
+        } catch (Exception e) {
+          LOGGER.error(&quot;Failed to load configuration data. Exception follows.&quot;,
+              e);
+        } catch (NoClassDefFoundError e) {
+          LOGGER.error(&quot;Failed to start agent because dependencies were not &quot; +
+              &quot;found in classpath. Error follows.&quot;, e);
+        } catch (Throwable t) {
+          // caught because the caller does not handle or log Throwables
+          LOGGER.error(&quot;Unhandled error&quot;, t);
+        }
+      }
+    }
+</code></pre>
+
+<p>在fileWatcher中通过对文件修改时间来判断配置文件是否发生变化。如果配置文件发生变化<br/>
+调用<strong>eventBus.post(getConfiguration());</strong> 将配置文件的内容发布。</p>
+
+<p>在Application.java 中有如下代码</p>
+
+<pre><code class="language-java">@Subscribe
+  public synchronized void handleConfigurationEvent(MaterializedConfiguration conf) {
+    stopAllComponents();
+    startAllComponents(conf);
+  }
+</code></pre>
+
+<p>此方法订阅了eventBus的消息。当一有消息将会触发该方法，此方法的功能相当于重启flume组件。还记得上面分析的代码吗？要是用户配置no-reload-conf 那么将会直接调用该方法。</p>
+
+<p>那么getConfiguration()方法是如何实现的呢？</p>
+
+<pre><code class="language-java">protected abstract FlumeConfiguration getFlumeConfiguration();
+public MaterializedConfiguration getConfiguration() {
+    MaterializedConfiguration conf = new SimpleMaterializedConfiguration();
+    FlumeConfiguration fconfig = getFlumeConfiguration();
+    AgentConfiguration agentConf = fconfig.getConfigurationFor(getAgentName());
+    if (agentConf != null) {
+      Map&lt;String, ChannelComponent&gt; channelComponentMap = Maps.newHashMap();
+      Map&lt;String, SourceRunner&gt; sourceRunnerMap = Maps.newHashMap();
+      Map&lt;String, SinkRunner&gt; sinkRunnerMap = Maps.newHashMap();
+      try {
+        loadChannels(agentConf, channelComponentMap);
+        loadSources(agentConf, channelComponentMap, sourceRunnerMap);
+        loadSinks(agentConf, channelComponentMap, sinkRunnerMap);
+        Set&lt;String&gt; channelNames =
+            new HashSet&lt;String&gt;(channelComponentMap.keySet());
+        for(String channelName : channelNames) {
+          ChannelComponent channelComponent = channelComponentMap.
+              get(channelName);
+          if(channelComponent.components.isEmpty()) {
+            LOGGER.warn(String.format(&quot;Channel %s has no components connected&quot; +
+                &quot; and has been removed.&quot;, channelName));
+            channelComponentMap.remove(channelName);
+            Map&lt;String, Channel&gt; nameChannelMap = channelCache.
+                get(channelComponent.channel.getClass());
+            if(nameChannelMap != null) {
+              nameChannelMap.remove(channelName);
+            }
+          } else {
+            LOGGER.info(String.format(&quot;Channel %s connected to %s&quot;,
+                channelName, channelComponent.components.toString()));
+            conf.addChannel(channelName, channelComponent.channel);
+          }
+        }
+        for(Map.Entry&lt;String, SourceRunner&gt; entry : sourceRunnerMap.entrySet()) {
+          conf.addSourceRunner(entry.getKey(), entry.getValue());
+        }
+        for(Map.Entry&lt;String, SinkRunner&gt; entry : sinkRunnerMap.entrySet()) {
+          conf.addSinkRunner(entry.getKey(), entry.getValue());
+        }
+      } catch (InstantiationException ex) {
+        LOGGER.error(&quot;Failed to instantiate component&quot;, ex);
+      } finally {
+        channelComponentMap.clear();
+        sourceRunnerMap.clear();
+        sinkRunnerMap.clear();
+      }
+    } else {
+      LOGGER.warn(&quot;No configuration found for this host:{}&quot;, getAgentName());
+    }
+    return conf;
+  }
+</code></pre>
+
+<p>getConfiguration()中调用了getFlumeConfiguration()方法;getFlumeConfiguration() 是一个抽象方法，以PollingPropertiesFileConfigurationProvider 实现为列 。该实现在父类中。</p>
+
+<pre><code>@Override
+  public FlumeConfiguration getFlumeConfiguration() {
+    BufferedReader reader = null;
+    try {
+      reader = new BufferedReader(new FileReader(file));
+      Properties properties = new Properties();
+      properties.load(reader);
+      return new FlumeConfiguration(toMap(properties));
+    } catch (IOException ex) {
+      LOGGER.error(&quot;Unable to load file:&quot; + file
+          + &quot; (I/O failure) - Exception follows.&quot;, ex);
+    } finally {
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (IOException ex) {
+          LOGGER.warn(
+              &quot;Unable to close file reader for file: &quot; + file, ex);
+        }
+      }
+    }
+    return new FlumeConfiguration(new HashMap&lt;String, String&gt;());
+  }
+</code></pre>
+
+<p>该方法通过基本的流加载方法返回FlumeConfigruation对象。该对象封装一个Map对象<br/>
+。在FlumeConfigruation的构造函数中将会遍历这个Map对象，调用addRawProperty方法<br/>
+该方法首先会进行一些合法性的检查，并且该方法会创建一个AgentConfiguration对象的aoconf<br/>
+该方法最后调用aconf.addProperty 方法</p>
+
+<p>在aconf.addProperty方法中会区分source，channel，sink ，sinkgroup。将对应的配置信息放在<br/>
+sourceContextMap，channelContextMap，sinkContextMap，sinkGroupContextMap。这些信息封装在AgentConfiguration，AgentConfiguration封装在FlumeConfiguration中，key是agentName。使用时可以通过getConfigurationFor(String hostname) 来获取。</p>
+
+<h2 id="toc_6">flume如何获自定义的key</h2>
+
+<p>在上面的分析中addProperty方法中，调用了parseConfigKey方法</p>
+
+<pre><code>cnck = parseConfigKey(key,
+          BasicConfigurationConstants.CONFIG_SINKGROUPS_PREFIX);
+</code></pre>
+
+<p>具体实现如下：</p>
+
+<pre><code>private ComponentNameAndConfigKey parseConfigKey(String key, String prefix) {
+      // key must start with prefix
+      if (!key.startsWith(prefix)) {
+        return null;
+      }
+
+      // key must have a component name part after the prefix of the format:
+      // &lt;prefix&gt;&lt;component-name&gt;.&lt;config-key&gt;
+      int index = key.indexOf(&#39;.&#39;, prefix.length() + 1);
+
+      if (index == -1) {
+        return null;
+      }
+
+      String name = key.substring(prefix.length(), index);
+      String configKey = key.substring(prefix.length() + name.length() + 1);
+
+      // name and config key must be non-empty
+      if (name.length() == 0 || configKey.length() == 0) {
+        return null;
+      }
+
+      return new ComponentNameAndConfigKey(name, configKey);
+    }
+</code></pre>
+
+<p>上面代码中prefix为定义的常量如下：</p>
+
+<pre><code>public final class BasicConfigurationConstants {
+
+  public static final String CONFIG_SOURCES = &quot;sources&quot;;
+  public static final String CONFIG_SOURCES_PREFIX = CONFIG_SOURCES + &quot;.&quot;;
+  public static final String CONFIG_SOURCE_CHANNELSELECTOR_PREFIX = &quot;selector.&quot;;
+
+
+  public static final String CONFIG_SINKS = &quot;sinks&quot;;
+  public static final String CONFIG_SINKS_PREFIX = CONFIG_SINKS + &quot;.&quot;;
+  public static final String CONFIG_SINK_PROCESSOR_PREFIX = &quot;processor.&quot;;
+
+  public static final String CONFIG_SINKGROUPS = &quot;sinkgroups&quot;;
+  public static final String CONFIG_SINKGROUPS_PREFIX = CONFIG_SINKGROUPS + &quot;.&quot;;
+
+  public static final String CONFIG_CHANNEL = &quot;channel&quot;;
+  public static final String CONFIG_CHANNELS = &quot;channels&quot;;
+  public static final String CONFIG_CHANNELS_PREFIX = CONFIG_CHANNELS + &quot;.&quot;;
+
+  public static final String CONFIG_CONFIG = &quot;config&quot;;
+  public static final String CONFIG_TYPE = &quot;type&quot;;
+
+  private BasicConfigurationConstants() {
+    // disable explicit object creation
+  }
+
+}
+</code></pre>
+
+<ul>
+<li>比如我们配置的格式是agent1.sources.source1.type=avro(注意在后面parse时，agent1.已经被截取掉)</li>
+<li>在上面的parseKey方法中首先会判断prefix的后面有多少个字符</li>
+<li>解析出name 。source1就是name</li>
+<li>解析出configKey 。type就是configKey</li>
+<li>封装为ComponentNameAndConfigKey</li>
+<li>然后有上面的分析把sources、channel、sink配置信息，分别存放到sourceContextMap、channelConfigMap、sinkConfigMap三个HashMap，这些信息封装在AgentConfiguration，AgentConfiguration封装在FlumeConfiguration中，key是agentName。使用时可以通过getConfigurationFor(String hostname) 来获取</li>
+</ul>
+
+<h2 id="toc_7">总结</h2>
+
+<p>以上分析了flume启动agent的流程。部分源码没有贴出来，可以自行阅读；以及flume中如何解析<br/>
+用户自定义的source,channel,sink;以及flume如何用zk listener和fileWatcher实现配置文件的动态加载。下篇主要讲解flume整体架构--常用架构篇</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[flume 总结]]></title>
+    <link href="http://www.blacklight.xin/14909422875977.html"/>
+    <updated>2017-03-31T14:38:07+08:00</updated>
+    <id>http://www.blacklight.xin/14909422875977.html</id>
+    <content type="html"><![CDATA[
+<p>这里只考虑flume本身的一些东西，对于JVM、HDFS、HBase等得暂不涉及。。。。</p>
+
+<h2 id="toc_0">一、关于Source：</h2>
+
+<p>1、spool-source：适合静态文件，即文件本身不是动态变化的；</p>
+
+<p>2、avro source可以适当提高线程数量来提高此source性能；</p>
+
+<p>3、ThriftSource在使用时有个问题需要注意，使用批量操作时出现异常并不会打印异常内容而是&quot;Thrift source %s could not append events to the channel.&quot;，这是因为源码中在出现异常时，它并未捕获异常而是获取组件名称，这是源码中的一个bug，也可以说明thrift很少有人用，否则这个问题也不会存在在很多版本中；</p>
+
+<p>4、如果一个source对应多个channel，默认就是每个channel是同样的一份数据，会把这批数据复制N份发送到N个channel中，所以如果某个channel满了会影响整体的速度的哦；</p>
+
+<p>5、ExecSource官方文档已经说明是异步的，可能会丢数据哦，尽量使用tail -F，注意是大写的；</p>
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_1">二、关于Channel：</h2>
+
+<p>1、采集节点建议使用新的复合类型的SpillableMemoryChannel，汇总节点建议采用memory channel，具体还要看实际的数据量，一般每分钟数据量超过120MB大小的flume agent都建议用memory channel(自己测的file channel处理速率大概是2M/s，不同机器、不同环境可能不同，这里只提供参考)，因为一旦此agent的channel出现溢出情况，将会导致大多数时间处于file channel(SpillableMemoryChannel本身是file channel的一个子类，而且复合channel会保证一定的event的顺序的使得读完内存中的数据后，再需要把溢出的拿走，可能这时内存已满又会溢出。。。)，性能大大降低，汇总一旦成为这样后果可想而知；</p>
+
+<p>2、调整memory 占用物理内存空间，需要两个参数byteCapacityBufferPercentage(默认是20)和byteCapacity(默认是JVM最大可用内存的0.8)来控制，计算公式是：byteCapacity = (int)((context.getLong(&quot;byteCapacity&quot;, defaultByteCapacity).longValue() * (1 - byteCapacityBufferPercentage * .01 )) /byteCapacitySlotSize)，很明显可以调节这两个参数来控制，至于byteCapacitySlotSize默认是100，将物理内存转换成槽(slot)数，这样易于管理，但是可能会浪费空间，至少我是这样想的。。。；</p>
+
+<p>3、还有一个有用的参数&quot;keep-alive&quot;这个参数用来控制channel满时影响source的发送，channel空时影响sink的消费，就是等待时间，默认是3s，超过这个时间就甩异常，一般不需配置，但是有些情况很有用，比如你得场景是每分钟开头集中发一次数据，这时每分钟的开头量可能比较大，后面会越来越小，这时你可以调大这个参数，不至于出现channel满了得情况；</p>
+
+<h2 id="toc_2">三、关于Sink：</h2>
+
+<p>1、avro sink的batch-size可以设置大一点，默认是100，增大会减少RPC次数，提高性能；</p>
+
+<p>2、内置hdfs sink的解析时间戳来设置目录或者文件前缀非常损耗性能，因为是基于正则来匹配的，可以通过修改源码来替换解析时间功能来极大提升性能，稍后我会写一篇文章来专门说明这个问题；</p>
+
+<p>3、RollingFileSink文件名不能自定义，而且不能定时滚动文件，只能按时间间隔滚动，可以自己定义sink，来做定时写文件；</p>
+
+<p>4、hdfs sink的文件名中的时间戳部分不能省去，可增加前缀、后缀以及正在写的文件的前后缀等信息；&quot;hdfs.idleTimeout&quot;这个参数很有意义，指的是正在写的hdfs文件多长时间不更新就关闭文件，建议都配置上，比如你设置了解析时间戳存不同的目录、文件名，而且rollInterval=0、rollCount=0、rollSize=1000000，如果这个时间内的数据量达不到rollSize的要求而且后续的写入新的文件中了，就是一直打开，类似情景不注意的话可能很多；&quot;hdfs.callTimeout&quot;这个参数指的是每个hdfs操作(读、写、打开、关闭等)规定的最长操作时间，每个操作都会放入&quot;hdfs.threadsPoolSize&quot;指定的线程池中得一个线程来操作；</p>
+
+<p>5、关于HBase sink(非异步hbase sink：AsyncHBaseSink)，rowkey不能自定义，而且一个serializer只能写一列，一个serializer按正则匹配多个列，性能可能存在问题，建议自己根据需求写一个hbase sink；</p>
+
+<p>6、avro sink可以配置failover和loadbalance，所用的组件和sinkgroup中的是一样的，而且也可以在此配置压缩选项，需要在avro source中配置解压缩；</p>
+
+<h2 id="toc_3">四、关于SinkGroup：</h2>
+
+<p>1、不管是loadbalance或者是failover的多个sink需要共用一个channel；</p>
+
+<p>2、loadbalance的多个sink如果都是直接输出到同一种设备，比如都是hdfs，性能并不会有明显增加，因为sinkgroup是单线程的它的process方法会轮流调用每个sink去channel中take数据，并确保处理正确，使得是顺序操作的，但是如果是发送到下一级的flume agent就不一样了，take操作是顺序的，但是下一级agent的写入操作是并行的，所以肯定是快的；</p>
+
+<p>3、其实用loadbalance在一定意义上可以起到failover的作用，生产环境量大建议loadbalance；</p>
+
+<h2 id="toc_4">五、关于监控monitor：</h2>
+
+<p>1、监控我这边做得还是比较少的，但是目前已知的有以下几种吧：cloudera manager（前提是你得安装CDH版本）、ganglia(这个天生就是支持的)、http(其实就是将统计信息jmx信息，封装成json串，使用jetty展示在浏览器中而已)、再一个就是自己实现收集监控信息，自己做(可以收集http的信息或者自己实现相应的接口实现自己的逻辑，具体可以参考我以前的博客)；</p>
+
+<p>2、简单说一下cloudera manager这种监控，最近在使用，确实很强大，可以查看实时的channel进出数据速率、channel实时容量、sink的出速率、source的入速率等等，图形化的东西确实很丰富很直观，可以提供很多flume agent整体运行情况的信息和潜在的一些信息；</p>
+
+<h2 id="toc_5">六、关于flume启动：</h2>
+
+<p>1、flume组件启动顺序：channels——&gt;sinks——&gt;sources，关闭顺序：sources——&gt;sinks——&gt;channels；</p>
+
+<p>2、自动加载配置文件功能，会先关闭所有组件，再重启所有组件；</p>
+
+<p>3、关于AbstractConfigurationProvider中的Map<Class<? extends Channel>, Map<String, Channel>&gt; channelCache这个对象，始终存储着agent中得所有channel对象，因为在动态加载时，channel中可能还有未消费完的数据，但是需要对channel重新配置，所以用以来缓存channel对象的所有数据及配置信息；</p>
+
+<p>4、通过在启动命令中添加 &quot;no-reload-conf&quot;参数为true来取消自动加载配置文件功能；</p>
+
+<h2 id="toc_6">七、关于interceptor：</h2>
+
+<p>请看我的关于这个组件的博客，传送门；</p>
+
+<p>八、关于自定义组件：sink、source、channel：</p>
+
+<p>1、channel不建议自定义哦，这个要求比较高，其他俩都是框架式的开发，往指定的方法填充自己配置、启动、关闭、业务逻辑即可，以后有机会单独写一篇文章来介绍；</p>
+
+<p>2、关于自定义组件请相信github，上面好多好多好多，可以直接用的自定义组件....；</p>
+
+<p>九、关于Flume-NG集群网络拓扑方案：</p>
+
+<p>1、在每台采集节点上部署一个flume agent，然后做一到多个汇总flume agent(loadbalance)，采集只负责收集数据发往汇总，汇总可以写HDFS、HBase、spark、本地文件、kafka等等，这样一般修改会只在汇总，agent少，维护工作少；</p>
+
+<p>2、采集节点没有部署flume agent，可能发往mongo、redis等，这时你需要自定义source或者使用sdk来将其中的数据取出并发往flume agent，这样agent就又可以充当“采集节点”或者汇总节点了，但是这样在前面相当于加了一层控制，就又多了一层风险；</p>
+
+<p>3、由于能力有限，其它未知，上面两种，第一种好些，这里看看美团的架构———— 传送门 ；</p>
+
+<p>东西比较简单，容易消化。</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[flume 注意事项]]></title>
+    <link href="http://www.blacklight.xin/14891158030188.html"/>
+    <updated>2017-03-10T11:16:43+08:00</updated>
+    <id>http://www.blacklight.xin/14891158030188.html</id>
+    <content type="html"><![CDATA[
+<p>这里只考虑flume本身的一些东西，对于JVM、HDFS、HBase等得暂不涉及。。。。</p>
+
+<h2 id="toc_0">一、关于Source：</h2>
+
+<p>1、spool-source：适合静态文件，即文件本身不是动态变化的；</p>
+
+<p>2、avro source可以适当提高线程数量来提高此source性能；</p>
+
+<p>3、ThriftSource在使用时有个问题需要注意，使用批量操作时出现异常并不会打印异常内容而是&quot;Thrift source %s could not append events to the channel.&quot;，这是因为源码中在出现异常时，它并未捕获异常而是获取组件名称，这是源码中的一个bug，也可以说明thrift很少有人用，否则这个问题也不会存在在很多版本中；</p>
+
+<p>4、如果一个source对应多个channel，默认就是每个channel是同样的一份数据，会把这批数据复制N份发送到N个channel中，所以如果某个channel满了会影响整体的速度的哦；</p>
+
+<p>5、ExecSource官方文档已经说明是异步的，可能会丢数据哦，尽量使用tail -F，注意是大写的；</p>
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_1">二、关于Channel：</h2>
+
+<p>1、采集节点建议使用新的复合类型的SpillableMemoryChannel，汇总节点建议采用memory channel，具体还要看实际的数据量，一般每分钟数据量超过120MB大小的flume agent都建议用memory channel(自己测的file channel处理速率大概是2M/s，不同机器、不同环境可能不同，这里只提供参考)，因为一旦此agent的channel出现溢出情况，将会导致大多数时间处于file channel(SpillableMemoryChannel本身是file channel的一个子类，而且复合channel会保证一定的event的顺序的使得读完内存中的数据后，再需要把溢出的拿走，可能这时内存已满又会溢出。。。)，性能大大降低，汇总一旦成为这样后果可想而知；</p>
+
+<p>2、调整memory 占用物理内存空间，需要两个参数byteCapacityBufferPercentage(默认是20)和byteCapacity(默认是JVM最大可用内存的0.8)来控制，计算公式是：byteCapacity = (int)((context.getLong(&quot;byteCapacity&quot;, defaultByteCapacity).longValue() * (1 - byteCapacityBufferPercentage * .01 )) /byteCapacitySlotSize)，很明显可以调节这两个参数来控制，至于byteCapacitySlotSize默认是100，将物理内存转换成槽(slot)数，这样易于管理，但是可能会浪费空间，至少我是这样想的。。。；</p>
+
+<p>3、还有一个有用的参数&quot;keep-alive&quot;这个参数用来控制channel满时影响source的发送，channel空时影响sink的消费，就是等待时间，默认是3s，超过这个时间就甩异常，一般不需配置，但是有些情况很有用，比如你得场景是每分钟开头集中发一次数据，这时每分钟的开头量可能比较大，后面会越来越小，这时你可以调大这个参数，不至于出现channel满了得情况；</p>
+
+<h2 id="toc_2">三、关于Sink：</h2>
+
+<p>1、avro sink的batch-size可以设置大一点，默认是100，增大会减少RPC次数，提高性能；</p>
+
+<p>2、内置hdfs sink的解析时间戳来设置目录或者文件前缀非常损耗性能，因为是基于正则来匹配的，可以通过修改源码来替换解析时间功能来极大提升性能，稍后我会写一篇文章来专门说明这个问题；</p>
+
+<p>3、RollingFileSink文件名不能自定义，而且不能定时滚动文件，只能按时间间隔滚动，可以自己定义sink，来做定时写文件；</p>
+
+<p>4、hdfs sink的文件名中的时间戳部分不能省去，可增加前缀、后缀以及正在写的文件的前后缀等信息；&quot;hdfs.idleTimeout&quot;这个参数很有意义，指的是正在写的hdfs文件多长时间不更新就关闭文件，建议都配置上，比如你设置了解析时间戳存不同的目录、文件名，而且rollInterval=0、rollCount=0、rollSize=1000000，如果这个时间内的数据量达不到rollSize的要求而且后续的写入新的文件中了，就是一直打开，类似情景不注意的话可能很多；&quot;hdfs.callTimeout&quot;这个参数指的是每个hdfs操作(读、写、打开、关闭等)规定的最长操作时间，每个操作都会放入&quot;hdfs.threadsPoolSize&quot;指定的线程池中得一个线程来操作；</p>
+
+<p>5、关于HBase sink(非异步hbase sink：AsyncHBaseSink)，rowkey不能自定义，而且一个serializer只能写一列，一个serializer按正则匹配多个列，性能可能存在问题，建议自己根据需求写一个hbase sink；</p>
+
+<p>6、avro sink可以配置failover和loadbalance，所用的组件和sinkgroup中的是一样的，而且也可以在此配置压缩选项，需要在avro source中配置解压缩；</p>
+
+<h2 id="toc_3">四、关于SinkGroup：</h2>
+
+<p>1、不管是loadbalance或者是failover的多个sink需要共用一个channel；</p>
+
+<p>2、loadbalance的多个sink如果都是直接输出到同一种设备，比如都是hdfs，性能并不会有明显增加，因为sinkgroup是单线程的它的process方法会轮流调用每个sink去channel中take数据，并确保处理正确，使得是顺序操作的，但是如果是发送到下一级的flume agent就不一样了，take操作是顺序的，但是下一级agent的写入操作是并行的，所以肯定是快的；</p>
+
+<p>3、其实用loadbalance在一定意义上可以起到failover的作用，生产环境量大建议loadbalance；</p>
+
+<h2 id="toc_4">五、关于监控monitor：</h2>
+
+<p>1、监控我这边做得还是比较少的，但是目前已知的有以下几种吧：cloudera manager（前提是你得安装CDH版本）、ganglia(这个天生就是支持的)、http(其实就是将统计信息jmx信息，封装成json串，使用jetty展示在浏览器中而已)、再一个就是自己实现收集监控信息，自己做(可以收集http的信息或者自己实现相应的接口实现自己的逻辑，具体可以参考我以前的博客)；</p>
+
+<p>2、简单说一下cloudera manager这种监控，最近在使用，确实很强大，可以查看实时的channel进出数据速率、channel实时容量、sink的出速率、source的入速率等等，图形化的东西确实很丰富很直观，可以提供很多flume agent整体运行情况的信息和潜在的一些信息；</p>
+
+<h2 id="toc_5">六、关于flume启动：</h2>
+
+<p>1、flume组件启动顺序：channels——&gt;sinks——&gt;sources，关闭顺序：sources——&gt;sinks——&gt;channels；</p>
+
+<p>2、自动加载配置文件功能，会先关闭所有组件，再重启所有组件；</p>
+
+<p>3、关于AbstractConfigurationProvider中的Map<Class<? extends Channel>, Map<String, Channel>&gt; channelCache这个对象，始终存储着agent中得所有channel对象，因为在动态加载时，channel中可能还有未消费完的数据，但是需要对channel重新配置，所以用以来缓存channel对象的所有数据及配置信息；</p>
+
+<p>4、通过在启动命令中添加 &quot;no-reload-conf&quot;参数为true来取消自动加载配置文件功能；</p>
+
+<h2 id="toc_6">七、关于interceptor：</h2>
+
+<p>请看我的关于这个组件的博客，传送门；</p>
+
+<h2 id="toc_7">八、关于自定义组件：sink、source、channel：</h2>
+
+<p>1、channel不建议自定义哦，这个要求比较高，其他俩都是框架式的开发，往指定的方法填充自己配置、启动、关闭、业务逻辑即可，以后有机会单独写一篇文章来介绍；</p>
+
+<p>2、关于自定义组件请相信github，上面好多好多好多，可以直接用的自定义组件....；</p>
+
+<h2 id="toc_8">九、关于Flume-NG集群网络拓扑方案：</h2>
+
+<p>1、在每台采集节点上部署一个flume agent，然后做一到多个汇总flume agent(loadbalance)，采集只负责收集数据发往汇总，汇总可以写HDFS、HBase、spark、本地文件、kafka等等，这样一般修改会只在汇总，agent少，维护工作少；</p>
+
+<p>2、采集节点没有部署flume agent，可能发往mongo、redis等，这时你需要自定义source或者使用sdk来将其中的数据取出并发往flume agent，这样agent就又可以充当“采集节点”或者汇总节点了，但是这样在前面相当于加了一层控制，就又多了一层风险；</p>
+
+<p>3、由于能力有限，其它未知，上面两种，第一种好些，这里看看美团的架构———— 传送门 ；</p>
+
+<p>东西比较简单，容易消化。</p>
+
+<p>未完，待续。。。欢迎补充</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[剖析spark-shell]]></title>
+    <link href="http://www.blacklight.xin/14822419760078.html"/>
+    <updated>2016-12-20T21:52:56+08:00</updated>
+    <id>http://www.blacklight.xin/14822419760078.html</id>
+    <content type="html"><![CDATA[
+<p>我们首先来看看spark-shell 到底做了什么，spark-shell 中有一段脚本内容如下:</p>
+
+<pre><code>function main() {
+  if $cygwin; then
+    # Workaround for issue involving JLine and Cygwin
+    # (see http://sourceforge.net/p/jline/bugs/40/).
+    # If you&#39;re using the Mintty terminal emulator in Cygwin, may need to set the
+    # &quot;Backspace sends ^H&quot; setting in &quot;Keys&quot; section of the Mintty options
+    # (see https://github.com/sbt/sbt/issues/562).
+    stty -icanon min 1 -echo &gt; /dev/null 2&gt;&amp;1
+    export SPARK_SUBMIT_OPTS=&quot;$SPARK_SUBMIT_OPTS -Djline.terminal=unix&quot;
+    &quot;${SPARK_HOME}&quot;/bin/spark-submit --class org.apache.spark.repl.Main --name &quot;Spark shell&quot; &quot;$@&quot;
+    stty icanon echo &gt; /dev/null 2&gt;&amp;1
+  else
+    export SPARK_SUBMIT_OPTS
+    &quot;${SPARK_HOME}&quot;/bin/spark-submit --class org.apache.spark.repl.Main --name &quot;Spark shell&quot; &quot;$@&quot;
+  fi
+}
+</code></pre>
+
+<span id="more"></span><!-- more -->
+
+<p>在上面的脚本中，实际上市执行了spark-submit,查看spark-submit代码：</p>
+
+<pre><code>if [ -z &quot;${SPARK_HOME}&quot; ]; then
+  export SPARK_HOME=&quot;$(cd &quot;`dirname &quot;$0&quot;`&quot;/..; pwd)&quot;
+fi
+
+# disable randomized hash for string in Python 3.3+
+export PYTHONHASHSEED=0
+
+exec &quot;${SPARK_HOME}&quot;/bin/spark-class org.apache.spark.deploy.SparkSubmit &quot;$@&quot;
+</code></pre>
+
+<p>非常简单，执行spark-class 并传入参数.继续查看spark-class 脚本内容:</p>
+
+<pre><code>if [ -z &quot;${SPARK_HOME}&quot; ]; then
+  export SPARK_HOME=&quot;$(cd &quot;`dirname &quot;$0&quot;`&quot;/..; pwd)&quot;
+fi
+
+. &quot;${SPARK_HOME}&quot;/bin/load-spark-env.sh
+</code></pre>
+
+<blockquote>
+<p>执行load-spark-env.sh 加载环境变量，稍后在讨论这个脚本</p>
+</blockquote>
+
+<pre><code>......
+build_command() {
+  &quot;$RUNNER&quot; -Xmx128m -cp &quot;$LAUNCH_CLASSPATH&quot; org.apache.spark.launcher.Main &quot;$@&quot;
+  printf &quot;%d\0&quot; $?
+}
+......
+CMD=()
+while IFS= read -d &#39;&#39; -r ARG; do
+  CMD+=(&quot;$ARG&quot;)
+done &lt; &lt;(build_command &quot;$@&quot;)
+......
+CMD=(&quot;${CMD[@]:0:$LAST}&quot;)
+exec &quot;${CMD[@]}&quot;
+
+</code></pre>
+
+<p>c从上面可以看出执行了org.apache.spark.launcher.Main ,继续打开org.apache.spark.launcher.Main 查看代码</p>
+
+<pre><code>public static void main(String[] argsArray) throws Exception {
+    checkArgument(argsArray.length &gt; 0, &quot;Not enough arguments: missing class name.&quot;);
+
+    List&lt;String&gt; args = new ArrayList&lt;&gt;(Arrays.asList(argsArray));
+    String className = args.remove(0);
+
+    boolean printLaunchCommand = !isEmpty(System.getenv(&quot;SPARK_PRINT_LAUNCH_COMMAND&quot;));
+    AbstractCommandBuilder builder;
+    if (className.equals(&quot;org.apache.spark.deploy.SparkSubmit&quot;)) {
+      try {
+        builder = new SparkSubmitCommandBuilder(args);
+      } catch (IllegalArgumentException e) {
+        printLaunchCommand = false;
+        System.err.println(&quot;Error: &quot; + e.getMessage());
+        System.err.println();
+
+        MainClassOptionParser parser = new MainClassOptionParser();
+        try {
+          parser.parse(args);
+        } catch (Exception ignored) {
+          // Ignore parsing exceptions.
+        }
+
+        List&lt;String&gt; help = new ArrayList&lt;&gt;();
+        if (parser.className != null) {
+          help.add(parser.CLASS);
+          help.add(parser.className);
+        }
+        help.add(parser.USAGE_ERROR);
+        builder = new SparkSubmitCommandBuilder(help);
+      }
+    } else {
+      builder = new SparkClassCommandBuilder(className, args);
+    }
+
+    Map&lt;String, String&gt; env = new HashMap&lt;&gt;();
+    List&lt;String&gt; cmd = builder.buildCommand(env);
+    if (printLaunchCommand) {
+      System.err.println(&quot;Spark Command: &quot; + join(&quot; &quot;, cmd));
+      System.err.println(&quot;========================================&quot;);
+    }
+
+    if (isWindows()) {
+      System.out.println(prepareWindowsCommand(cmd, env));
+    } else {
+      // In bash, use NULL as the arg separator since it cannot be used in an argument.
+      List&lt;String&gt; bashCmd = prepareBashCommand(cmd, env);
+      for (String c : bashCmd) {
+        System.out.print(c);
+        System.out.print(&#39;\0&#39;);
+      }
+    }
+  }
+</code></pre>
+
+<p>从上面的分析我们可知,spark-submit 传递给spark-class 的参数为org.apache.spark.deploy.SparkSubmit,所以在org.apache.spark.launcher.Main 执行的应该是</p>
+
+<pre><code>builder = new SparkSubmitCommandBuilder(args);
+</code></pre>
+
+<p>设置一些参数信息</p>
+
+<p>继续往下执行<strong>builder.buildCommand(env);</strong> 查看 buildCommand 内容</p>
+
+<pre><code>@Override
+  public List&lt;String&gt; buildCommand(Map&lt;String, String&gt; env)
+      throws IOException, IllegalArgumentException {
+    if (PYSPARK_SHELL.equals(appResource) &amp;&amp; isAppResourceReq) {
+      return buildPySparkShellCommand(env);
+    } else if (SPARKR_SHELL.equals(appResource) &amp;&amp; isAppResourceReq) {
+      return buildSparkRCommand(env);
+    } else {
+      return buildSparkSubmitCommand(env);
+    }
+  }
+</code></pre>
+
+<p>判断启动时的哪种环境py,shell,or submit 然后构建命令，继续查看<strong>buildSparkSubmitCommand</strong>函数</p>
+
+<p>其中有如下代码:</p>
+
+<pre><code>...
+addPermGenSizeOpt(cmd);
+    cmd.add(&quot;org.apache.spark.deploy.SparkSubmit&quot;);
+    cmd.addAll(buildSparkSubmitArgs());
+    return cmd;
+</code></pre>
+
+<p>好了继续查看org.apache.spark.deploy.SparkSubmit</p>
+
+<p>spark main 线程dump 信息</p>
+
+<pre><code>&quot;main&quot; #1 prio=5 os_prio=31 tid=0x00007f807180c800 nid=0x1c03 runnable [0x0000700003b08000]
+   java.lang.Thread.State: RUNNABLE
+    at java.io.FileInputStream.read0(Native Method)
+    at java.io.FileInputStream.read(FileInputStream.java:207)
+    at jline.internal.NonBlockingInputStream.read(NonBlockingInputStream.java:169)
+    - locked &lt;0x00000007830bf508&gt; (a jline.internal.NonBlockingInputStream)
+    at jline.internal.NonBlockingInputStream.read(NonBlockingInputStream.java:137)
+    at jline.internal.NonBlockingInputStream.read(NonBlockingInputStream.java:246)
+    at jline.internal.InputStreamReader.read(InputStreamReader.java:261)
+    - locked &lt;0x00000007830bf508&gt; (a jline.internal.NonBlockingInputStream)
+    at jline.internal.InputStreamReader.read(InputStreamReader.java:198)
+    - locked &lt;0x00000007830bf508&gt; (a jline.internal.NonBlockingInputStream)
+    at jline.console.ConsoleReader.readCharacter(ConsoleReader.java:2145)
+    at jline.console.ConsoleReader.readLine(ConsoleReader.java:2349)
+    at jline.console.ConsoleReader.readLine(ConsoleReader.java:2269)
+    at scala.tools.nsc.interpreter.jline.InteractiveReader.readOneLine(JLineReader.scala:57)
+    at scala.tools.nsc.interpreter.InteractiveReader$$anonfun$readLine$2.apply(InteractiveReader.scala:37)
+    at scala.tools.nsc.interpreter.InteractiveReader$$anonfun$readLine$2.apply(InteractiveReader.scala:37)
+    at scala.tools.nsc.interpreter.InteractiveReader$.restartSysCalls(InteractiveReader.scala:44)
+    at scala.tools.nsc.interpreter.InteractiveReader$class.readLine(InteractiveReader.scala:37)
+    at scala.tools.nsc.interpreter.jline.InteractiveReader.readLine(JLineReader.scala:28)
+    at scala.tools.nsc.interpreter.ILoop.readOneLine(ILoop.scala:404)
+        at scala.tools.nsc.interpreter.ILoop.loop(ILoop.scala:413)
+    at scala.tools.nsc.interpreter.ILoop$$anonfun$process$1.apply$mcZ$sp(ILoop.scala:923)
+    at scala.tools.nsc.interpreter.ILoop$$anonfun$process$1.apply(ILoop.scala:909)
+    at scala.tools.nsc.interpreter.ILoop$$anonfun$process$1.apply(ILoop.scala:909)
+    at scala.reflect.internal.util.ScalaClassLoader$.savingContextLoader(ScalaClassLoader.scala:97)
+    at scala.tools.nsc.interpreter.ILoop.process(ILoop.scala:909)
+    at org.apache.spark.repl.Main$.doMain(Main.scala:68)
+    at org.apache.spark.repl.Main$.main(Main.scala:51)
+    at org.apache.spark.repl.Main.main(Main.scala)
+    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    at java.lang.reflect.Method.invoke(Method.java:497)
+    at org.apache.spark.deploy.SparkSubmit$.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:736)
+    at org.apache.spark.deploy.SparkSubmit$.doRunMain$1(SparkSubmit.scala:185)
+    at org.apache.spark.deploy.SparkSubmit$.submit(SparkSubmit.scala:210)
+    at org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:124)
+    at org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)
+
+   Locked ownable synchronizers:
+    - None
+
+</code></pre>
+
+<p>从堆栈中信息中我们可以看出程序的调用顺序:SparkSubmit.main =&gt; repl.Main.main =&gt; ILoop.process<br/>
+ILoop.process 中如下代码:</p>
+
+<pre><code>def process(settings: Settings): Boolean = savingContextLoader {
+    this.settings = settings
+    createInterpreter()
+
+    // sets in to some kind of reader depending on environmental cues
+    in = in0.fold(chooseReader(settings))(r =&gt; SimpleReader(r, out, interactive = true))
+    globalFuture = future {
+      intp.initializeSynchronous()
+      loopPostInit()
+      !intp.reporter.hasErrors
+    }
+    loadFiles(settings)
+    printWelcome()
+
+    try loop() match {
+      case LineResults.EOF =&gt; out print Properties.shellInterruptedString
+      case _               =&gt;
+    }
+    catch AbstractOrMissingHandler()
+    finally closeInterpreter()
+
+    true
+  }
+</code></pre>
+
+<p>在process中我们发现调用了loadFiles并且打印Welcome信息</p>
+
+<p>SparkLoop 继承了loadFiles并且复写了loadFiles 方法 如下:</p>
+
+<pre><code>override def loadFiles(settings: Settings): Unit = {
+    initializeSpark()
+    super.loadFiles(settings)
+  }
+</code></pre>
+
+<p>在loadFiles中调度initalizeSpark ,查看源码如下:</p>
+
+<pre><code>def initializeSpark() {
+    intp.beQuietDuring {
+      processLine(&quot;&quot;&quot;
+        @transient val spark = if (org.apache.spark.repl.Main.sparkSession != null) {
+            org.apache.spark.repl.Main.sparkSession
+          } else {
+            org.apache.spark.repl.Main.createSparkSession()
+          }
+        @transient val sc = {
+          val _sc = spark.sparkContext
+          _sc.uiWebUrl.foreach(webUrl =&gt; println(s&quot;Spark context Web UI available at ${webUrl}&quot;))
+          println(&quot;Spark context available as &#39;sc&#39; &quot; +
+            s&quot;(master = ${_sc.master}, app id = ${_sc.applicationId}).&quot;)
+          println(&quot;Spark session available as &#39;spark&#39;.&quot;)
+          _sc
+        }
+        &quot;&quot;&quot;)
+      processLine(&quot;import org.apache.spark.SparkContext._&quot;)
+      processLine(&quot;import spark.implicits._&quot;)
+      processLine(&quot;import spark.sql&quot;)
+      processLine(&quot;import org.apache.spark.sql.functions._&quot;)
+      replayCommandStack = Nil // remove above commands from session history.
+    }
+  }
+</code></pre>
+
+<p>从上面可以看出，如果SparkSession 已存在，那么直接返回，否则调用<strong>createSparkSession</strong></p>
+
+<p>最后从SparkSession中返回SparkContext 查看<strong>createSparkSession</strong>源码</p>
+
+<pre><code>def createSparkSession(): SparkSession = {
+    val execUri = System.getenv(&quot;SPARK_EXECUTOR_URI&quot;)
+    conf.setIfMissing(&quot;spark.app.name&quot;, &quot;Spark shell&quot;)
+    // SparkContext will detect this configuration and register it with the RpcEnv&#39;s
+    // file server, setting spark.repl.class.uri to the actual URI for executors to
+    // use. This is sort of ugly but since executors are started as part of SparkContext
+    // initialization in certain cases, there&#39;s an initialization order issue that prevents
+    // this from being set after SparkContext is instantiated.
+    conf.set(&quot;spark.repl.class.outputDir&quot;, outputDir.getAbsolutePath())
+    if (execUri != null) {
+      conf.set(&quot;spark.executor.uri&quot;, execUri)
+    }
+    if (System.getenv(&quot;SPARK_HOME&quot;) != null) {
+      conf.setSparkHome(System.getenv(&quot;SPARK_HOME&quot;))
+    }
+
+    val builder = SparkSession.builder.config(conf)
+    if (conf.get(CATALOG_IMPLEMENTATION.key, &quot;hive&quot;).toLowerCase == &quot;hive&quot;) {
+      if (SparkSession.hiveClassesArePresent) {
+        // In the case that the property is not set at all, builder&#39;s config
+        // does not have this value set to &#39;hive&#39; yet. The original default
+        // behavior is that when there are hive classes, we use hive catalog.
+        sparkSession = builder.enableHiveSupport().getOrCreate()
+        logInfo(&quot;Created Spark session with Hive support&quot;)
+      } else {
+        // Need to change it back to &#39;in-memory&#39; if no hive classes are found
+        // in the case that the property is set to hive in spark-defaults.conf
+        builder.config(CATALOG_IMPLEMENTATION.key, &quot;in-memory&quot;)
+        sparkSession = builder.getOrCreate()
+        logInfo(&quot;Created Spark session&quot;)
+      }
+    } else {
+      // In the case that the property is set but not to &#39;hive&#39;, the internal
+      // default is &#39;in-memory&#39;. So the sparkSession will use in-memory catalog.
+      sparkSession = builder.getOrCreate()
+      logInfo(&quot;Created Spark session&quot;)
+    }
+    sparkContext = sparkSession.sparkContext
+    Signaling.cancelOnInterrupt(sparkContext)
+    sparkSession
+  }
+</code></pre>
+
+<p>这里最后使用SparkConf 设置一些必要的参数并且通过Builder 创建sparkSession 并且判断是否需要启用Hive的支持。</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[spark 源码编译流程]]></title>
+    <link href="http://www.blacklight.xin/14815990344230.html"/>
+    <updated>2016-12-13T11:17:14+08:00</updated>
+    <id>http://www.blacklight.xin/14815990344230.html</id>
+    <content type="html"><![CDATA[
+<p>已v2.0.2 版本为列进行源码编译</p>
+
+<ol>
+<li>从github 上clone源码 <strong>git clone git://git.apache.org/spark.git</strong></li>
+<li>切换到v2.0.2 <strong>git checkout v2.0.2 -b dev_2.0.2</strong></li>
+<li>build/mvn -DskipTests install 此部分等待时间最长，下面必要的软件和jar包</li>
+<li>给idea 装scala 插件，具体就不说了，要是网速不好可以下载下来，选择从磁盘安装<a href="https://plugins.jetbrains.com/?idea">idea plugin</a></li>
+<li>导入idea，在官方文档上有下面一些话</li>
+</ol>
+
+<span id="more"></span><!-- more -->
+
+<blockquote>
+<p>Some of the modules have pluggable source directories based on Maven profiles (i.e. to support both Scala 2.11 and 2.10 or to allow cross building against different versions of Hive). In some cases IntelliJ’s does not correctly detect use of the maven-build-plugin to add source directories. In these cases, you may need to add source locations explicitly to compile the entire project. If so, open the “Project Settings” and select “Modules”. Based on your selected Maven profiles, you may need to add source folders to the following modules:<br/>
+<strong>spark-hive: add v0.13.1/src/main/scala</strong><br/>
+<strong>spark-streaming-flume-sink: add target\scala-2.10\src_managed\main\compiled_avro</strong></p>
+</blockquote>
+
+<p>意思就是idea 在某些情况下不能正确的决定source 目录，需要我们手动标记。我的情况是spark-streaming-flume-sink 这个moudle没有正确的标记出来，手动标记一下source 就行。<br/>
+不然运行example时候回报classnotfound</p>
+
+<ol>
+<li>在运行过程中发现找不到guava中的类,clipse jetty 类找不到等，找打spark—parent-2.11下的pom </li>
+</ol>
+
+<p><img src="media/14815990344230/14816790522215.jpg" alt=""/><br/>
+如下图所示，将guava 和jetty 相关的依赖scope 都改成compile<br/>
+<img src="media/14815990344230/14816791028761.jpg" alt=""/></p>
+
+<p>重新运行example中的列子，正确执行。</p>
+
+<p>开始你的源码之旅吧！</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[maven 遇到不能下载问题]]></title>
+    <link href="http://www.blacklight.xin/14813767804827.html"/>
+    <updated>2016-12-10T21:33:00+08:00</updated>
+    <id>http://www.blacklight.xin/14813767804827.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">问题描述</h2>
+
+<pre><code>Caused by: org.eclipse.aether.transfer.ArtifactTransferException: Could not transfer artifact org.apache.spark:spark-core_2.11:pom:2.0.2 from/to central (https://repo.maven.apache.org/maven2): sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+</code></pre>
+
+<h2 id="toc_1">原因</h2>
+
+<p>maven 用的默认配置，中央仓库https：xxx，所以改成<a href="http://repo.maven.apache.org/maven2%EF%BC%8C%E9%97%AE%E9%A2%98%E5%8D%B3%E5%8F%AF%E8%A7%A3%E5%86%B3">http://repo.maven.apache.org/maven2，问题即可解决</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[提交spark应用]]></title>
+    <link href="http://www.blacklight.xin/14812978853380.html"/>
+    <updated>2016-12-09T23:38:05+08:00</updated>
+    <id>http://www.blacklight.xin/14812978853380.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">提交应用</h2>
+
+<p>在bin目录中spark-submit 脚本用于向集群启动你的应用，通过统一的接口，可以支持所有spark 支持的clusterManager，所以你没有必要为你的每个应用坐一些特殊的配置。</p>
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_1">打包你的应用程序</h2>
+
+<p>如果你的代码依赖与其他的项目，为了分发所有代码到集群，需要把他们和你的应用打包在一起，所以你可以打一个assembly jar 或者&quot;uber jar&quot; 包含你的代码和依赖。sbt和maven 都有assembly 插件。在创建assembly jar 时，将hadoop和spark的依赖设置成为provided，这些依赖在运行时cluster已经包含了，所以不需要用户打包进来。</p>
+
+<h2 id="toc_2">Loading Configuration from a File</h2>
+
+<p>spark-submit 会自动从配置文件中加载默认的属性值传递给你的应用程序。默认读取的是conf/spark-default.conf<br/>
+通过这种方式加载配置属性可以取消spark-submit 上的参数，列如：加入spark.master 在应用程序中已经设置了那么就可以在spark-submit 取消--master 选项。<strong>总之，通过SparkConf 设置的属性具有最高的优先级，其次是通过spark-submit 传递的，最后是配置文件中默认的。</strong></p>
+
+<h2 id="toc_3">用spark-submit 启动你的应用</h2>
+
+<p>一旦你的应用打包好了，你就可以用spark-submit 脚本启动你的应用了。这个脚本会设置spark的classpath和它的依赖。并且可以支持spark所支持的所有<strong>clusterManager</strong> 和 <strong>deployMode</strong></p>
+
+<pre><code class="language-shell">./bin/spark-submit \
+  --class &lt;main-class&gt; \
+  --master &lt;master-url&gt; \
+  --deploy-mode &lt;deploy-mode&gt; \
+  --conf &lt;key&gt;=&lt;value&gt; \
+  ... # other options
+  &lt;application-jar&gt; \
+  [application-arguments]
+</code></pre>
+
+<p>下面讲解一些通用的选项：</p>
+
+<ul>
+<li>--class:程序的切入点（eg:org.apache.spark.examples.SparkPi）</li>
+<li>--master:集群的master url（eg.spark://xxx.xxx.xxx.xxx:xxx）</li>
+<li>--deploy-mode:决定你的driver程序是否在worker node（cluster模式下），或者作为一个外部client（clinet 模式）<strong>默认值是client</strong></li>
+<li>--conf 以key=value的形式设置任意的spark properties，如果value包含空格，用双引号括起来，</li>
+<li><application-jar> 你的应用程序和依赖的jar的路径，URL 必须对集群是全局可见的，列如:hdfs://  或者 a file:// 路径必须在所有的node都可见</li>
+<li>application-arguments 如果有额外的参数需要传递给你的main程序，请用这个选项</li>
+</ul>
+
+<p>一个常用的提交应用的策略是通过一个网关机器(<strong>gateway machine</strong>),并且这个机器在物理位置上接近你的worker node，这种方式client模式是非常适合的。在client 模式下，dirver直接被spark-submit启动扮演集群一个client的角色。应用的输出都在console上，因此这种模式非常十分的适合那些需要REPL的应用（比如Spark shell）.</p>
+
+<p>有一个可用选项可以指定clusterManager，在standalone集群中，cluster 模式下，你可以指定--supervise 以确保driver程序非正常退出的情况下自动重启driver。--help 显示所有可用的选项。</p>
+
+<p><strong>下面是一些可用的选项</strong></p>
+
+<pre><code class="language-shell"># Run application locally on 8 cores
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master local[8] \
+  /path/to/examples.jar \
+  100
+
+# Run on a Spark standalone cluster in client deploy mode
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master spark://207.184.161.138:7077 \
+  --executor-memory 20G \
+  --total-executor-cores 100 \
+  /path/to/examples.jar \
+  1000
+
+# Run on a Spark standalone cluster in cluster deploy mode with supervise
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master spark://207.184.161.138:7077 \
+  --deploy-mode cluster \
+  --supervise \
+  --executor-memory 20G \
+  --total-executor-cores 100 \
+  /path/to/examples.jar \
+  1000
+
+# Run on a YARN cluster
+export HADOOP_CONF_DIR=XXX
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master yarn \
+  --deploy-mode cluster \  # can be client for client mode
+  --executor-memory 20G \
+  --num-executors 50 \
+  /path/to/examples.jar \
+  1000
+
+# Run a Python application on a Spark standalone cluster
+./bin/spark-submit \
+  --master spark://207.184.161.138:7077 \
+  examples/src/main/python/pi.py \
+  1000
+
+# Run on a Mesos cluster in cluster deploy mode with supervise
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master mesos://207.184.161.138:7077 \
+  --deploy-mode cluster \
+  --supervise \
+  --executor-memory 20G \
+  --total-executor-cores 100 \
+  http://path/to/examples.jar \
+  1000
+</code></pre>
+
+<h2 id="toc_4">Master URLS</h2>
+
+<p>master url 可以是以下的格式：</p>
+
+<table>
+<thead>
+<tr>
+<th>MasterURL</th>
+<th>解释</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>local</td>
+<td>本地模式一个worker线程（没有并发）</td>
+</tr>
+<tr>
+<td>local[k]</td>
+<td>本地模式K个worker线程（设置成你机器的core数）</td>
+</tr>
+<tr>
+<td>local[*]</td>
+<td>本地模式多个worker线程数—&gt;你机器的逻辑core数量</td>
+</tr>
+<tr>
+<td>spark://HOST:PORT</td>
+<td>连接到一个spark standalone 集群，端口号必须是master指定的，7007是默认的</td>
+</tr>
+<tr>
+<td>mesos://HOST:PORT</td>
+<td>连接到一个Messon集群</td>
+</tr>
+<tr>
+<td>yarn</td>
+<td>连接到一个yarn集群。—deploy-mode 指定client或者cluster模式，集群地址通过HADOOP_CONF_DIR or YARN_CONF_DIR 自动发现</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_5">通过文件配置</h2>
+
+<p>spark-submit 会自动从配置文件中加载默认的属性值传递给你的应用程序。默认读取的是conf/spark-default.conf<br/>
+通过这种方式加载配置属性可以取消spark-submit 上的参数，列如：加入spark.master 在应用程序中已经设置了那么就可以在spark-submit 取消--master 选项。<strong>总之，通过SparkConf 设置的属性具有最高的优先级，其次是通过spark-submit 传递的，最后是配置文件中默认的。</strong></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[sql 好习惯]]></title>
+    <link href="http://www.blacklight.xin/14714462595894.html"/>
+    <updated>2016-08-17T23:04:19+08:00</updated>
+    <id>http://www.blacklight.xin/14714462595894.html</id>
+    <content type="html"><![CDATA[
+<p>我们做软件开发的，大部分人都离不开跟数据库打交道，特别是erp开发的，跟数据库打交道更是频繁，存储过程动不动就是上千行，如果数据量大，人员流动大，那么我么还能保证下一段时间系统还能流畅的运行吗？我么还能保证下一个人能看懂我么的存储过程吗？那么我结合公司平时的培训和平时个人工作经验和大家分享一下，希望对大家有帮助。</p>
+
+<p>要知道sql语句，我想我们有必要知道sqlserver查询分析器怎么执行我么sql语句的，我么很多人会看执行计划，或者用profile来监视和调优查询语句或者存储过程慢的原因，但是如果我们知道查询分析器的执行逻辑顺序，下手的时候就胸有成竹，那么下手是不是有把握点呢？<br/>
+&lt;!-- more --&gt;</p>
+
+<h2 id="toc_0">一：查询的逻辑执行顺序</h2>
+
+<p>(1) FROM &lt; left_table&gt; </p>
+
+<p>(3) &lt; join_type&gt;  JOIN &lt; right_table&gt;   (2) ON &lt; join_condition&gt; </p>
+
+<p>(4) WHERE &lt; where_condition&gt; </p>
+
+<p>(5) GROUP BY &lt; group_by_list&gt; </p>
+
+<p>(6) WITH {cube | rollup}</p>
+
+<p>(7) HAVING &lt; having_condition&gt; </p>
+
+<p>(8) SELECT  (9) DISTINCT (11) &lt; top_specification&gt;  &lt; select_list&gt; </p>
+
+<p>(10) ORDER BY &lt; order_by_list&gt; </p>
+
+<p><strong>标准的SQL 的解析顺序为:</strong></p>
+
+<p>(1).FROM 子句 组装来自不同数据源的数据</p>
+
+<p>(2).WHERE 子句 基于指定的条件对记录进行筛选</p>
+
+<p>(3).GROUP BY 子句 将数据划分为多个分组</p>
+
+<p>(4).使用聚合函数进行计算</p>
+
+<p>(5).使用HAVING子句筛选分组</p>
+
+<p>(6).计算所有的表达式</p>
+
+<p>(7).使用ORDER BY对结果集进行排序</p>
+
+<h2 id="toc_1">二 执行顺序：</h2>
+
+<p>1.FROM：对FROM子句中前两个表执行笛卡尔积生成虚拟表vt1</p>
+
+<p>2.ON:对vt1表应用ON筛选器只有满足&lt; join_condition&gt; 为真的行才被插入vt2</p>
+
+<p>3.OUTER(join)：如果指定了 OUTER JOIN保留表(preserved table)中未找到的行将行作为外部行添加到vt2 生成t3如果from包含两个以上表则对上一个联结生成的结果表和下一个表重复执行步骤和步骤直接结束</p>
+
+<p>4.WHERE：对vt3应用 WHERE 筛选器只有使&lt; where_condition&gt; 为true的行才被插入vt4</p>
+
+<p>5.GROUP BY：按GROUP BY子句中的列列表对vt4中的行分组生成vt5</p>
+
+<p>6.CUBE|ROLLUP：把超组(supergroups)插入vt6 生成vt6</p>
+
+<p>7.HAVING：对vt6应用HAVING筛选器只有使&lt; having_condition&gt; 为true的组才插入vt7</p>
+
+<p>8.SELECT：处理select列表产生vt8</p>
+
+<p>9.DISTINCT：将重复的行从vt8中去除产生vt9</p>
+
+<p>10.ORDER BY：将vt9的行按order by子句中的列列表排序生成一个游标vc10</p>
+
+<p>11.TOP：从vc10的开始处选择指定数量或比例的行生成vt11 并返回调用者</p>
+
+<p>看到这里，那么用过linqtosql的语法有点相似啊？如果我们我们了解了sqlserver执行顺序，那么我们就接下来进一步养成日常sql好习惯，也就是在实现功能同时有考虑性能的思想，数据库是能进行集合运算的工具，我们应该尽量的利用这个工具，所谓集合运算实际就是批量运算，就是尽量减少在客户端进行大数据量的循环操作，而用SQL语句或者存储过程代替。</p>
+
+<h2 id="toc_2">三、只返回需要的数据</h2>
+
+<p>返回数据到客户端至少需要数据库提取数据、网络传输数据、客户端接收数据以及客户端处理数据等环节，如果返回不需要的数据，就会增加服务器、网络和客户端的无效劳动，其害处是显而易见的，避免这类事件需要注意：</p>
+
+<p>A、横向来看，</p>
+
+<p>(1)不要写SELECT *的语句，而是选择你需要的字段。</p>
+
+<p>(2)当在SQL语句中连接多个表时, 请使用表的别名并把别名前缀于每个Column上.这样一来,就可以减少解析的时间并减少那些由Column歧义引起的语法错误。</p>
+
+<p>如有表table1（ID,col1）和table2 （ID,col2）</p>
+
+<p>Select A.ID, A.col1, B.col2</p>
+
+<p>-- Select A.ID, col1, col2 –不要这么写，不利于将来程序扩展</p>
+
+<p>from table1 A inner join table2 B on A.ID=B.ID Where …</p>
+
+<p>B、纵向来看，</p>
+
+<p>(1)合理写WHERE子句，不要写没有WHERE的SQL语句。</p>
+
+<p>(2) SELECT TOP N * --没有WHERE条件的用此替代 </p>
+
+<h2 id="toc_3">四 ：尽量少做重复的工作</h2>
+
+<p>A、控制同一语句的多次执行，特别是一些基础数据的多次执行是很多程序员很少注意的。</p>
+
+<p>B、减少多次的数据转换，也许需要数据转换是设计的问题，但是减少次数是程序员可以做到的。</p>
+
+<p>C、杜绝不必要的子查询和连接表，子查询在执行计划一般解释成外连接，多余的连接表带来额外的开销。</p>
+
+<p>D、合并对同一表同一条件的多次UPDATE，比如</p>
+
+<p>UPDATE EMPLOYEE SET FNAME=&#39;HAIWER&#39;<br/>
+WHERE EMP_ID=&#39; VPA30890F&#39; UPDATE EMPLOYEE SET LNAME=&#39;YANG&#39;<br/>
+WHERE EMP_ID=&#39; VPA30890F&#39;</p>
+
+<p>这两个语句应该合并成以下一个语句</p>
+
+<p>UPDATE EMPLOYEE SET FNAME=&#39;HAIWER&#39;,LNAME=&#39;YANG&#39;  WHERE EMP_ID=&#39; VPA30890F&#39;</p>
+
+<p>E、UPDATE操作不要拆成DELETE操作+INSERT操作的形式，虽然功能相同，但是性能差别是很大的。</p>
+
+<h2 id="toc_4">五、注意临时表和表变量的用法</h2>
+
+<p>在复杂系统中，临时表和表变量很难避免，关于临时表和表变量的用法，需要注意：</p>
+
+<p>A、如果语句很复杂，连接太多，可以考虑用临时表和表变量分步完成。</p>
+
+<p>B、如果需要多次用到一个大表的同一部分数据，考虑用临时表和表变量暂存这部分数据。</p>
+
+<p>C、如果需要综合多个表的数据，形成一个结果，可以考虑用临时表和表变量分步汇总这多个表的数据。</p>
+
+<p>D、其他情况下，应该控制临时表和表变量的使用。</p>
+
+<p>E、关于临时表和表变量的选择，很多说法是表变量在内存，速度快，应该首选表变量，但是在实际使用中发现，</p>
+
+<p>(1)主要考虑需要放在临时表的数据量，在数据量较多的情况下，临时表的速度反而更快。</p>
+
+<p>(2)执行时间段与预计执行时间(多长)</p>
+
+<p>F、关于临时表产生使用SELECT INTO和CREATE TABLE + INSERT INTO的选择，一般情况下，</p>
+
+<p>SELECT INTO会比CREATE TABLE + INSERT INTO的方法快很多，</p>
+
+<p>但是SELECT INTO会锁定TEMPDB的系统表SYSOBJECTS、SYSINDEXES、SYSCOLUMNS，在多用户并发环境下，容易阻塞其他进程，</p>
+
+<p>所以我的建议是，在并发系统中，尽量使用CREATE TABLE + INSERT INTO，而大数据量的单个语句使用中，使用SELECT INTO。</p>
+
+<h2 id="toc_5">六、子查询的用法（1）</h2>
+
+<p>子查询是一个 SELECT 查询，它嵌套在 SELECT、INSERT、UPDATE、DELETE 语句或其它子查询中。</p>
+
+<p>任何允许使用表达式的地方都可以使用子查询，子查询可以使我们的编程灵活多样，可以用来实现一些特殊的功能。但是在性能上，</p>
+
+<p>往往一个不合适的子查询用法会形成一个性能瓶颈。如果子查询的条件中使用了其外层的表的字段，这种子查询就叫作相关子查询。</p>
+
+<p>相关子查询可以用IN、NOT IN、EXISTS、NOT EXISTS引入。 关于相关子查询，应该注意：</p>
+
+<p>(1)</p>
+
+<p>A、NOT IN、NOT EXISTS的相关子查询可以改用LEFT JOIN代替写法。比如： SELECT PUB_NAME FROM PUBLISHERS WHERE PUB_ID NOT IN (SELECT PUB_ID FROM TITLES WHERE TYPE = &#39;BUSINESS&#39;) 可以改写成： SELECT A.PUB_NAME FROM PUBLISHERS A LEFT JOIN TITLES B ON B.TYPE = &#39;BUSINESS&#39; AND A.PUB_ID=B. PUB_ID WHERE B.PUB_ID IS NULL</p>
+
+<p>(2)</p>
+
+<p>SELECT TITLE FROM TITLES <br/>
+WHERE NOT EXISTS <br/>
+ (SELECT TITLE_ID FROM SALES <br/>
+WHERE TITLE_ID = TITLES.TITLE_ID)</p>
+
+<p>可以改写成：</p>
+
+<p>SELECT TITLE <br/>
+FROM TITLES LEFT JOIN SALES <br/>
+ON SALES.TITLE_ID = TITLES.TITLE_ID <br/>
+WHERE SALES.TITLE_ID IS NULL</p>
+
+<p>B、 如果保证子查询没有重复 ，IN、EXISTS的相关子查询可以用INNER JOIN 代替。比如：</p>
+
+<p>SELECT PUB_NAME <br/>
+FROM PUBLISHERS <br/>
+WHERE PUB_ID IN<br/>
+ (SELECT PUB_ID <br/>
+ FROM TITLES <br/>
+ WHERE TYPE = &#39;BUSINESS&#39;)</p>
+
+<p>可以改写成：</p>
+
+<p>SELECT A.PUB_NAME --SELECT DISTINCT A.PUB_NAME <br/>
+FROM PUBLISHERS A INNER JOIN TITLES B <br/>
+ON        B.TYPE = &#39;BUSINESS&#39; AND<br/>
+A.PUB_ID=B. PUB_ID</p>
+
+<p>(3)</p>
+
+<p>C、 IN的相关子查询用EXISTS代替，比如</p>
+
+<p>SELECT PUB_NAME FROM PUBLISHERS <br/>
+WHERE PUB_ID IN<br/>
+(SELECT PUB_ID FROM TITLES WHERE TYPE = &#39;BUSINESS&#39;)</p>
+
+<p>可以用下面语句代替：</p>
+
+<p>SELECT PUB_NAME FROM PUBLISHERS WHERE EXISTS <br/>
+(SELECT 1 FROM TITLES WHERE TYPE = &#39;BUSINESS&#39; AND<br/>
+PUB_ID= PUBLISHERS.PUB_ID)</p>
+
+<p>D、不要用COUNT(*)的子查询判断是否存在记录，最好用LEFT JOIN或者EXISTS，比如有人写这样的语句：</p>
+
+<p>SELECT JOB_DESC FROM JOBS <br/>
+WHERE (SELECT COUNT(*) FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID)=0</p>
+
+<p>应该改成：</p>
+
+<p>SELECT JOBS.JOB_DESC FROM JOBS LEFT JOIN EMPLOYEE<br/><br/>
+ON EMPLOYEE.JOB_ID=JOBS.JOB_ID <br/>
+WHERE EMPLOYEE.EMP_ID IS NULL</p>
+
+<p>SELECT JOB_DESC FROM JOBS <br/>
+WHERE (SELECT COUNT(*) FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID)&lt;&gt;0</p>
+
+<p>应该改成：</p>
+
+<p>SELECT JOB_DESC FROM JOBS <br/>
+WHERE EXISTS (SELECT 1 FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID) </p>
+
+<h2 id="toc_6">七：尽量使用索引</h2>
+
+<p>建立索引后，并不是每个查询都会使用索引，在使用索引的情况下，索引的使用效率也会有很大的差别。只要我们在查询语句中没有强制指定索引，</p>
+
+<p>索引的选择和使用方法是SQLSERVER的优化器自动作的选择，而它选择的根据是查询语句的条件以及相关表的统计信息，这就要求我们在写SQL</p>
+
+<p>语句的时候尽量使得优化器可以使用索引。为了使得优化器能高效使用索引，写语句的时候应该注意：</p>
+
+<p>（1</p>
+
+<p>A、不要对索引字段进行运算，而要想办法做变换，比如</p>
+
+<pre><code>SELECT ID FROM T WHERE NUM/2=100
+应改为:
+SELECT ID FROM T WHERE NUM=100*2
+
+SELECT ID FROM T WHERE NUM/2=NUM1
+如果NUM有索引应改为:
+SELECT ID FROM T WHERE NUM=NUM1*2
+
+如果NUM1有索引则不应该改。
+</code></pre>
+
+<p>(2)</p>
+
+<p>发现过这样的语句：</p>
+
+<pre><code>SELECT 年,月,金额 FROM 结余表  WHERE 100*年+月=2010*100+10
+应该改为：
+
+SELECT 年,月,金额 FROM 结余表 WHERE 年=2010 AND月=10
+</code></pre>
+
+<p>B、 不要对索引字段进行格式转换</p>
+
+<p>日期字段的例子：</p>
+
+<p>WHERE CONVERT(VARCHAR(10), 日期字段,120)=&#39;2010-07-15&#39;</p>
+
+<p>应该改为</p>
+
+<p>WHERE日期字段〉=&#39;2010-07-15&#39;   AND   日期字段&lt;&#39;2010-07-16&#39;</p>
+
+<p>ISNULL转换的例子：</p>
+
+<p>WHERE ISNULL(字段,&#39;&#39;)&lt;&gt;&#39;&#39;应改为:WHERE字段&lt;&gt;&#39;&#39;<br/>
+WHERE ISNULL(字段,&#39;&#39;)=&#39;&#39;不应修改<br/>
+WHERE ISNULL(字段,&#39;F&#39;) =&#39;T&#39;应改为: WHERE字段=&#39;T&#39;<br/>
+WHERE ISNULL(字段,&#39;F&#39;)&lt;&gt;&#39;T&#39;不应修改</p>
+
+<p>(3)</p>
+
+<p>C、 不要对索引字段使用函数</p>
+
+<p>WHERE LEFT(NAME, 3)=&#39;ABC&#39; 或者WHERE SUBSTRING(NAME,1, 3)=&#39;ABC&#39;</p>
+
+<p>应改为: WHERE NAME LIKE &#39;ABC%&#39;</p>
+
+<p>日期查询的例子：</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)=0<br/>
+应改为:WHERE 日期&gt;=&#39;2010-06-30&#39; AND 日期 &lt;&#39;2010-07-01&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&gt;0<br/>
+应改为:WHERE 日期 &lt;&#39;2010-06-30&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&gt;=0<br/>
+应改为:WHERE 日期 &lt;&#39;2010-07-01&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)<0<br/>
+应改为:WHERE 日期>=&#39;2010-07-01&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&lt;=0<br/>
+应改为:WHERE 日期&gt;=&#39;2010-06-30&#39;</p>
+
+<p>D、不要对索引字段进行多字段连接</p>
+
+<p>比如：</p>
+
+<p>WHERE FAME+ &#39;. &#39;+LNAME=&#39;HAIWEI.YANG&#39;</p>
+
+<p>应改为:</p>
+
+<p>WHERE FNAME=&#39;HAIWEI&#39; AND LNAME=&#39;YANG&#39;</p>
+
+<h2 id="toc_7">八：多表连接的连接条件对索引的选择有着重要的意义，所以我们在写连接条件条件的时候需要特别注意。</h2>
+
+<p>A、多表连接的时候，连接条件必须写全，宁可重复，不要缺漏。</p>
+
+<p>B、连接条件尽量使用聚集索引</p>
+
+<p>C、注意ON、WHERE和HAVING部分条件的区别</p>
+
+<p>ON是最先执行， WHERE次之，HAVING最后，因为ON是先把不符合条件的记录过滤后才进行统计，它就可以减少中间运算要处理的数据，按理说应该速度是最快的，WHERE也应该比 HAVING快点的，因为它过滤数据后才进行SUM，在两个表联接时才用ON的，所以在一个表的时候，就剩下WHERE跟HAVING比较了</p>
+
+<p>考虑联接优先顺序：</p>
+
+<p>(1)INNER JOIN<br/>
+(2)LEFT JOIN (注：RIGHT JOIN 用 LEFT JOIN 替代)<br/>
+(3)CROSS JOIN</p>
+
+<p>其它注意和了解的地方有：</p>
+
+<p>A、在IN后面值的列表中，将出现最频繁的值放在最前面，出现得最少的放在最后面，减少判断的次数</p>
+
+<p>B、注意UNION和UNION ALL的区别。--允许重复数据用UNION ALL好  </p>
+
+<p>C、注意使用DISTINCT，在没有必要时不要用</p>
+
+<p>D、TRUNCATE TABLE 与 DELETE 区别</p>
+
+<p>E、减少访问数据库的次数</p>
+
+<p>还有就是我们写存储过程，如果比较长的话，最后用标记符标开，因为这样可读性很好，即使语句写的不怎么样但是语句工整，C# 有region</p>
+
+<p>sql我比较喜欢用的就是</p>
+
+<p>--startof  查询在职人数<br/>
+     sql语句<br/>
+  --end of</p>
+
+<p>正式机器上我们一般不能随便调试程序，但是很多时候程序在我们本机上没问题，但是进正式系统就有问题，但是我们又不能随便在正式机器上操作，那么怎么办呢？我们可以用回滚来调试我们的存储过程或者是sql语句，从而排错。</p>
+
+<p>BEGIN TRAN<br/>
+ UPDATE a SET 字段=&#39;&#39;<br/>
+ROLLBACK</p>
+
+<p>作业存储过程我一般会加上下面这段，这样检查错误可以放在存储过程，如果执行错误回滚操作，但是如果程序里面已经有了事务回滚，那么存储过程就不要写事务了，这样会导致事务回滚嵌套降低执行效率，但是我们很多时候可以把检查放在存储过程里，这样有利于我们解读这个存储过程，和排错。</p>
+
+<p>BEGIN TRANSACTION<br/><br/>
+--事务回滚开始       </p>
+
+<p>--检查报错<br/>
+ IF ( @@ERROR &gt; 0 )<br/><br/>
+                    BEGIN<br/><br/>
+--回滚操作<br/>
+                        ROLLBACK TRANSACTION<br/><br/>
+                        RAISERROR(&#39;删除工作报告错误&#39;, 16, 3)<br/><br/>
+                        RETURN<br/><br/>
+                    END         </p>
+
+<p>--结束事务<br/>
+  COMMIT TRANSACTION     </p>
+
+<p>好久没有写博文了，工作项目一个接一个，再加上公司人员流动，新人很多事情接不下来，加班成了家常便饭，仓促写下这些希望对大家有帮助，不对的也欢迎指点，交流互相提高。</p>
+
+<p>有错误的地方欢迎大家拍砖,希望交流和共享。</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[深入浅出 Redis Cluster 原理]]></title>
+    <link href="http://www.blacklight.xin/14714457247718.html"/>
+    <updated>2016-08-17T22:55:24+08:00</updated>
+    <id>http://www.blacklight.xin/14714457247718.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">一、 简介</h2>
+
+<p><img src="media/14714457247718/14714457994808.jpg" alt=""/></p>
+
+<span id="more"></span><!-- more -->
+
+<p>Redis Cluster是一个高性能高可用的分布式系统。由多个Redis实例组成的整体，数据按照Slot存储分布在多个Redis实例上，通过Gossip协议来进行节点之间通信。</p>
+
+<ul>
+<li><p>Redis Cluster功能特点如下：</p>
+
+<pre><code>* 所有的节点相互连接
+* 集群消息通信通过集群总线通信，，集群总线端口大小为客户端服务端口+10000，这个10000是固定值
+* 节点与节点之间通过二进制协议进行通信
+* 客户端和集群节点之间通信和通常一样，通过文本协议进行
+* 集群节点不会代理查询
+* 数据按照Slot存储分布在多个Redis实例上
+* 集群节点挂掉会自动故障转移
+* 可以相对平滑扩/缩容节点
+</code></pre></li>
+</ul>
+
+<h2 id="toc_1">二、 集群通信</h2>
+
+<h3 id="toc_2">2.1 CLUSTER MEET</h3>
+
+<p><img src="media/14714457247718/14714459193034.jpg" alt=""/><br/>
+需要组建一个真正的可工作的集群，我们必须将各个独立的节点连接起来，构成一个包含多个节点的集群。<br/>
+连接各个节点的工作使用CLUSTER MEET命令来完成。<br/>
+CLUSTER MEET <ip> <port></p>
+
+<p><strong>CLUSTERMEET命令实现：</strong></p>
+
+<ul>
+<li>节点 A 会为节点 B 创建一个 clusterNode 结构，并将该结构添加到自己的 clusterState.nodes 字典里面。</li>
+<li>节点A根据CLUSTER MEET命令给定的IP地址和端口号，向节点B发送一条MEET消息。</li>
+<li>节点B接收到节点A发送的MEET消息，节点B会为节点A创建一个clusterNode结构，并将该结构添加到自己的clusterState.nodes字典里面。</li>
+<li>节点B向节点A返回一条PONG消息。</li>
+<li>节点A将受到节点B返回的PONG消息，通过这条PONG消息节点A可以知道节点B已经成功的接收了自己发送的MEET消息。</li>
+<li>之后，节点A将向节点B返回一条PING消息。</li>
+<li>节点B将接收到的节点A返回的PING消息，通过这条PING消息节点B可以知道节点A已经成功的接收到了自己返回的PONG消息，握手完成。</li>
+<li>之后，节点A会将节点B的信息通过Gossip协议传播给集群中的其他节点，让其他节点也与节点B进行握手，最终，经过一段时间后，节点B会被集群中的所有节点认识。</li>
+</ul>
+
+<p><strong>2.2 集群消息处理 clusterProcessPacket</strong></p>
+
+<ul>
+<li>更新接收消息计数器</li>
+<li>查找发送者节点并且不是handshake节点</li>
+<li>更新自己的epoch和slave的offset信息</li>
+<li>处理MEET消息，使加入集群</li>
+<li>从goosip中发现未知节点，发起handshake</li>
+<li>对PING，MEET回复PONG</li>
+<li>根据收到的心跳信息更新自己clusterState中的master-slave，slots信息</li>
+<li>对FAILOVER_AUTH_REQUEST消息，检查并投票</li>
+<li>处理FAIL，FAILOVER_AUTH_ACK，UPDATE信息</li>
+</ul>
+
+<p><img src="media/14714457247718/14714460777902.jpg" alt=""/></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[java 垃圾回收机制]]></title>
+    <link href="http://www.blacklight.xin/14714451686233.html"/>
+    <updated>2016-08-17T22:46:08+08:00</updated>
+    <id>http://www.blacklight.xin/14714451686233.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">对象引用</h2>
+
+<p>Java中的垃圾回收一般是在Java堆中进行，因为堆中几乎存放了Java中所有的对象实例。谈到Java堆中的垃圾回收，自然要谈到引用。在JDK1.2之前，Java中的引用定义很很纯粹：如果reference类型的数据中存储的数值代表的是另外一块内存的起始地址，就称这块内存代表着一个引用。但在JDK1.2之后，Java对引用的概念进行了扩充，将其分为强引用（Strong Reference）、软引用（Soft Reference）、弱引用（Weak Reference）、虚引用（Phantom Reference）四种，引用强度依次减弱。</p>
+
+<ul>
+<li><p>强引用：如“Object obj = new Object（）”，这类引用是Java程序中最普遍的。只要强引用还存在，垃圾收集器就永远不会回收掉被引用的对象。</p></li>
+<li><p>软引用：它用来描述一些可能还有用，但并非必须的对象。在系统内存不够用时，这类引用关联的对象将被垃圾收集器回收。JDK1.2之后提供了SoftReference类来实现软引用。</p></li>
+<li><p>弱引用：它也是用来描述非需对象的，但它的强度比软引用更弱些，被弱引用关联的对象只能生存岛下一次垃圾收集发生之前。当垃圾收集器工作时，无论当前内存是否足够，都会回收掉只被弱引用关联的对象。在JDK1.2之后，提供了WeakReference类来实现弱引用。</p></li>
+<li><p>虚引用：最弱的一种引用关系，完全不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。为一个对象设置虚引用关联的唯一目的是希望能在这个对象被收集器回收时收到一个系统通知。JDK1.2之后提供了PhantomReference类来实现虚引用。<br/>
+&lt;!-- more --&gt;</p></li>
+</ul>
+
+<h2 id="toc_1">垃圾对象的判定</h2>
+
+<p>Java堆中存放着几乎所有的对象实例，垃圾收集器对堆中的对象进行回收前，要先确定这些对象是否还有用，判定对象是否为垃圾对象有如下算法：</p>
+
+<ul>
+<li>引用计数算法</li>
+</ul>
+
+<p>给对象添加一个引用计数器，每当有一个地方引用它时，计数器值就加1，当引用失效时，计数器值就减1，任何时刻计数器都为0的对象就是不可能再被使用的。</p>
+
+<p>引用计数算法的实现简单，判定效率也很高，在大部分情况下它都是一个不错的选择，当Java语言并没有选择这种算法来进行垃圾回收，主要原因是它很难解决对象之间的相互循环引用问题。</p>
+
+<ul>
+<li>根搜索算法</li>
+</ul>
+
+<p>Java和C#中都是采用根搜索算法来判定对象是否存活的。这种算法的基本思路是通过一系列名为“GC Roots”的对象作为起始点，从这些节点开始向下搜索，搜索所走过的路径称为引用链，当一个对象到GC Roots没有任何引用链相连时，就证明此对象是不可用的。在Java语言里，可作为GC Roots的兑现包括下面几种：</p>
+
+<pre><code>* 虚拟机栈（栈帧中的本地变量表）中引用的对象。
+* 方法区中的类静态属性引用的对象。
+* 方法区中的常量引用的对象。
+* 本地方法栈中JNI（Native方法）的引用对象。
+</code></pre>
+
+<p>实际上，在根搜索算法中，要真正宣告一个对象死亡，至少要经历两次标记过程：如果对象在进行根搜索后发现没有与GC Roots相连接的引用链，那它会被第一次标记并且进行一次筛选，筛选的条件是此对象是否有必要执行finalize（）方法。当对象没有覆盖finalize（）方法，或finalize（）方法已经被虚拟机调用过，虚拟机将这两种情况都视为没有必要执行。如果该对象被判定为有必要执行finalize（）方法，那么这个对象将会被放置在一个名为F-Queue队列中，并在稍后由一条由虚拟机自动建立的、低优先级的Finalizer线程去执行finalize（）方法。finalize（）方法是对象逃脱死亡命运的最后一次机会（因为一个对象的finalize（）方法最多只会被系统自动调用一次），稍后GC将对F-Queue中的对象进行第二次小规模的标记，如果要在finalize（）方法中成功拯救自己，只要在finalize（）方法中让该对象重引用链上的任何一个对象建立关联即可。而如果对象这时还没有关联到任何链上的引用，那它就会被回收掉。</p>
+
+<h2 id="toc_2">垃圾收集算法</h2>
+
+<p>判定除了垃圾对象之后，便可以进行垃圾回收了。下面介绍一些垃圾收集算法，由于垃圾收集算法的实现涉及大量的程序细节，因此这里主要是阐明各算法的实现思想，而不去细论算法的具体实现。</p>
+
+<ul>
+<li>标记—清除算法</li>
+</ul>
+
+<p>标记—清除算法是最基础的收集算法，它分为“标记”和“清除”两个阶段：首先标记出所需回收的对象，在标记完成后统一回收掉所有被标记的对象，它的标记过程其实就是前面的根搜索算法中判定垃圾对象的标记过程。标记—清除算法的执行情况如下图所示：</p>
+
+<p>回收前状态：</p>
+
+<p><img src="media/14714451686233/14714454453059.jpg" alt=""/></p>
+
+<p>回收后状态：</p>
+
+<p><img src="media/14714451686233/14714454536029.jpg" alt=""/></p>
+
+<p>该算法有如下缺点：</p>
+
+<pre><code>* 标记和清除过程的效率都不高。
+* 标记清除后会产生大量不连续的内存碎片，空间碎片太多可能会导致，当程序在以后的运行过程中需要分配较大对象时无法找到足够的连续内存而不得不触发另一次垃圾收集动作。
+</code></pre>
+
+<ul>
+<li>复制算法</li>
+</ul>
+
+<p>复制算法是针对标记—清除算法的缺点，在其基础上进行改进而得到的，它讲课用内存按容量分为大小相等的两块，每次只使用其中的一块，当这一块的内存用完了，就将还存活着的对象复制到另外一块内存上面，然后再把已使用过的内存空间一次清理掉。复制算法有如下优点：</p>
+
+<p>每次只对一块内存进行回收，运行高效。<br/>
+只需移动栈顶指针，按顺序分配内存即可，实现简单。<br/>
+内存回收时不用考虑内存碎片的出现。</p>
+
+<p>它的缺点是：可一次性分配的最大内存缩小了一半。</p>
+
+<p>复制算法的执行情况如下图所示：</p>
+
+<p>回收前状态：<br/>
+<img src="media/14714451686233/14714454964808.jpg" alt=""/></p>
+
+<p>回收后状态：<br/>
+<img src="media/14714451686233/14714455030414.jpg" alt=""/></p>
+
+<ul>
+<li><p>标记—整理算法</p>
+
+<p>复制算法比较适合于新生代，在老年代中，对象存活率比较高，如果执行较多的复制操作，效率将会变低，所以老年代一般会选用其他算法，如标记—整理算法。该算法标记的过程与标记—清除算法中的标记过程一样，但对标记后出的垃圾对象的处理情况有所不同，它不是直接对可回收对象进行清理，而是让所有的对象都向一端移动，然后直接清理掉端边界以外的内存。标记—整理算法的回收情况如下所示：</p></li>
+</ul>
+
+<p>回收前状态：</p>
+
+<p><img src="media/14714451686233/14714455172648.jpg" alt=""/></p>
+
+<p>回收后状态：<br/>
+<img src="media/14714451686233/14714455231926.jpg" alt=""/></p>
+
+<ul>
+<li>分代收集</li>
+</ul>
+
+<p>当前商业虚拟机的垃圾收集 都采用分代收集，它根据对象的存活周期的不同将内存划分为几块，一般是把Java堆分为新生代和老年代。在新生代中，每次垃圾收集时都会发现有大量对象死去，只有少量存活，因此可选用复制算法来完成收集，而老年代中因为对象存活率高、没有额外空间对它进行分配担保，就必须使用标记—清除算法或标记—整理算法来进行回收。</p>
+
+<ul>
+<li>垃圾收集器
+垃圾收集器是内存回收算法的具体实现，Java虚拟机规范中对垃圾收集器应该如何实现并没有任何规定，因此不同厂商、不同版本的虚拟机所提供的垃圾收集器都可能会有很大的差别。Sun  HotSpot虚拟机1.6版包含了如下收集器：Serial、ParNew、Parallel Scavenge、CMS、Serial Old、Parallel Old。这些收集器以不同的组合形式配合工作来完成不同分代区的垃圾收集工作。</li>
+</ul>
+
+<h2 id="toc_3">性能调优</h2>
+
+<p>Java虚拟机的内存管理与垃圾收集是虚拟机结构体系中最重要的组成部分，对程序（尤其服务器端）的性能和稳定性有着非常重要的影响。性能调优需要具体情况具体分析，而且实际分析时可能需要考虑的方面很多，这里仅就一些简单常用的情况作简要介绍。</p>
+
+<ul>
+<li><p>我们可以通过给Java虚拟机分配超大堆（前提是物理机的内存足够大）来提升服务器的响应速度，但分配超大堆的前提是有把握把应用程序的Full GC频率控制得足够低，因为一次Full GC的时间造成比较长时间的停顿。控制Full GC频率的关键是保证应用中绝大多数对象的生存周期不应太长，尤其不能产生批量的、生命周期长的大对象，这样才能保证老年代的稳定。</p></li>
+<li><p>Direct Memory在堆内存外分配，而且二者均受限于物理机内存，且成负相关关系，因此分配超大堆时，如果用到了NIO机制分配使用了很多的Direct Memory，则有可能导致Direct Memory的OutOfMemoryError异常，这时可以通过-XX:MaxDirectMemorySize参数调整Direct Memory的大小。</p></li>
+<li><p>除了Java堆和永久代以及直接内存外，还要注意下面这些区域也会占用较多的内存，这些内存的总和会受到操作系统进程最大内存的限制：</p>
+
+<p>1、线程堆栈：可通过-Xss调整大小，内存不足时抛出StackOverflowError（纵向无法分配，即无法分配新的栈帧）或OutOfMemoryError（横向无法分配，即无法建立新的线程）。</p>
+
+<p>2、Socket缓冲区：每个Socket连接都有Receive和Send两个缓冲区，分别占用大约37KB和25KB的内存。如果无法分配，可能会抛出IOException：Too many open files异常。关于Socket缓冲区的详细介绍参见我的Java网络编程系列中深入剖析Socket的几篇文章。</p>
+
+<p>3、JNI代码：如果代码中使用了JNI调用本地库，那本地库使用的内存也不在堆中。</p>
+
+<p>4、虚拟机和GC：虚拟机和GC的代码执行也要消耗一定的内存。</p></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[scala base]]></title>
+    <link href="http://www.blacklight.xin/14696149737175.html"/>
+    <updated>2016-07-27T18:22:53+08:00</updated>
+    <id>http://www.blacklight.xin/14696149737175.html</id>
+    <content type="html"><![CDATA[
+<ul>
+<li><p>什么时候应该使用特质而不是抽象类？ 如果你想定义一个类似接口的类型,你可能会在特质和抽象类之间难以取舍。这两种形式都可以让你定义一个类型的一些行为，并要求继承者定义一些其他行为。一些经验法则:</p>
+
+<ul>
+<li><p>优先使用特质。一个类扩展多个特质是很方便的，但却只能扩展一个抽象类</p></li>
+<li><p>如果你需要构造函数参数，使用抽象类。因为抽象类可以定义带参数的构造函数，而特质不行。例如，你不能说trait t(i: Int) {}，参数i是非法的。</p></li>
+</ul></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[design of schedule]]></title>
+    <link href="http://www.blacklight.xin/14630228188603.html"/>
+    <updated>2016-05-12T11:13:38+08:00</updated>
+    <id>http://www.blacklight.xin/14630228188603.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">总体设计</h2>
+
+<h3 id="toc_1">功能特性：</h3>
+
+<ul>
+<li>master-savle 架构</li>
+<li>支持任务的自动唤醒</li>
+<li>支持依赖配置</li>
+<li>自动重试</li>
+<li>失败，延时报警</li>
+<li>在线编辑脚本</li>
+<li>日志实时显示</li>
+<li>支持hadoop工作流</li>
+<li>简单的配置方式（任务名，执行命令，依赖任务，执行时间【可选】）</li>
+<li><em>资源隔离</em>
+&lt;!-- more --&gt;</li>
+</ul>
+
+<h3 id="toc_2">greathole核心实现</h3>
+
+<p><img src="media/14630228188603/14630285732590.jpg" alt=""/></p>
+
+<ul>
+<li>客户端提交job 到调度中心</li>
+<li>调度中心分配任务给worker 节点</li>
+<li>worker负责具体任务的执行，任务状态判断，报警，子任务唤醒等</li>
+</ul>
+
+<h3 id="toc_3">greathole 数据库设计</h3>
+
+<pre><code>CREATE TABLE `hole_job` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT &#39;任务ID&#39;,
+  `name` varchar(100) NOT NULL COMMENT &#39;任务名称&#39;,
+  `description` varchar(300) DEFAULT &#39;&#39; COMMENT &#39;任务描述&#39;,
+  `crontab` varchar(200) NOT NULL DEFAULT &#39;&#39; COMMENT &#39;任务执行时间,定时任务填写,依赖任务不用填写&#39;,
+  `command` varchar(500) NOT NULL COMMENT &#39;任务启动命令,hadoop ,hive ,shell&#39;,
+  `alarm_lazy_minute` int(10) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;任务启动失败后触发报警的时间 0:立即报警 n:任务重试n分钟后报警&#39;,
+  `alarm_email` varchar(500) DEFAULT NULL COMMENT &#39;依赖报警邮件列表，逗号间隔&#39;,
+  `alarm_phone` varchar(300) DEFAULT NULL COMMENT &#39;依赖报警手机号列表，逗号间隔&#39;,
+  `enable` tinyint(1) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;是否启用 0:未启用 1:启用&#39;,
+  `auto_retry` tinyint(1) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;执行失败后是否自动重试 0:不自动重试 1:执行失败后自动重试,最多重试三次&#39;,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,
+  `params` varchar(1000) NOT NULL DEFAULT &#39;&#39; COMMENT &#39;传递给命令的额外参数&#39;,
+  `task_type` varchar(10) NOT NULL DEFAULT &#39;hadoop,shell...&#39;,
+  `owner` varchar(200) NOT NULL DEFAULT &#39;&#39;,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unq_name` (`name`) USING BTREE
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT=&#39;任务元信息&#39; ;
+
+CREATE TABLE `hole_depend` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `job_id` bigint(20) NOT NULL COMMENT &#39;任务ID&#39;,
+  `depend_job_id` bigint(20) NOT NULL COMMENT &#39;依赖任务ID&#39;,
+  `description` varchar(300) DEFAULT NULL COMMENT &#39;依赖描述&#39;,
+  `depend_date_format` varchar(15) NOT NULL DEFAULT &#39;days ago&#39;  COMMENT &#39;依赖日期计算纬度 minutes,hours,days,months,weeks,years [ago]&#39;,
+  `depend_values` varchar(240) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;多个依赖值用逗号分割 如:depend_field=hours ago时 1,2表示当前任务前1小时及前2小时的任务实例已执行成功&#39;,
+  `match_minute` tinyint(1) NOT NULL DEFAULT 0 COMMENT &#39;分 依赖匹配 0:不匹配 1:匹配&#39;,
+  `match_hour` tinyint(1) NOT NULL DEFAULT 0 COMMENT &#39;时 依赖匹配 0:不匹配 1:匹配&#39;,
+  `match_day` tinyint(1) NOT NULL DEFAULT 1 COMMENT &#39;日 依赖匹配 0:不匹配 1:匹配&#39;,
+  `match_month` tinyint(1) NOT NULL DEFAULT 1 COMMENT &#39;月 依赖匹配 0:不匹配 1:匹配&#39;,
+  `match_year` tinyint(1) NOT NULL DEFAULT 1 COMMENT &#39;年 依赖匹配 0:不匹配 1:匹配&#39;,
+  `enable` tinyint(1) NOT NULL DEFAULT &#39;1&#39; COMMENT &#39;是否启用 0:未启用 1:启用&#39;,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,
+  PRIMARY KEY (`id`),
+  KEY `idx_meta` (`meta_id`) USING BTREE
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT=&#39;任务依赖配置&#39;;
+
+CREATE TABLE `hole_instance_run` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT &#39;自增id,taskid&#39;,
+  `job_id` bigint(20) NOT NULL COMMENT &#39;jobID&#39;,
+  `minute` char(2) NOT NULL COMMENT &#39;分&#39;,
+  `hour` char(2) NOT NULL COMMENT &#39;时&#39;,
+  `day` char(2) NOT NULL COMMENT &#39;日&#39;,
+  `month` char(2) NOT NULL COMMENT &#39;月&#39;,
+  `year` char(4) NOT NULL COMMENT &#39;年&#39;,
+  `pid` int(11) NOT NULL COMMENT &#39;0:依赖未满足，待重试 !0:正在执行的进程PID&#39;,
+  `alarmed` tinyint(1) NOT NULL COMMENT &#39;是否已触发报警 0:尚未报警 1:已报警&#39;,
+  `exec_count` INT NOT NULL DEFAULT 1 COMMENT &#39;执行次数,用户自动重试限制次数&#39;,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unq_idx` (`meta_id`,`minute`,`hour`,`day`,`month`,`year`) USING BTREE
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT=&#39;执行中的任务实例&#39;;
+
+CREATE TABLE `hole_instance_done` (
+  `id` bigint(20) NOT NULL COMMENT &#39;task_id,hole_instance_done中id&#39;,
+  `meta_id` bigint(20) NOT NULL COMMENT &#39;jobID&#39;,
+  `minute` char(2) NOT NULL COMMENT &#39;分&#39;,
+  `hour` char(2) NOT NULL COMMENT &#39;时&#39;,
+  `day` char(2) NOT NULL COMMENT &#39;日&#39;,
+  `month` char(2) NOT NULL COMMENT &#39;月&#39;,
+  `year` char(4) NOT NULL COMMENT &#39;年&#39;,
+  `stat` bigint(20) NOT NULL COMMENT &#39;0:成功 -1:失败 &gt;0:依赖任务失败(任务实例ID)&#39;,
+  `exec_count` INT NOT NULL DEFAULT 1 COMMENT &#39;执行次数,用户自动重试限制次数&#39;,
+  `start_time` timestamp NOT NULL DEFAULT &#39;0000-00-00 00:00:00&#39; COMMENT &#39;任务开始时间&#39;,
+  `start_time_real` timestamp NOT NULL DEFAULT &#39;0000-00-00 00:00:00&#39; COMMENT &#39;任务实际开始时间&#39;,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间,也是任务的结束时间&#39;,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unq_idx` (`meta_id`,`minute`,`hour`,`day`,`month`,`year`) USING BTREE
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT=&#39;已完成的任务实例&#39;;
+
+create table `hole_job_info`(
+  `id` BIGINT(20) PRIMARY KEY NOT NULL COMMENT &#39;id&#39;,
+  `job_id` BIGINT(20) NOT NULL COMMENT &#39;任务id&#39;,
+  `file_name` BIGINT(20) NOT NULL COMMENT &#39;job 文件名&#39;
+)ENGINE =MyISAM DEFAULT CHARSET=utf8 COMMENT &#39;job运行时的所依赖的文件&#39;;
+
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[msyql 常用命令]]></title>
+    <link href="http://www.blacklight.xin/14622541510551.html"/>
+    <updated>2016-05-03T13:42:31+08:00</updated>
+    <id>http://www.blacklight.xin/14622541510551.html</id>
+    <content type="html"><![CDATA[
+<p>1.删除主键约束：<br/>
+alter table COLUMNS_V2 drop primary key;<br/>
+2.添加主键约束<br/>
+alter table COLUMNS_V2 add constraint pk_columns_v2 primary key COLUMNS_V2(table_name,DB_NAME,COLUMN_NAME);</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[storm 入门]]></title>
+    <link href="http://www.blacklight.xin/14606961293143.html"/>
+    <updated>2016-04-15T12:55:29+08:00</updated>
+    <id>http://www.blacklight.xin/14606961293143.html</id>
+    <content type="html"><![CDATA[
+<p>Storm组件和Hadoop组件对比</p>
+
+<p><img src="media/14606961293143/14606961535766.jpg" alt=""/><br/>
+/data/workspace/model_user/production/task_error_logs/psr_user_parameter</p>
+
+]]></content>
+  </entry>
+  
+</feed>

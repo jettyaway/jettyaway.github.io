@@ -1,0 +1,967 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  flume - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
+</script>
+<div class="row">
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="14961334971521.html">
+                
+                  <h1>flume-ng源码分析-核心组件分析</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>从第一篇分析可知,flume中所有的组件都会实现LifecycleAware 接口。该接口定义如下：</p>
+
+<pre><code class="language-java">public interface LifecycleAware {
+  public void start();
+  public void stop();
+  public LifecycleState getLifecycleState();
+}
+</code></pre>
+
+<p>在组件启动的时候会调用start方法，当有异常时调用stop方法。getLifecycleState 方法返回该组件的状态。包含 <strong>IDLE, START, STOP, ERROR;</strong> </p>
+
+<p>当在组件开发中需要配置一些属性的时候可以实现<strong>Configurable</strong>接口</p>
+
+<pre><code class="language-java">public interface Configurable {
+  public void configure(Context context);
+
+}
+</code></pre>
+
+<p>下面开始分析Agent中各个组件的实现</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14961334971521.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/5/30</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14961128486144.html">
+                
+                  <h1>flume-ng源码分析-整体架构2【常用架构篇】</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">数据流模型</h2>
+
+<p><img src="media/14961128486144/14961138534005.jpg" alt=""/></p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14961128486144.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/5/30</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14953349711216.html">
+                
+                  <h1>flume-ng 源码分析-整体架构1【启动篇】</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">什么是flume</a>
+</li>
+<li>
+<a href="#toc_1">flume源码结构</a>
+</li>
+<li>
+<a href="#toc_3">flume启动脚本flume-ng分析</a>
+</li>
+<li>
+<a href="#toc_4">agent的启动分析Application.java</a>
+</li>
+<li>
+<a href="#toc_5">配置载入分析</a>
+</li>
+<li>
+<a href="#toc_6">flume如何获自定义的key</a>
+</li>
+<li>
+<a href="#toc_7">总结</a>
+</li>
+</ul>
+
+
+<h2 id="toc_0">什么是flume</h2>
+
+<p>Flume是Cloudera提供的一个高可用的，高可靠的，分布式的海量日志采集、聚合和传输的系统，Flume支持在日志系统中定制各类数据发送方，用于收集数据；同时，Flume提供对数据进行简单处理，并写到各种数据接受方（可定制）的能力。flume常用场景:log--&gt;flume--&gt;[hdfs,hbase,kafka],收集日志并落地到各种不同的存储，以供不同需求的计算。</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14953349711216.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/5/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14909422875977.html">
+                
+                  <h1>flume 总结</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>这里只考虑flume本身的一些东西，对于JVM、HDFS、HBase等得暂不涉及。。。。</p>
+
+<h2 id="toc_0">一、关于Source：</h2>
+
+<p>1、spool-source：适合静态文件，即文件本身不是动态变化的；</p>
+
+<p>2、avro source可以适当提高线程数量来提高此source性能；</p>
+
+<p>3、ThriftSource在使用时有个问题需要注意，使用批量操作时出现异常并不会打印异常内容而是&quot;Thrift source %s could not append events to the channel.&quot;，这是因为源码中在出现异常时，它并未捕获异常而是获取组件名称，这是源码中的一个bug，也可以说明thrift很少有人用，否则这个问题也不会存在在很多版本中；</p>
+
+<p>4、如果一个source对应多个channel，默认就是每个channel是同样的一份数据，会把这批数据复制N份发送到N个channel中，所以如果某个channel满了会影响整体的速度的哦；</p>
+
+<p>5、ExecSource官方文档已经说明是异步的，可能会丢数据哦，尽量使用tail -F，注意是大写的；</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14909422875977.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/3/31</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14891158030188.html">
+                
+                  <h1>flume 注意事项</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>这里只考虑flume本身的一些东西，对于JVM、HDFS、HBase等得暂不涉及。。。。</p>
+
+<h2 id="toc_0">一、关于Source：</h2>
+
+<p>1、spool-source：适合静态文件，即文件本身不是动态变化的；</p>
+
+<p>2、avro source可以适当提高线程数量来提高此source性能；</p>
+
+<p>3、ThriftSource在使用时有个问题需要注意，使用批量操作时出现异常并不会打印异常内容而是&quot;Thrift source %s could not append events to the channel.&quot;，这是因为源码中在出现异常时，它并未捕获异常而是获取组件名称，这是源码中的一个bug，也可以说明thrift很少有人用，否则这个问题也不会存在在很多版本中；</p>
+
+<p>4、如果一个source对应多个channel，默认就是每个channel是同样的一份数据，会把这批数据复制N份发送到N个channel中，所以如果某个channel满了会影响整体的速度的哦；</p>
+
+<p>5、ExecSource官方文档已经说明是异步的，可能会丢数据哦，尽量使用tail -F，注意是大写的；</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14891158030188.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/3/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14566304025438.html">
+                
+                  <h1>日志收集系统&日志ETL 实践</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">flume 简单入门</a>
+</li>
+<li>
+<a href="#toc_1">日志收集系统简介</a>
+</li>
+<li>
+<a href="#toc_2">日志收集系统架构</a>
+</li>
+<li>
+<a href="#toc_3">架构考虑</a>
+<ul>
+<li>
+<a href="#toc_4">可用性</a>
+<ul>
+<li>
+<a href="#toc_5">Agent死掉</a>
+</li>
+<li>
+<a href="#toc_6">Collector死掉</a>
+</li>
+<li>
+<a href="#toc_7">Hdfs正常停机或异常停机</a>
+</li>
+<li>
+<a href="#toc_8">Hdfs变慢</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_9">可靠性</a>
+</li>
+<li>
+<a href="#toc_10">可扩展性(scalability)</a>
+<ul>
+<li>
+<a href="#toc_11">Agent层</a>
+</li>
+<li>
+<a href="#toc_12">Collector层</a>
+</li>
+<li>
+<a href="#toc_13">Store层</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_14">提供实时流</a>
+</li>
+<li>
+<a href="#toc_15">系统监控</a>
+<ul>
+<li>
+<a href="#toc_16">flume写hfds状态的监控</a>
+</li>
+<li>
+<a href="#toc_17">日志大小异常监控</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_18">日志ETL</a>
+
+
+<p>我司的日志收集系统负责我司的所有业务日志的收集，并分别给Hadoop平台提供离线数据和实时平台提供实时数据流。17作业的日志收集系统基于Flume设计和搭建而成。</p>
+
+<!--more -->
+
+<h2 id="toc_0">flume 简单入门</h2>
+
+<p>Flume的架构主要有一下几个核心概念：</p>
+
+<p>Event：一个数据单元，带有一个可选的消息头<br/>
+Flow：Event从源点到达目的点的迁移的抽象<br/>
+Client：操作位于源点处的Event，将其发送到Flume Agent<br/>
+Agent：一个独立的Flume进程，包含组件Source、Channel、Sink<br/>
+Source：用来消费传递到该组件的Event<br/>
+Channel：中转Event的一个临时存储，保存有Source组件传递过来的Event<br/>
+Sink：从Channel中读取并移除Event，将Event传递到Flow Pipeline中的下一个Agent（如果有的话）</p>
+
+<p><img src="media/14566304025438/14569258246622.jpg" alt=""/></p>
+
+<ul>
+<li>每个Flume Agent 包含三个主要组件：Source、Channel、Sink</li>
+<li>Source 可以监听一个或者多个网络端口，用于接收数据或者可以从本地文件系统读取数据。每个Source 必须至少连接一个Channel。基于一些标准，一个Source 可以写入几个Channel，复制事件到所有或某些Channe</li>
+<li><p>Channel 是被动组件（虽然它们可以为了清理或者垃圾回收运行自己的线程），缓冲Agent 已经接收，但尚未写出到另一个Agent 或者存储系统的数据。Channel 的行为像队列，Source 写入到它们，Sink 从它们中读取。多个Source 可以安全地写入到相同的Channel，并且多个Sink 可以从相同的Channel 进行读取。可是一个Sink 只能从一个Channel 读取。</p></li>
+<li><p>Sink 连续轮询各自的Channel 来读取和删除事件。Sink 将事件推送到下一阶段（RPCSink 的情况下），或到最终目的地。一旦在下一阶段或其目的地中数据是安全的，Sink通过事务提交通知Channel，可以从Channel 中删除这些事件。</p></li>
+</ul>
+
+<p>source channel sink 自由组合  </p>
+
+<h2 id="toc_1">日志收集系统简介</h2>
+
+<p>日志收集是大数据的基石<br/>
+业务平台每天会产生大量的日志数据。收集业务日志数据，供离线和在线的分析和使用，正是日志系统要做的事情。高可用性，和高可靠性，可扩展性是日志系统具备的基本特征</p>
+
+<p>目前常用的开源日志收集系统有Flume, Scribe等。Flume是Cloudera提供的一个高可用的，高可靠的，分布式的海量日志采集、聚合和传输的系统，目前已经是Apache的一个子项目。Scribe是Facebook开源的日志收集系统，它为日志的分布式收集，统一处理提供一个可扩展的，高容错的简单方案。</p>
+
+<h2 id="toc_2">日志收集系统架构</h2>
+
+<p><img src="media/14566304025438/14566323231652.jpg" alt=""/></p>
+
+<ul>
+<li><p>整个系统分为三层：Agent层，Collector层和Store层。其中agent层即是线上业务方，通过调用接口发送数据；Collector层部署在中心服务器上，负责接收Agent层发送的日志，并且将日志根据路由规则写到相应的Store层中；Store层负责提供永久或者临时的日志存储服务，或者将日志流导向其它服务器。</p></li>
+<li><p>Agent到Collector使用LoadBalance策略，将所有的日志均衡地发到所有的Collector上，达到负载均衡的目标，同时并处理单个Collector失效的问题。</p></li>
+<li><p>Collector层的目标主要有两个：SinkHdfs, SinkKafka。分别提供离线的数据到Hdfs，和提供实时的日志流到Kafka。</p></li>
+<li><p>对于Store来说，Hdfs负责永久地存储所有日志；Kafka存储最新的3天日志，并给Storm,spark等系统提供实时日志流；</p></li>
+</ul>
+
+<p>下图是日志收集系统的模块分解图，详解Agent, Collector和Bypass中的Source, Channel和Sink的关系。</p>
+
+<p><img src="media/14566304025438/14566354199401.jpg" alt=""/></p>
+
+<p>a. 模块命名规则：所有的Source以src开头，所有的Channel以ch开头，所有的Sink以sink开头；</p>
+
+<p>b. Channel统一使用flume1.6 SPILLABLEMEMORY，</p>
+
+<p>c. 模块之间内部通信统一使用Avro接口</p>
+
+<h2 id="toc_3">架构考虑</h2>
+
+<h3 id="toc_4">可用性</h3>
+
+<ul>
+<li>对日志收集系统来说，可用性(availablity)指固定周期内系统无故障运行总时间。要想提高系统的可用性，就需要消除系统的单点，提高系统的冗余度。下面来看看17作业的日志收集系统在可用性方面的考虑。</li>
+</ul>
+
+<h4 id="toc_5">Agent死掉</h4>
+
+<ul>
+<li>机器死机。线上部署多台agent服务器，通过ng转发，只要保证有一台服务器可用，则服务可用。</li>
+<li>agent进程进程死掉。原理同机器down掉一样，ng会自动转发到服务可用的机器</li>
+</ul>
+
+<h4 id="toc_6">Collector死掉</h4>
+
+<ul>
+<li>采用多个collector服务，agent通过轮询方式发送到collector，当某一collector死掉之后，自动寻找下一个可用的collector服务。所以整体服务不受影响</li>
+</ul>
+
+<h4 id="toc_7">Hdfs正常停机或异常停机</h4>
+
+<ul>
+<li>采用flume最新SPILLABLEMEMORY,当写入hdfs失败，达到重试次数。channel中event数量累计到一定程度，flume将会采用FILECHANNEL，写入本地磁盘，保证数据不丢失。当HDFS恢复服务，collector再将FILECHANNEL中数据写到HDFS</li>
+</ul>
+
+<h4 id="toc_8">Hdfs变慢</h4>
+
+<ul>
+<li><p>当Hadoop上的任务较多且有大量的读写操作时，Hdfs的读写数据往往变的很慢。由于每天，每周都有高峰使用期，所以这种情况非常普遍。</p></li>
+<li><p>对于Hdfs变慢的问题，我们同样使用SPILLABLEMEMORY来解决。当Hdfs写入较快时，所有的events只经过MemChannel传递数据，减少磁盘IO，获得较高性能。当Hdfs写入较慢时，超过MEMEORYCHANNEL容纳范围的EVENTS将会被写到FILECHANNEL，有一个较大的数据缓存空间。</p></li>
+</ul>
+
+<h3 id="toc_9">可靠性</h3>
+
+<p>对日志收集系统来说，可靠性(reliability)是指Flume在数据流的传输过程中，保证events的可靠传递。</p>
+
+<ul>
+<li>对Flume来说，所有的events都被保存在Agent的Channel中，然后被发送到数据流中的下一个Agent或者最终的存储服务中。那么一个Agent的Channel中的events什么时候被删除呢？当且仅当它们被保存到下一个Agent的Channel中或者被保存到最终的存储服务中。这就是Flume提供数据流中点到点的可靠性保证的最基本的单跳消息传递语义。</li>
+</ul>
+
+<p>那么Flume是如何做到上述最基本的消息传递语义呢？</p>
+
+<ul>
+<li>首先，Agent间的事务交换。Flume使用事务的办法来保证event的可靠传递。Source和Sink分别被封装在   事务中，这些事务由保存event的存储提供或者由Channel提供。这就保证了event在数据流的点对点传输中是可靠的。在多级数据流中，如下图，上一级的Sink和下一级的Source都被包含在事务中，保证数据可靠地从一个Channel到另一个Channel转移</li>
+</ul>
+
+<p><img src="media/14566304025438/14566659029080.jpg" alt=""/></p>
+
+<ul>
+<li>其次，数据流中 Channel的持久性。Flume中MemoryChannel是可能丢失数据的（当Agent死掉时），而FileChannel是持久性的，提供类似mysql的日志机制，保证数据不丢失。而我们采用FLUME最新的SPILLABLECHANNEL，该CHANNEL结合MEMORYCHANNEL,FILECHANNEL的优点，当MEMEORYCHANNEL中容纳不下，将会自动采用FILECHANNEL，保证数据不丢失</li>
+</ul>
+
+<h3 id="toc_10">可扩展性(scalability)</h3>
+
+<p>对日志收集系统来说，可扩展性(scalability)是指系统能够线性扩展。当日志量增大时，系统能够以简单的增加机器来达到线性扩容的目的</p>
+
+<p>对于基于Flume的日志收集系统来说，需要在设计的每一层，都可以做到线性扩展地提供服务。下面将对每一层的可扩展性做相应的说明。</p>
+
+<h4 id="toc_11">Agent层</h4>
+
+<p>对于Agent这一层来说，以HTTP方式提供接口，可以水平扩展，不受限制。一个方面，Agent收集日志的能力受限于机器的性能，正常情况下一个Agent可以为单机提供足够服务。另一方面，如果机器比较多，可能受限于后端Collector提供的服务，但Agent到Collector是有Load Balance机制，使得Collector可以线性扩展提高能力。</p>
+
+<h4 id="toc_12">Collector层</h4>
+
+<p>对于Collector这一层，Agent到Collector是有Load Balance机制，并且Collector提供无差别服务，所以可以线性扩展。其性能主要受限于Store层提供的能力。</p>
+
+<h4 id="toc_13">Store层</h4>
+
+<p>对于Store这一层来说，Hdfs和Kafka都是分布式系统，可以做到线性扩展。</p>
+
+<p>在FLUME 1.5之前提供了MEMEORYCHANNEL 和 FILECHANNEL，1.5以及之后提供新的复合CHANNEL，SPILLABLECHANNEL</p>
+
+<ul>
+<li>MemoryChannel: 所有的events被保存在内存中。优点是高吞吐。缺点是容量有限并且Agent死掉时会丢失内存中的数据。</li>
+<li>FileChannel: 所有的events被保存在文件中。优点是容量较大且死掉时数据可恢复。缺点是速度较慢。</li>
+</ul>
+
+<p>上述两种Channel，优缺点相反，分别有自己适合的场景。然而，对于大部分应用来说，我们希望Channel可以同提供高吞吐和大缓存。基于此，我们采用新的复合SPILLABLECHANNEL。</p>
+
+<p>当堆积在Channel中的events数小于阈值时，所有的events被保存在MemoryChannel中，Sink从MemoryChannel中读取数据； 当堆积在Channel中的events数大于阈值时， 所有的events被自动存放在FileChannel中，Sink从FileChannel中读取数据。这样当系统正常运行时，我们可以使用MemoryChannel的高吞吐特性；当系统有异常时，我们可以利用FileChannel的大缓存的特性。</p>
+
+<h2 id="toc_14">提供实时流</h2>
+
+<p>17作业的部分业务，如实时监控等服务，需要处理实时的数据流。因此我们希望Flume能够导出一份实时流给Kafka</p>
+
+<p>一个非常重要的要求是实时数据流不应该受到其它Sink的速度影响，保证实时数据流的速度。这一点，我们是通过Collector中设置不同的Channel进行隔离。</p>
+
+<h2 id="toc_15">系统监控</h2>
+
+<p>监控是必不可少的部分。设计合理的监控，可以对异常情况及时发现，只要有一部手机，就可以知道系统是否正常运作。对于17作业的日志收集系统，我们建立了多维度的监控，防止未知的异常发生</p>
+
+<p>通过发送给zabbix的数据，我们可以绘制出发送数量、拥堵情况和写Hdfs速度的图表，对于超预期的拥堵，</p>
+
+<h3 id="toc_16">flume写hfds状态的监控</h3>
+
+<p>对于非常重要的日志，我们每个小时会运行程序去检查日志，当发生异常我们会通过邮件短信报警</p>
+
+<h3 id="toc_17">日志大小异常监控</h3>
+
+<p>我们会每天监控重要日志量的大小，当日志量有较大的波动，能及时反馈出来</p>
+
+<p>通过以上分析17作业日志服务具备高可用性，高可靠性，可扩展等特性的分布式服务</p>
+
+<h1 id="toc_18">日志ETL</h1>
+
+<p>ETL目的：清洗原始数据，让数据可靠，易用</p>
+
+<p>日志ETL 整体流程如下图：<br/>
+<img src="media/14566304025438/14569273534221.jpg" alt=""/></p>
+
+<p>实现关键：</p>
+
+<pre><code>public class GroovyServiceImpl implements IGroovyService {
+    private Logger logger = LoggerFactory.getLogger(GroovyServiceImpl.class);
+
+    @Override
+    Object execute(String groovyScript, Map params) {
+        Class&lt;GroovyObject&gt; groovyObjectClass = parseScript(groovyScript)
+        GroovyObject groovyObject
+        try {
+            groovyObject = groovyObjectClass.newInstance()
+        } catch (any) {
+            logger.error(&quot;error when execute groovyScript:{}&quot;, any)
+            throw new RuntimeException(&quot;error,when execute groovyScript&quot;, any)
+        }
+        ArrayList&lt;String&gt; list = Lists.newArrayList();
+        return groovyObject.invokeMethod(&quot;validate&quot;, [params, list] as Object[])
+    }
+
+    private Class&lt;GroovyObject&gt; parseScript(String script) {
+        GroovyClassLoader loader = new GroovyClassLoader();
+        Class&lt;GroovyObject&gt; clazz = loader.parseClass(script)
+        clazz
+    }
+}
+</code></pre>
+
+<p>example:</p>
+
+<pre><code>class AdrNormal {
+    private static bldr
+    private static writer
+    static {
+        bldr = new groovy.json.JsonBuilder()
+        writer = new StringWriter()
+    }
+
+    def validate(Map dataMap) {
+        def otherField = [&quot;ktwelve&quot;, &quot;native_version&quot;]
+        def returnList = []
+        List&lt;String&gt; keys = dataMap.get(&quot;keys&quot;)
+        Set&lt;String&gt; keySet = dataMap.keySet()
+        List&lt;String&gt; keyList = Lists.newArrayList(keySet)
+        List&lt;String&gt; diffList = keyList - keys
+        diffList.remove(&quot;keys&quot;)
+        for (key in keys) {
+            if (otherField.contains(key)) {
+                continue
+            }
+            String value = dataMap.get(key)
+            if (Strings.isNullOrEmpty(value)) {
+                value = &quot;null&quot;;
+            }
+            returnList.add(value)
+        }
+
+        def map = [:]
+        for (key in diffList) {
+            map[key] = dataMap.get(key)
+        }
+        bldr.call(map)
+        returnList.add(bldr.toString())
+
+        for (key in otherField) {
+            String value = dataMap.get(key)
+            if (Strings.isNullOrEmpty(value)) {
+                value = &quot;null&quot;;
+            }
+            returnList.add(value)
+        }
+        returnList
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/2/28</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14501716390726.html">
+                
+                  <h1>flume日志架构</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">日志收集系统整体架构如下图：</h2>
+
+<p><img src="media/14501716390726/14501753699574.jpg" alt=""/></p>
+
+<ul>
+<li>整个系统分为三层：Agent层，Collector和Store层。其中agent层部署在三台机器，并通过resion集群进行均衡负载。外界通过调用API，将日志传入给agent，agent负责收集外界所有日志。collector层在部署在三台服务器（共22个节点），负责收集agent传输过来的日志，并将日志持久化到hdfs，发送到kafka消息队列，供storm使用</li>
+<li>agent到collector使用LoadBalance策略，将日志均衡的发送到所有的collector上，达到负载均衡的目的</li>
+<li><p>store层，hdfs负责持久化存储消息，供离线分析使用。kafka 则给storm提供实时计算流</p>
+
+<pre><code>在agent的实际部署中，部署程序在xx1，xx2,xx3分别一套。
+xxx,xxx agent中收集的数据将会均衡负载到xx1,xx2的collector上，
+而114上agent收集到的日志将只会分发给114上的collector
+</code></pre></li>
+</ul>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14501716390726.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/15</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
+
+
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

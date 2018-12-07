@@ -1,0 +1,499 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  hive 基础知识 - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>hive 基础知识</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/1/13</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='hive.html'>hive</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <h2 id="toc_0">hive查看rcfile文件内容</h2>
+
+<pre><code>hive --service rcfilecat /primary/storage/log/normal_adr/dt=2016-01-10/hour=11/part-r-00000 | more
+</code></pre>
+
+<span id="more"></span><!-- more -->
+
+<h3 id="toc_1">內存設置</h3>
+
+<p>Configuring Heapsize for Mappers and Reducers in Hadoop 2</p>
+
+<p>If a YARN container grows beyond its heap size setting, the map or reduce task will fail with an error similar to the one below:</p>
+
+<p>&quot;Container [pid=14639,containerID=container_1400188786457_0006_01_001609] is running beyond physical memory limits. Current usage: 2.5 GB of 2.5 GB physical memory used; 3.1 GB of 12.5 GB virtual memory used. Killing container.&quot;</p>
+
+<p>The default heapsize for mappers is 1.5GB and for reducers is 2.5GB on the Altiscale platform.</p>
+
+<p>You can solve this by increasing the heap size for the container for mappers or reducers, depending on which one is having the problem when you look at the job history UI or container logs.</p>
+
+<p>mapreduce.{map|reduce}.memory.mb vs. mapreduce.{map|reduce}.java.opts</p>
+
+<p>In Hadoop 2, tasks are run within containers launched by YARN.  mapreduce.{map|reduce}.memory.mb is used by YARN to set the memory size of the container being used to run the map or reduce task. If the task grows beyond this limit, YARN will kill the container.</p>
+
+<p>To execute the actual map or reduce task, YARN will run a JVM within the container. The Hadoop property mapreduce.{map|reduce}.java.opts is intended to pass options to this JVM. This can include ­Xmx to set max heap size of the JVM. However, the subsequent growth in the memory footprint of the JVM due to the settings in mapreduce.{map|reduce}.java.opts is limited by the actual size of the container as set by mapreduce.{map|reduce}.memory.mb.</p>
+
+<p>Consequently, you should ensure that the heap you specify in mapreduce.{map|reduce}.java.opts is set to be less than the memory specified by mapreduce.{map|reduce}.memory.mb.  If, for example, you see the following fatal error reported by your mapper or reducer:</p>
+
+<p>2014-10-10 00:19:39,693 FATAL [main] org.apache.hadoop.mapred.YarnChild: Error running child : java.lang.OutOfMemoryError: Java heap space<br/>
+This is a good indication that you need to make adjustments to mapreduce.{map|reduce}.java.opts and commensurate changes to mapreduce.{map|reduce}.memory.mb.</p>
+
+<p>For example:<br/>
+  hadoop jar <jarName> -Dmapreduce.map.memory.mb=4096 -Dmapreduce.map.java.opts=-Xmx3686m</p>
+
+<p>and from the Hive CLI, you would run:</p>
+
+<p>hive&gt; set mapreduce.map.memory.mb=4096;<br/>
+  hive&gt; set mapreduce.map.java.opts=-Xmx3686m;</p>
+
+<p>Note: The two properties yarn.nodemanager.resource.memory-mb and yarn.scheduler.maximum-allocation-mb cannot be set by customers. </p>
+
+<p>Setting the heap size for Mappers or Reducers</p>
+
+<p>You can solve the memory error by increasing the heap size for the container for mappers or reducers, depending on which one is having the problem when you look at the job history UI or container logs.</p>
+
+<p>SET mapreduce.{map|reduce}.memory.mb=<numerical memory value>;</p>
+
+<p>Important: You should also raise the java heap specified by mapreduce.{map|reduce}.java.opts. However, you should ensure that the heap you specify in mapreduce.{map|reduce}.java.opts is set to be less than the container memory specified by mapreduce.{map|reduce}.memory.mb.</p>
+
+<p>Specifically, a good rule of thumb is to set the jave heap size to be 10% less than the container size:<br/>
+mapreduce.{map|reduce}.java.opts = mapreduce.{map|reduce}.memory.mb x 0.9</p>
+
+<p>See the section above for further explanation of these two settings. </p>
+
+<p>For example (in Hive), to configure Reducer memory allocation:</p>
+
+<p>SET mapreduce.reduce.memory.mb=3809;<br/>
+  SET mapreduce.reduce.java.opts=-Xmx3428m;</p>
+
+<p>or to configure Mapper memory allocation:</p>
+
+<p>SET mapreduce.map.memory.mb=3809;<br/>
+   SET mapreduce.map.java.opts=-Xmx3428m;</p>
+
+<p>As a Hadoop job option, for example:</p>
+
+<p>hadoop jar <jarName> <youClassName> -Dmapreduce.reduce.memory.mb=5120 -Dmapreduce.reduce.java.opts=-Xmx4608m <otherArgs><br/>
+Increasing the memory size of mappers or reducers comes at the expense of reduced parallelism of your cluster since it can now launch fewer containers simultaneously, so do feel free to experiment with the memory settings to find the lowest heapsize that will allow you to complete your jobs comfortably.</p>
+
+<p>We would suggest that you at least bump up the values 20% higher according to the virtual memory used from the logs if you have ran into similar execptions.  For example, given the following error:  </p>
+
+<p>&quot;Container [pid=14639,containerID=container_1400188786457_0006_01_001609] is running beyond physical memory limits. Current usage: 2.5 GB of 2.5 GB physical memory used; 3.1 GB of 12.5 GB virtual memory used. Killing container.&quot;<br/>
+you should try at least 3809 (3174 x 1.2) as the new heapsize (mapreduce.{map|reduce}.java.opts) value and bump up the mapreduce.{map|reduce}.memory.mb accordingly.</p>
+
+<p>Setting the container heapsize in Hive</p>
+
+<p>Most tools that operate on top of the Hadoop MapReduce framework provide ways to tune these Hadoop level settings for its jobs.  For example, in Hive there are multiple ways to do this.  Three of these are shown here:</p>
+
+<p>1) Pass directly via the Hive command line:</p>
+
+<p>hive -hiveconf mapreduce.map.memory.mb=5120 -hiveconf mapreduce.reduce.memory.mb=5120 -hiveconf mapreduce.map.java.opts=-Xmx4608m -hiveconf mapreduce.reduce.java.opts=-Xmx4608m -e &quot;select count(*) from test_table;&quot;<br/>
+2) Set the ENV variable before invoking Hive:</p>
+
+<p>export HIVE_OPTS=&quot;-hiveconf mapreduce.map.memory.mb=5120 -hiveconf mapreduce.reduce.memory.mb=5120 -hiveconf mapreduce.map.java.opts=-Xmx4608m -hiveconf mapreduce.reduce.java.opts=-Xmx4608m&quot;</p>
+
+<p>3) Use the &quot;set&quot; command within the Hive CLI.</p>
+
+<p>set mapreduce.map.memory.mb=5120;<br/>
+   set mapreduce.map.java.opts=-Xmx4608m;<br/>
+   set mapreduce.reduce.memory.mb=5120;<br/>
+   set mapreduce.reduce.java.opts=-Xmx4608m;<br/>
+   select count(*) from test_table;</p>
+
+<p>The above 3 examples use a theoritical value that has no assumption. In order to identify whether to bump up the mapper&#39;s or reducer&#39;s memory settings, you should be able to <br/>
+tell from the Job History UI that will indicate whether it is failing in the Mapper phase or the Reducer phase. This varies from application to application that runs on MapReduce and <br/>
+also varies based on input data and algorithm.</p>
+
+<p>Settings the container heapsize for HiveServer2 sessions</p>
+
+<p>HiveServer2 provides a different channel than HiveCLI and the Hive command line tool. If you are submitting queries via HiveServer2 with JDBC or ODBC driver, or a python module such as pyhs2, the following examples show you how to customize the values.</p>
+
+<p>1) Beeline / JDBC URL</p>
+
+<p>The JDBC URL string will look like this:</p>
+
+<p>jdbc:hive2://localhost:10000/default?mapreduce.map.memory.mb=3809;mapreduce.map.java.opts=-Xmx3428m;mapreduce.reduce.memory.mb=2560;mapreduce.reduce.java.opts=-Xmx2304m;<br/>
+You use a semi-colon to specify multiple key-value pairs to customize this session with HiveServer2. The default in the URL before the question mark is pointing to the default database.</p>
+
+<p>2) pyhs2 module example </p>
+
+<p>You will need to perform the SET statements without the semi-colon in the cursor.</p>
+
+<p>import pyhs2<br/>
+conn = pyhs2.connect(host=&#39;hostname_to_your_hiveserver2&#39;,port=10000,user=&#39;alti-test&#39;,authMechanism=&quot;PLAIN&quot;,database=&#39;default&#39;) <br/>
+cur = conn.cursor()<br/>
+cur.execute(&quot;SET mapreduce.map.memory.mb=3809&quot;)<br/>
+cur.execute(&quot;SET mapreduce.map.java.opts=-Xmx3428m&quot;)<br/>
+cur.execute(&quot;SET mapreduce.reduce.memory.mb=2560&quot;)<br/>
+cur.execute(&quot;SET mapreduce.reduce.java.opts=-Xmx2304m&quot;)<br/>
+cur.execute(&quot;SELECT COUNT(*) FROM yourtable_example&quot;)</p>
+
+<p>Note: The authMechanism depends on what is enabled in your HiveServer2 settings.</p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="14566304025438.html" 
+          title="Previous Post: 日志收集系统&日志ETL 实践">&laquo; 日志收集系统&日志ETL 实践</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14512202904632.html" 
+          title="Next Post: zookeeper 集群搭建">zookeeper 集群搭建 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

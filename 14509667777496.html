@@ -1,0 +1,562 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  kafa 消费者和生产者实例 - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>kafa 消费者和生产者实例</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2015/12/24</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='kafka.html'>kafka</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <ul>
+<li>
+<a href="#toc_0">Kafka消费者编程模型</a>
+<ul>
+<li>
+<a href="#toc_1">分区消费模型</a>
+</li>
+<li>
+<a href="#toc_2">组消费模型</a>
+</li>
+<li>
+<a href="#toc_3">两种消费模型对比</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_4">kafka Consumer Java客户端实现</a>
+</li>
+<li>
+<a href="#toc_5">kafka生产者消费模型</a>
+<ul>
+<li>
+<a href="#toc_6">同步生产模型</a>
+</li>
+<li>
+<a href="#toc_7">异步生产模型</a>
+</li>
+<li>
+<a href="#toc_8">两种生产模型的伪代码</a>
+</li>
+<li>
+<a href="#toc_9">两种生产模型对比</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_10">生产者消费者实现</a>
+</li>
+</ul>
+
+
+<h2 id="toc_0">Kafka消费者编程模型</h2>
+
+<h3 id="toc_1">分区消费模型</h3>
+
+<span id="more"></span><!-- more -->
+
+<p><img src="media/14509667777496/14509728523395.jpg" alt=""/></p>
+
+<p>如图有kafka集群有两台服务器，共有四个分区，在<strong>分区消费模型</strong>中有四个分区，每个分区就要对应一个消费者实例。一对一的关系是必须建立的</p>
+
+<ul>
+<li>分区消费模型的伪代码：</li>
+</ul>
+
+<pre><code>main()
+   获取分区的size
+   for index =0 to size
+     create thread(or process) consumer(Index)
+
+
+第index个线程(进程)
+consumer(index)
+    创建到kafka broker的连接: KafkaClient(host,port)
+    指定消费参数构建consumer: SimpleConsumer(topic, partitions)
+    设置消费offset : consumer.seek(offset,0)
+    while  True
+      消费指定topic第index个分区的数据
+      处理
+     记录当前消息offset(可选)
+     提交当前offset（可选）
+</code></pre>
+
+<h3 id="toc_2">组消费模型</h3>
+
+<p><img src="media/14509667777496/14509684121136.jpg" alt=""/></p>
+
+<ul>
+<li>两台服务器，四个分区</li>
+<li>两个消费组 groupA（2个consumer实例） ,groupB（4个consumer实例）</li>
+<li>groupA 和GroupB 将会拿到kafka发送的全量消息</li>
+<li>groupA 中每个消费者实例消费两个kafka集群中得两个partition</li>
+<li><p>groupB 中每个消费者实例消费一个kafka集群中得一个partition</p></li>
+<li><p>组消费模型伪代码</p></li>
+</ul>
+
+<pre><code>main()
+   设置需要创建的流数N # 每个consumer组里有多少个consumer实例，即N值
+   for index =0 to N
+     create thread  consumer(Index)
+
+第index个线程
+consumer(index)
+    创建到kafka broker的连接: KafkaClient(host,port)
+    指定消费参数构建consumer: SimpleConsumer(topic, partitions)
+    设置从头消费还是从最新的消费(smallest或largest)
+    while  True
+        从指定topic的第index个流取数据
+        处理
+     （offset会自动提交到zookeeper,无需我们操作）
+</code></pre>
+
+<ul>
+<li>Consumer分配算法</li>
+</ul>
+
+<pre><code>1.For each topic T that Ci subscribes to 
+2.let PT be all partitions producing topic T 
+3.let CG be all consumers in the same group as Ci that consume topic T 
+4.sort PT (so partitions on the same broker are clustered together) 
+5.sort CG 
+6.let i be the index position of Ci in CG and let N = size(PT)/size(CG) 
+7.assign partitions from i*N to (i+1)*N - 1 to consumer Ci 
+8.remove current entries owned by Ci from the partition owner registry
+9.add newly assigned partitions to the partition owner registry
+   (we may need to re-try this until the original partition owner releases 
+   its ownership)
+</code></pre>
+
+<h3 id="toc_3">两种消费模型对比</h3>
+
+<p>分区消费模型更加灵活但是：<br/>
+（1）需要自己处理各种异常情况；<br/>
+（2）需要自己管理offset(以实现消息传递的其他语义)；<br/>
+组消费模型更加简单，但是不灵活：<br/>
+（1）不需要自己处理异常情况，不需要自己管理offset；<br/>
+（2）只能实现kafka默认的最少一次消息传递语义；</p>
+
+<pre><code>语义：
+    * 最多一次，有可能出现数据的丢失。
+    * 最少一次，有可能出现数据的重复，如当producer 发送一条数据给consumer，
+      consumer发送确认信息，由于网络等原因producer，未收到确认消息，故再次给consumer
+      发送消息，此时，第一条消息和第二条消息都被consumer重复消费
+    * 有且仅有一次，即生产者生产一条消息，消费者消费一条消息，一对一关系，消费者不会
+       重复收到消息也不会丢失消息
+
+    * 两种消费模型中kafka默认实现的都是至少一次语义
+</code></pre>
+
+<h2 id="toc_4">kafka Consumer Java客户端实现</h2>
+
+<h2 id="toc_5">kafka生产者消费模型</h2>
+
+<h3 id="toc_6">同步生产模型</h3>
+
+<p><img src="media/14509667777496/14511974464205.jpg" alt=""/></p>
+
+<ul>
+<li>同步生产模型中，客户端开始发送消息，需要等待kafka服务器端的确认，如果收到确认，则该条消息发送成功，
+否则进入休眠等待一段时间，将重新发送，发送成功则结束，否则等待超时后继续发送直到发送成功
+或者达到最大重试次数</li>
+</ul>
+
+<h3 id="toc_7">异步生产模型</h3>
+
+<p><img src="media/14509667777496/14511976162063.jpg" alt=""/></p>
+
+<ul>
+<li>异步生产模型中，当客户端发送消息时将被缓存到客户端（kafka服务器上）的队列上，此时该条消息发送结束。</li>
+<li>当缓冲队列达到累计数或者到达累计时间，客户端将队列中得所有消息批量一次发送给kafka服务器</li>
+</ul>
+
+<h3 id="toc_8">两种生产模型的伪代码</h3>
+
+<p><img src="media/14509667777496/14511981452030.jpg" alt=""/></p>
+
+<h3 id="toc_9">两种生产模型对比</h3>
+
+<p>同步生产模型:<br/>
+（1）低消息丢失率；<br/>
+（2）高消息重复率(由于网络原因，回复确认未收到)；<br/>
+（3）高延迟<br/>
+异步生产模型:<br/>
+（1）低延迟;<br/>
+（2）高发送性能；<br/>
+（3）高消息丢失率(无确认机制，发送端队列满)<br/>
+我们可以根据不同的应用场景选择不同的发送模型。当我们的业务需要高吞吐量，并允许丢失的情况下<br/>
+选择异步生产模型为好。当我们的的消息不能丢失而对吞吐量没有太高的要求此时选择同步生产模型。</p>
+
+<h2 id="toc_10">生产者消费者实现</h2>
+
+<pre><code>java -cp kafka-test.jar com.zuoye17.kafka.producer.ASyncProduce
+java -cp kafka-test.jar com.zuoye17.kafka.consumer.GroupConsumer 3
+</code></pre>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="14512202904632.html" 
+          title="Previous Post: zookeeper 集群搭建">&laquo; zookeeper 集群搭建</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14507946663861.html" 
+          title="Next Post: kafa集群搭建">kafa集群搭建 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

@@ -1,0 +1,3416 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
+</script>
+<div class="row">
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="15011626313885.html">
+                
+                  <h1>java double 精度问题</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>标题     在Java中实现浮点数的精确计算    AYellow（原作） 修改<br/><br/>
+关键字     Java 浮点数 精确计算<br/><br/>
+问题的提出：<br/>
+如果我们编译运行下面这个程序会看到什么？</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15011626313885.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/7/27</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='java.html'>java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14967618384549.html">
+                
+                  <h1>docker 常用命令</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>1.容器互联</p>
+
+<p>docker run -dt -p88:80 --name web3 --link web2:l_web nginx:v2</p>
+
+<p>2.启动容器<br/>
+docker run --name web2 -d -p 81:80 nginx:v2</p>
+
+<p>3.执行容器命令<br/>
+docker exec -it webserver bash</p>
+
+<p>4.进入容器<br/>
+docker attach 36454d9d5a1c</p>
+
+<p>5.所有镜像<br/>
+docker images</p>
+
+<p>6.正在运行的容器</p>
+
+<p>docker ps （docker ps -a 所有容器）</p>
+
+<p>7.docker history nginx</p>
+
+<p>8.</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/6/6</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='docker.html'>docker</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14965523697004.html">
+                
+                  <h1>使用 Dockerfile 定制镜像</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>镜像的定制实际上就是定制每一层所添加的配置、文件。如果我们可以把每一层修改、安装、构建、操作的命令都写入一个脚本，用这个脚本来构建、定制镜像，那么之前提及的无法重复的问题、镜像构建透明性的问题、体积的问题就都会解决。这个脚本就是 Dockerfile。</p>
+
+<p>Dockerfile 是一个文本文件，其内包含了一条条的指令(Instruction)，每一条指令构建一层，因此每一条指令的内容，就是描述该层应当如何构建。</p>
+
+<p>还以之前定制 nginx 镜像为例，这次我们使用 Dockerfile 来定制。</p>
+
+<p>在一个空白目录中，建立一个文本文件，并命名为 Dockerfile:</p>
+
+<pre><code>$ mkdir mynginx
+$ cd mynginx
+$ touch Dockerfile
+</code></pre>
+
+<p>其内容为:</p>
+
+<pre><code>FROM nginx
+RUN echo &#39;&lt;h1&gt;Hello, Docker!&lt;/h1&gt;&#39; &gt; /usr/share/nginx/html/index.html
+
+</code></pre>
+
+<h2 id="toc_0">FROM 指定基础镜像</h2>
+
+<p>所谓定制镜像，那一定是以一个镜像为基础，在其上进行定制。就像我们之前运行了一个 nginx 镜像的容器，再进行修改一样，基础镜像是必须指定的。而 FROM 就是指定基础镜像，因此一个 Dockerfile 中 FROM 是必备的指令，并且必须是第一条指令。</p>
+
+<p>在 Docker Hub1 上有非常多的高质量的官方镜像， 有可以直接拿来使用的服务类的镜像，如 nginx、redis、mongo、mysql、httpd、php、tomcat 等； 也有一些方便开发、构建、运行各种语言应用的镜像，如 node、openjdk、python、ruby、golang 等。 可以在其中寻找一个最符合我们最终目标的镜像为基础镜像进行定制。 如果没有找到对应服务的镜像，官方镜像中还提供了一些更为基础的操作系统镜像，如 ubuntu、debian、centos、fedora、alpine 等，这些操作系统的软件库为我们提供了更广阔的扩展空间。</p>
+
+<p>除了选择现有镜像为基础镜像外，Docker 还存在一个特殊的镜像，名为 scratch。这个镜像是虚拟的概念，并不实际存在，它表示一个空白的镜像</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/6/4</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='docker.html'>docker</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14962015887709.html">
+                
+                  <h1>shell十三问之8: $(())与$()还有${}差在哪？</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<hr/>
+
+<p>我们上一章介绍了()与{}的不同，<br/>
+这次让我们扩展一下，看看更多的变化：<br/>
+\(()与\){}又是啥玩意儿呢？</p>
+
+<p>在bash shell中, <code>$()</code>与``(反引号)都是用来做<br/>
+<code>命令替换</code>(command substitution)的。</p>
+
+<p>所谓的<code>命令替换</code>与我们第五章学过的变量替换差不多，<br/>
+都是用来<code>重组命令行</code>：<br/>
+完成 `` 或者<code>$()</code>里面的<br/>
+命令，将其结果替换出来，<br/>
+再重组命令行。</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14962015887709.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/5/31</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='shell.html'>shell</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14961334971521.html">
+                
+                  <h1>flume-ng源码分析-核心组件分析</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>从第一篇分析可知,flume中所有的组件都会实现LifecycleAware 接口。该接口定义如下：</p>
+
+<pre><code class="language-java">public interface LifecycleAware {
+  public void start();
+  public void stop();
+  public LifecycleState getLifecycleState();
+}
+</code></pre>
+
+<p>在组件启动的时候会调用start方法，当有异常时调用stop方法。getLifecycleState 方法返回该组件的状态。包含 <strong>IDLE, START, STOP, ERROR;</strong> </p>
+
+<p>当在组件开发中需要配置一些属性的时候可以实现<strong>Configurable</strong>接口</p>
+
+<pre><code class="language-java">public interface Configurable {
+  public void configure(Context context);
+
+}
+</code></pre>
+
+<p>下面开始分析Agent中各个组件的实现</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14961334971521.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/5/30</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14961128486144.html">
+                
+                  <h1>flume-ng源码分析-整体架构2【常用架构篇】</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">数据流模型</h2>
+
+<p><img src="media/14961128486144/14961138534005.jpg" alt=""/></p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14961128486144.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/5/30</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14953349711216.html">
+                
+                  <h1>flume-ng 源码分析-整体架构1【启动篇】</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">什么是flume</a>
+</li>
+<li>
+<a href="#toc_1">flume源码结构</a>
+</li>
+<li>
+<a href="#toc_3">flume启动脚本flume-ng分析</a>
+</li>
+<li>
+<a href="#toc_4">agent的启动分析Application.java</a>
+</li>
+<li>
+<a href="#toc_5">配置载入分析</a>
+</li>
+<li>
+<a href="#toc_6">flume如何获自定义的key</a>
+</li>
+<li>
+<a href="#toc_7">总结</a>
+</li>
+</ul>
+
+
+<h2 id="toc_0">什么是flume</h2>
+
+<p>Flume是Cloudera提供的一个高可用的，高可靠的，分布式的海量日志采集、聚合和传输的系统，Flume支持在日志系统中定制各类数据发送方，用于收集数据；同时，Flume提供对数据进行简单处理，并写到各种数据接受方（可定制）的能力。flume常用场景:log--&gt;flume--&gt;[hdfs,hbase,kafka],收集日志并落地到各种不同的存储，以供不同需求的计算。</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14953349711216.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/5/21</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14909422875977.html">
+                
+                  <h1>flume 总结</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>这里只考虑flume本身的一些东西，对于JVM、HDFS、HBase等得暂不涉及。。。。</p>
+
+<h2 id="toc_0">一、关于Source：</h2>
+
+<p>1、spool-source：适合静态文件，即文件本身不是动态变化的；</p>
+
+<p>2、avro source可以适当提高线程数量来提高此source性能；</p>
+
+<p>3、ThriftSource在使用时有个问题需要注意，使用批量操作时出现异常并不会打印异常内容而是&quot;Thrift source %s could not append events to the channel.&quot;，这是因为源码中在出现异常时，它并未捕获异常而是获取组件名称，这是源码中的一个bug，也可以说明thrift很少有人用，否则这个问题也不会存在在很多版本中；</p>
+
+<p>4、如果一个source对应多个channel，默认就是每个channel是同样的一份数据，会把这批数据复制N份发送到N个channel中，所以如果某个channel满了会影响整体的速度的哦；</p>
+
+<p>5、ExecSource官方文档已经说明是异步的，可能会丢数据哦，尽量使用tail -F，注意是大写的；</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14909422875977.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/3/31</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14891158030188.html">
+                
+                  <h1>flume 注意事项</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>这里只考虑flume本身的一些东西，对于JVM、HDFS、HBase等得暂不涉及。。。。</p>
+
+<h2 id="toc_0">一、关于Source：</h2>
+
+<p>1、spool-source：适合静态文件，即文件本身不是动态变化的；</p>
+
+<p>2、avro source可以适当提高线程数量来提高此source性能；</p>
+
+<p>3、ThriftSource在使用时有个问题需要注意，使用批量操作时出现异常并不会打印异常内容而是&quot;Thrift source %s could not append events to the channel.&quot;，这是因为源码中在出现异常时，它并未捕获异常而是获取组件名称，这是源码中的一个bug，也可以说明thrift很少有人用，否则这个问题也不会存在在很多版本中；</p>
+
+<p>4、如果一个source对应多个channel，默认就是每个channel是同样的一份数据，会把这批数据复制N份发送到N个channel中，所以如果某个channel满了会影响整体的速度的哦；</p>
+
+<p>5、ExecSource官方文档已经说明是异步的，可能会丢数据哦，尽量使用tail -F，注意是大写的；</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14891158030188.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/3/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14822419760078.html">
+                
+                  <h1>剖析spark-shell</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>我们首先来看看spark-shell 到底做了什么，spark-shell 中有一段脚本内容如下:</p>
+
+<pre><code>function main() {
+  if $cygwin; then
+    # Workaround for issue involving JLine and Cygwin
+    # (see http://sourceforge.net/p/jline/bugs/40/).
+    # If you&#39;re using the Mintty terminal emulator in Cygwin, may need to set the
+    # &quot;Backspace sends ^H&quot; setting in &quot;Keys&quot; section of the Mintty options
+    # (see https://github.com/sbt/sbt/issues/562).
+    stty -icanon min 1 -echo &gt; /dev/null 2&gt;&amp;1
+    export SPARK_SUBMIT_OPTS=&quot;$SPARK_SUBMIT_OPTS -Djline.terminal=unix&quot;
+    &quot;${SPARK_HOME}&quot;/bin/spark-submit --class org.apache.spark.repl.Main --name &quot;Spark shell&quot; &quot;$@&quot;
+    stty icanon echo &gt; /dev/null 2&gt;&amp;1
+  else
+    export SPARK_SUBMIT_OPTS
+    &quot;${SPARK_HOME}&quot;/bin/spark-submit --class org.apache.spark.repl.Main --name &quot;Spark shell&quot; &quot;$@&quot;
+  fi
+}
+</code></pre>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14822419760078.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2016/12/20</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='spark.html'>spark</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14815990344230.html">
+                
+                  <h1>spark 源码编译流程</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>已v2.0.2 版本为列进行源码编译</p>
+
+<ol>
+<li>从github 上clone源码 <strong>git clone git://git.apache.org/spark.git</strong></li>
+<li>切换到v2.0.2 <strong>git checkout v2.0.2 -b dev_2.0.2</strong></li>
+<li>build/mvn -DskipTests install 此部分等待时间最长，下面必要的软件和jar包</li>
+<li>给idea 装scala 插件，具体就不说了，要是网速不好可以下载下来，选择从磁盘安装<a href="https://plugins.jetbrains.com/?idea">idea plugin</a></li>
+<li>导入idea，在官方文档上有下面一些话</li>
+</ol>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14815990344230.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2016/12/13</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='spark.html'>spark</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14813767804827.html">
+                
+                  <h1>maven 遇到不能下载问题</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">问题描述</h2>
+
+<pre><code>Caused by: org.eclipse.aether.transfer.ArtifactTransferException: Could not transfer artifact org.apache.spark:spark-core_2.11:pom:2.0.2 from/to central (https://repo.maven.apache.org/maven2): sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+</code></pre>
+
+<h2 id="toc_1">原因</h2>
+
+<p>maven 用的默认配置，中央仓库https：xxx，所以改成<a href="http://repo.maven.apache.org/maven2%EF%BC%8C%E9%97%AE%E9%A2%98%E5%8D%B3%E5%8F%AF%E8%A7%A3%E5%86%B3">http://repo.maven.apache.org/maven2，问题即可解决</a></p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/12/10</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='maven.html'>maven</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14812978853380.html">
+                
+                  <h1>提交spark应用</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">提交应用</h2>
+
+<p>在bin目录中spark-submit 脚本用于向集群启动你的应用，通过统一的接口，可以支持所有spark 支持的clusterManager，所以你没有必要为你的每个应用坐一些特殊的配置。</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14812978853380.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2016/12/9</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='spark.html'>spark</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14714462595894.html">
+                
+                  <h1>sql 好习惯</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>我们做软件开发的，大部分人都离不开跟数据库打交道，特别是erp开发的，跟数据库打交道更是频繁，存储过程动不动就是上千行，如果数据量大，人员流动大，那么我么还能保证下一段时间系统还能流畅的运行吗？我么还能保证下一个人能看懂我么的存储过程吗？那么我结合公司平时的培训和平时个人工作经验和大家分享一下，希望对大家有帮助。</p>
+
+<p>要知道sql语句，我想我们有必要知道sqlserver查询分析器怎么执行我么sql语句的，我么很多人会看执行计划，或者用profile来监视和调优查询语句或者存储过程慢的原因，但是如果我们知道查询分析器的执行逻辑顺序，下手的时候就胸有成竹，那么下手是不是有把握点呢？<br/>
+&lt;!-- more --&gt;</p>
+
+<h2 id="toc_0">一：查询的逻辑执行顺序</h2>
+
+<p>(1) FROM &lt; left_table&gt; </p>
+
+<p>(3) &lt; join_type&gt;  JOIN &lt; right_table&gt;   (2) ON &lt; join_condition&gt; </p>
+
+<p>(4) WHERE &lt; where_condition&gt; </p>
+
+<p>(5) GROUP BY &lt; group_by_list&gt; </p>
+
+<p>(6) WITH {cube | rollup}</p>
+
+<p>(7) HAVING &lt; having_condition&gt; </p>
+
+<p>(8) SELECT  (9) DISTINCT (11) &lt; top_specification&gt;  &lt; select_list&gt; </p>
+
+<p>(10) ORDER BY &lt; order_by_list&gt; </p>
+
+<p><strong>标准的SQL 的解析顺序为:</strong></p>
+
+<p>(1).FROM 子句 组装来自不同数据源的数据</p>
+
+<p>(2).WHERE 子句 基于指定的条件对记录进行筛选</p>
+
+<p>(3).GROUP BY 子句 将数据划分为多个分组</p>
+
+<p>(4).使用聚合函数进行计算</p>
+
+<p>(5).使用HAVING子句筛选分组</p>
+
+<p>(6).计算所有的表达式</p>
+
+<p>(7).使用ORDER BY对结果集进行排序</p>
+
+<h2 id="toc_1">二 执行顺序：</h2>
+
+<p>1.FROM：对FROM子句中前两个表执行笛卡尔积生成虚拟表vt1</p>
+
+<p>2.ON:对vt1表应用ON筛选器只有满足&lt; join_condition&gt; 为真的行才被插入vt2</p>
+
+<p>3.OUTER(join)：如果指定了 OUTER JOIN保留表(preserved table)中未找到的行将行作为外部行添加到vt2 生成t3如果from包含两个以上表则对上一个联结生成的结果表和下一个表重复执行步骤和步骤直接结束</p>
+
+<p>4.WHERE：对vt3应用 WHERE 筛选器只有使&lt; where_condition&gt; 为true的行才被插入vt4</p>
+
+<p>5.GROUP BY：按GROUP BY子句中的列列表对vt4中的行分组生成vt5</p>
+
+<p>6.CUBE|ROLLUP：把超组(supergroups)插入vt6 生成vt6</p>
+
+<p>7.HAVING：对vt6应用HAVING筛选器只有使&lt; having_condition&gt; 为true的组才插入vt7</p>
+
+<p>8.SELECT：处理select列表产生vt8</p>
+
+<p>9.DISTINCT：将重复的行从vt8中去除产生vt9</p>
+
+<p>10.ORDER BY：将vt9的行按order by子句中的列列表排序生成一个游标vc10</p>
+
+<p>11.TOP：从vc10的开始处选择指定数量或比例的行生成vt11 并返回调用者</p>
+
+<p>看到这里，那么用过linqtosql的语法有点相似啊？如果我们我们了解了sqlserver执行顺序，那么我们就接下来进一步养成日常sql好习惯，也就是在实现功能同时有考虑性能的思想，数据库是能进行集合运算的工具，我们应该尽量的利用这个工具，所谓集合运算实际就是批量运算，就是尽量减少在客户端进行大数据量的循环操作，而用SQL语句或者存储过程代替。</p>
+
+<h2 id="toc_2">三、只返回需要的数据</h2>
+
+<p>返回数据到客户端至少需要数据库提取数据、网络传输数据、客户端接收数据以及客户端处理数据等环节，如果返回不需要的数据，就会增加服务器、网络和客户端的无效劳动，其害处是显而易见的，避免这类事件需要注意：</p>
+
+<p>A、横向来看，</p>
+
+<p>(1)不要写SELECT *的语句，而是选择你需要的字段。</p>
+
+<p>(2)当在SQL语句中连接多个表时, 请使用表的别名并把别名前缀于每个Column上.这样一来,就可以减少解析的时间并减少那些由Column歧义引起的语法错误。</p>
+
+<p>如有表table1（ID,col1）和table2 （ID,col2）</p>
+
+<p>Select A.ID, A.col1, B.col2</p>
+
+<p>-- Select A.ID, col1, col2 –不要这么写，不利于将来程序扩展</p>
+
+<p>from table1 A inner join table2 B on A.ID=B.ID Where …</p>
+
+<p>B、纵向来看，</p>
+
+<p>(1)合理写WHERE子句，不要写没有WHERE的SQL语句。</p>
+
+<p>(2) SELECT TOP N * --没有WHERE条件的用此替代 </p>
+
+<h2 id="toc_3">四 ：尽量少做重复的工作</h2>
+
+<p>A、控制同一语句的多次执行，特别是一些基础数据的多次执行是很多程序员很少注意的。</p>
+
+<p>B、减少多次的数据转换，也许需要数据转换是设计的问题，但是减少次数是程序员可以做到的。</p>
+
+<p>C、杜绝不必要的子查询和连接表，子查询在执行计划一般解释成外连接，多余的连接表带来额外的开销。</p>
+
+<p>D、合并对同一表同一条件的多次UPDATE，比如</p>
+
+<p>UPDATE EMPLOYEE SET FNAME=&#39;HAIWER&#39;<br/>
+WHERE EMP_ID=&#39; VPA30890F&#39; UPDATE EMPLOYEE SET LNAME=&#39;YANG&#39;<br/>
+WHERE EMP_ID=&#39; VPA30890F&#39;</p>
+
+<p>这两个语句应该合并成以下一个语句</p>
+
+<p>UPDATE EMPLOYEE SET FNAME=&#39;HAIWER&#39;,LNAME=&#39;YANG&#39;  WHERE EMP_ID=&#39; VPA30890F&#39;</p>
+
+<p>E、UPDATE操作不要拆成DELETE操作+INSERT操作的形式，虽然功能相同，但是性能差别是很大的。</p>
+
+<h2 id="toc_4">五、注意临时表和表变量的用法</h2>
+
+<p>在复杂系统中，临时表和表变量很难避免，关于临时表和表变量的用法，需要注意：</p>
+
+<p>A、如果语句很复杂，连接太多，可以考虑用临时表和表变量分步完成。</p>
+
+<p>B、如果需要多次用到一个大表的同一部分数据，考虑用临时表和表变量暂存这部分数据。</p>
+
+<p>C、如果需要综合多个表的数据，形成一个结果，可以考虑用临时表和表变量分步汇总这多个表的数据。</p>
+
+<p>D、其他情况下，应该控制临时表和表变量的使用。</p>
+
+<p>E、关于临时表和表变量的选择，很多说法是表变量在内存，速度快，应该首选表变量，但是在实际使用中发现，</p>
+
+<p>(1)主要考虑需要放在临时表的数据量，在数据量较多的情况下，临时表的速度反而更快。</p>
+
+<p>(2)执行时间段与预计执行时间(多长)</p>
+
+<p>F、关于临时表产生使用SELECT INTO和CREATE TABLE + INSERT INTO的选择，一般情况下，</p>
+
+<p>SELECT INTO会比CREATE TABLE + INSERT INTO的方法快很多，</p>
+
+<p>但是SELECT INTO会锁定TEMPDB的系统表SYSOBJECTS、SYSINDEXES、SYSCOLUMNS，在多用户并发环境下，容易阻塞其他进程，</p>
+
+<p>所以我的建议是，在并发系统中，尽量使用CREATE TABLE + INSERT INTO，而大数据量的单个语句使用中，使用SELECT INTO。</p>
+
+<h2 id="toc_5">六、子查询的用法（1）</h2>
+
+<p>子查询是一个 SELECT 查询，它嵌套在 SELECT、INSERT、UPDATE、DELETE 语句或其它子查询中。</p>
+
+<p>任何允许使用表达式的地方都可以使用子查询，子查询可以使我们的编程灵活多样，可以用来实现一些特殊的功能。但是在性能上，</p>
+
+<p>往往一个不合适的子查询用法会形成一个性能瓶颈。如果子查询的条件中使用了其外层的表的字段，这种子查询就叫作相关子查询。</p>
+
+<p>相关子查询可以用IN、NOT IN、EXISTS、NOT EXISTS引入。 关于相关子查询，应该注意：</p>
+
+<p>(1)</p>
+
+<p>A、NOT IN、NOT EXISTS的相关子查询可以改用LEFT JOIN代替写法。比如： SELECT PUB_NAME FROM PUBLISHERS WHERE PUB_ID NOT IN (SELECT PUB_ID FROM TITLES WHERE TYPE = &#39;BUSINESS&#39;) 可以改写成： SELECT A.PUB_NAME FROM PUBLISHERS A LEFT JOIN TITLES B ON B.TYPE = &#39;BUSINESS&#39; AND A.PUB_ID=B. PUB_ID WHERE B.PUB_ID IS NULL</p>
+
+<p>(2)</p>
+
+<p>SELECT TITLE FROM TITLES <br/>
+WHERE NOT EXISTS <br/>
+ (SELECT TITLE_ID FROM SALES <br/>
+WHERE TITLE_ID = TITLES.TITLE_ID)</p>
+
+<p>可以改写成：</p>
+
+<p>SELECT TITLE <br/>
+FROM TITLES LEFT JOIN SALES <br/>
+ON SALES.TITLE_ID = TITLES.TITLE_ID <br/>
+WHERE SALES.TITLE_ID IS NULL</p>
+
+<p>B、 如果保证子查询没有重复 ，IN、EXISTS的相关子查询可以用INNER JOIN 代替。比如：</p>
+
+<p>SELECT PUB_NAME <br/>
+FROM PUBLISHERS <br/>
+WHERE PUB_ID IN<br/>
+ (SELECT PUB_ID <br/>
+ FROM TITLES <br/>
+ WHERE TYPE = &#39;BUSINESS&#39;)</p>
+
+<p>可以改写成：</p>
+
+<p>SELECT A.PUB_NAME --SELECT DISTINCT A.PUB_NAME <br/>
+FROM PUBLISHERS A INNER JOIN TITLES B <br/>
+ON        B.TYPE = &#39;BUSINESS&#39; AND<br/>
+A.PUB_ID=B. PUB_ID</p>
+
+<p>(3)</p>
+
+<p>C、 IN的相关子查询用EXISTS代替，比如</p>
+
+<p>SELECT PUB_NAME FROM PUBLISHERS <br/>
+WHERE PUB_ID IN<br/>
+(SELECT PUB_ID FROM TITLES WHERE TYPE = &#39;BUSINESS&#39;)</p>
+
+<p>可以用下面语句代替：</p>
+
+<p>SELECT PUB_NAME FROM PUBLISHERS WHERE EXISTS <br/>
+(SELECT 1 FROM TITLES WHERE TYPE = &#39;BUSINESS&#39; AND<br/>
+PUB_ID= PUBLISHERS.PUB_ID)</p>
+
+<p>D、不要用COUNT(*)的子查询判断是否存在记录，最好用LEFT JOIN或者EXISTS，比如有人写这样的语句：</p>
+
+<p>SELECT JOB_DESC FROM JOBS <br/>
+WHERE (SELECT COUNT(*) FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID)=0</p>
+
+<p>应该改成：</p>
+
+<p>SELECT JOBS.JOB_DESC FROM JOBS LEFT JOIN EMPLOYEE<br/><br/>
+ON EMPLOYEE.JOB_ID=JOBS.JOB_ID <br/>
+WHERE EMPLOYEE.EMP_ID IS NULL</p>
+
+<p>SELECT JOB_DESC FROM JOBS <br/>
+WHERE (SELECT COUNT(*) FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID)&lt;&gt;0</p>
+
+<p>应该改成：</p>
+
+<p>SELECT JOB_DESC FROM JOBS <br/>
+WHERE EXISTS (SELECT 1 FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID) </p>
+
+<h2 id="toc_6">七：尽量使用索引</h2>
+
+<p>建立索引后，并不是每个查询都会使用索引，在使用索引的情况下，索引的使用效率也会有很大的差别。只要我们在查询语句中没有强制指定索引，</p>
+
+<p>索引的选择和使用方法是SQLSERVER的优化器自动作的选择，而它选择的根据是查询语句的条件以及相关表的统计信息，这就要求我们在写SQL</p>
+
+<p>语句的时候尽量使得优化器可以使用索引。为了使得优化器能高效使用索引，写语句的时候应该注意：</p>
+
+<p>（1</p>
+
+<p>A、不要对索引字段进行运算，而要想办法做变换，比如</p>
+
+<pre><code>SELECT ID FROM T WHERE NUM/2=100
+应改为:
+SELECT ID FROM T WHERE NUM=100*2
+
+SELECT ID FROM T WHERE NUM/2=NUM1
+如果NUM有索引应改为:
+SELECT ID FROM T WHERE NUM=NUM1*2
+
+如果NUM1有索引则不应该改。
+</code></pre>
+
+<p>(2)</p>
+
+<p>发现过这样的语句：</p>
+
+<pre><code>SELECT 年,月,金额 FROM 结余表  WHERE 100*年+月=2010*100+10
+应该改为：
+
+SELECT 年,月,金额 FROM 结余表 WHERE 年=2010 AND月=10
+</code></pre>
+
+<p>B、 不要对索引字段进行格式转换</p>
+
+<p>日期字段的例子：</p>
+
+<p>WHERE CONVERT(VARCHAR(10), 日期字段,120)=&#39;2010-07-15&#39;</p>
+
+<p>应该改为</p>
+
+<p>WHERE日期字段〉=&#39;2010-07-15&#39;   AND   日期字段&lt;&#39;2010-07-16&#39;</p>
+
+<p>ISNULL转换的例子：</p>
+
+<p>WHERE ISNULL(字段,&#39;&#39;)&lt;&gt;&#39;&#39;应改为:WHERE字段&lt;&gt;&#39;&#39;<br/>
+WHERE ISNULL(字段,&#39;&#39;)=&#39;&#39;不应修改<br/>
+WHERE ISNULL(字段,&#39;F&#39;) =&#39;T&#39;应改为: WHERE字段=&#39;T&#39;<br/>
+WHERE ISNULL(字段,&#39;F&#39;)&lt;&gt;&#39;T&#39;不应修改</p>
+
+<p>(3)</p>
+
+<p>C、 不要对索引字段使用函数</p>
+
+<p>WHERE LEFT(NAME, 3)=&#39;ABC&#39; 或者WHERE SUBSTRING(NAME,1, 3)=&#39;ABC&#39;</p>
+
+<p>应改为: WHERE NAME LIKE &#39;ABC%&#39;</p>
+
+<p>日期查询的例子：</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)=0<br/>
+应改为:WHERE 日期&gt;=&#39;2010-06-30&#39; AND 日期 &lt;&#39;2010-07-01&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&gt;0<br/>
+应改为:WHERE 日期 &lt;&#39;2010-06-30&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&gt;=0<br/>
+应改为:WHERE 日期 &lt;&#39;2010-07-01&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)<0<br/>
+应改为:WHERE 日期>=&#39;2010-07-01&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&lt;=0<br/>
+应改为:WHERE 日期&gt;=&#39;2010-06-30&#39;</p>
+
+<p>D、不要对索引字段进行多字段连接</p>
+
+<p>比如：</p>
+
+<p>WHERE FAME+ &#39;. &#39;+LNAME=&#39;HAIWEI.YANG&#39;</p>
+
+<p>应改为:</p>
+
+<p>WHERE FNAME=&#39;HAIWEI&#39; AND LNAME=&#39;YANG&#39;</p>
+
+<h2 id="toc_7">八：多表连接的连接条件对索引的选择有着重要的意义，所以我们在写连接条件条件的时候需要特别注意。</h2>
+
+<p>A、多表连接的时候，连接条件必须写全，宁可重复，不要缺漏。</p>
+
+<p>B、连接条件尽量使用聚集索引</p>
+
+<p>C、注意ON、WHERE和HAVING部分条件的区别</p>
+
+<p>ON是最先执行， WHERE次之，HAVING最后，因为ON是先把不符合条件的记录过滤后才进行统计，它就可以减少中间运算要处理的数据，按理说应该速度是最快的，WHERE也应该比 HAVING快点的，因为它过滤数据后才进行SUM，在两个表联接时才用ON的，所以在一个表的时候，就剩下WHERE跟HAVING比较了</p>
+
+<p>考虑联接优先顺序：</p>
+
+<p>(1)INNER JOIN<br/>
+(2)LEFT JOIN (注：RIGHT JOIN 用 LEFT JOIN 替代)<br/>
+(3)CROSS JOIN</p>
+
+<p>其它注意和了解的地方有：</p>
+
+<p>A、在IN后面值的列表中，将出现最频繁的值放在最前面，出现得最少的放在最后面，减少判断的次数</p>
+
+<p>B、注意UNION和UNION ALL的区别。--允许重复数据用UNION ALL好  </p>
+
+<p>C、注意使用DISTINCT，在没有必要时不要用</p>
+
+<p>D、TRUNCATE TABLE 与 DELETE 区别</p>
+
+<p>E、减少访问数据库的次数</p>
+
+<p>还有就是我们写存储过程，如果比较长的话，最后用标记符标开，因为这样可读性很好，即使语句写的不怎么样但是语句工整，C# 有region</p>
+
+<p>sql我比较喜欢用的就是</p>
+
+<p>--startof  查询在职人数<br/>
+     sql语句<br/>
+  --end of</p>
+
+<p>正式机器上我们一般不能随便调试程序，但是很多时候程序在我们本机上没问题，但是进正式系统就有问题，但是我们又不能随便在正式机器上操作，那么怎么办呢？我们可以用回滚来调试我们的存储过程或者是sql语句，从而排错。</p>
+
+<p>BEGIN TRAN<br/>
+ UPDATE a SET 字段=&#39;&#39;<br/>
+ROLLBACK</p>
+
+<p>作业存储过程我一般会加上下面这段，这样检查错误可以放在存储过程，如果执行错误回滚操作，但是如果程序里面已经有了事务回滚，那么存储过程就不要写事务了，这样会导致事务回滚嵌套降低执行效率，但是我们很多时候可以把检查放在存储过程里，这样有利于我们解读这个存储过程，和排错。</p>
+
+<p>BEGIN TRANSACTION<br/><br/>
+--事务回滚开始       </p>
+
+<p>--检查报错<br/>
+ IF ( @@ERROR &gt; 0 )<br/><br/>
+                    BEGIN<br/><br/>
+--回滚操作<br/>
+                        ROLLBACK TRANSACTION<br/><br/>
+                        RAISERROR(&#39;删除工作报告错误&#39;, 16, 3)<br/><br/>
+                        RETURN<br/><br/>
+                    END         </p>
+
+<p>--结束事务<br/>
+  COMMIT TRANSACTION     </p>
+
+<p>好久没有写博文了，工作项目一个接一个，再加上公司人员流动，新人很多事情接不下来，加班成了家常便饭，仓促写下这些希望对大家有帮助，不对的也欢迎指点，交流互相提高。</p>
+
+<p>有错误的地方欢迎大家拍砖,希望交流和共享。</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/8/17</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='hive.html'>hive</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14714457247718.html">
+                
+                  <h1>深入浅出 Redis Cluster 原理</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">一、 简介</h2>
+
+<p><img src="media/14714457247718/14714457994808.jpg" alt=""/></p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14714457247718.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2016/8/17</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='redis.html'>redis</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14714451686233.html">
+                
+                  <h1>java 垃圾回收机制</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">对象引用</h2>
+
+<p>Java中的垃圾回收一般是在Java堆中进行，因为堆中几乎存放了Java中所有的对象实例。谈到Java堆中的垃圾回收，自然要谈到引用。在JDK1.2之前，Java中的引用定义很很纯粹：如果reference类型的数据中存储的数值代表的是另外一块内存的起始地址，就称这块内存代表着一个引用。但在JDK1.2之后，Java对引用的概念进行了扩充，将其分为强引用（Strong Reference）、软引用（Soft Reference）、弱引用（Weak Reference）、虚引用（Phantom Reference）四种，引用强度依次减弱。</p>
+
+<ul>
+<li><p>强引用：如“Object obj = new Object（）”，这类引用是Java程序中最普遍的。只要强引用还存在，垃圾收集器就永远不会回收掉被引用的对象。</p></li>
+<li><p>软引用：它用来描述一些可能还有用，但并非必须的对象。在系统内存不够用时，这类引用关联的对象将被垃圾收集器回收。JDK1.2之后提供了SoftReference类来实现软引用。</p></li>
+<li><p>弱引用：它也是用来描述非需对象的，但它的强度比软引用更弱些，被弱引用关联的对象只能生存岛下一次垃圾收集发生之前。当垃圾收集器工作时，无论当前内存是否足够，都会回收掉只被弱引用关联的对象。在JDK1.2之后，提供了WeakReference类来实现弱引用。</p></li>
+<li><p>虚引用：最弱的一种引用关系，完全不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。为一个对象设置虚引用关联的唯一目的是希望能在这个对象被收集器回收时收到一个系统通知。JDK1.2之后提供了PhantomReference类来实现虚引用。<br/>
+&lt;!-- more --&gt;</p></li>
+</ul>
+
+<h2 id="toc_1">垃圾对象的判定</h2>
+
+<p>Java堆中存放着几乎所有的对象实例，垃圾收集器对堆中的对象进行回收前，要先确定这些对象是否还有用，判定对象是否为垃圾对象有如下算法：</p>
+
+<ul>
+<li>引用计数算法</li>
+</ul>
+
+<p>给对象添加一个引用计数器，每当有一个地方引用它时，计数器值就加1，当引用失效时，计数器值就减1，任何时刻计数器都为0的对象就是不可能再被使用的。</p>
+
+<p>引用计数算法的实现简单，判定效率也很高，在大部分情况下它都是一个不错的选择，当Java语言并没有选择这种算法来进行垃圾回收，主要原因是它很难解决对象之间的相互循环引用问题。</p>
+
+<ul>
+<li>根搜索算法</li>
+</ul>
+
+<p>Java和C#中都是采用根搜索算法来判定对象是否存活的。这种算法的基本思路是通过一系列名为“GC Roots”的对象作为起始点，从这些节点开始向下搜索，搜索所走过的路径称为引用链，当一个对象到GC Roots没有任何引用链相连时，就证明此对象是不可用的。在Java语言里，可作为GC Roots的兑现包括下面几种：</p>
+
+<pre><code>* 虚拟机栈（栈帧中的本地变量表）中引用的对象。
+* 方法区中的类静态属性引用的对象。
+* 方法区中的常量引用的对象。
+* 本地方法栈中JNI（Native方法）的引用对象。
+</code></pre>
+
+<p>实际上，在根搜索算法中，要真正宣告一个对象死亡，至少要经历两次标记过程：如果对象在进行根搜索后发现没有与GC Roots相连接的引用链，那它会被第一次标记并且进行一次筛选，筛选的条件是此对象是否有必要执行finalize（）方法。当对象没有覆盖finalize（）方法，或finalize（）方法已经被虚拟机调用过，虚拟机将这两种情况都视为没有必要执行。如果该对象被判定为有必要执行finalize（）方法，那么这个对象将会被放置在一个名为F-Queue队列中，并在稍后由一条由虚拟机自动建立的、低优先级的Finalizer线程去执行finalize（）方法。finalize（）方法是对象逃脱死亡命运的最后一次机会（因为一个对象的finalize（）方法最多只会被系统自动调用一次），稍后GC将对F-Queue中的对象进行第二次小规模的标记，如果要在finalize（）方法中成功拯救自己，只要在finalize（）方法中让该对象重引用链上的任何一个对象建立关联即可。而如果对象这时还没有关联到任何链上的引用，那它就会被回收掉。</p>
+
+<h2 id="toc_2">垃圾收集算法</h2>
+
+<p>判定除了垃圾对象之后，便可以进行垃圾回收了。下面介绍一些垃圾收集算法，由于垃圾收集算法的实现涉及大量的程序细节，因此这里主要是阐明各算法的实现思想，而不去细论算法的具体实现。</p>
+
+<ul>
+<li>标记—清除算法</li>
+</ul>
+
+<p>标记—清除算法是最基础的收集算法，它分为“标记”和“清除”两个阶段：首先标记出所需回收的对象，在标记完成后统一回收掉所有被标记的对象，它的标记过程其实就是前面的根搜索算法中判定垃圾对象的标记过程。标记—清除算法的执行情况如下图所示：</p>
+
+<p>回收前状态：</p>
+
+<p><img src="media/14714451686233/14714454453059.jpg" alt=""/></p>
+
+<p>回收后状态：</p>
+
+<p><img src="media/14714451686233/14714454536029.jpg" alt=""/></p>
+
+<p>该算法有如下缺点：</p>
+
+<pre><code>* 标记和清除过程的效率都不高。
+* 标记清除后会产生大量不连续的内存碎片，空间碎片太多可能会导致，当程序在以后的运行过程中需要分配较大对象时无法找到足够的连续内存而不得不触发另一次垃圾收集动作。
+</code></pre>
+
+<ul>
+<li>复制算法</li>
+</ul>
+
+<p>复制算法是针对标记—清除算法的缺点，在其基础上进行改进而得到的，它讲课用内存按容量分为大小相等的两块，每次只使用其中的一块，当这一块的内存用完了，就将还存活着的对象复制到另外一块内存上面，然后再把已使用过的内存空间一次清理掉。复制算法有如下优点：</p>
+
+<p>每次只对一块内存进行回收，运行高效。<br/>
+只需移动栈顶指针，按顺序分配内存即可，实现简单。<br/>
+内存回收时不用考虑内存碎片的出现。</p>
+
+<p>它的缺点是：可一次性分配的最大内存缩小了一半。</p>
+
+<p>复制算法的执行情况如下图所示：</p>
+
+<p>回收前状态：<br/>
+<img src="media/14714451686233/14714454964808.jpg" alt=""/></p>
+
+<p>回收后状态：<br/>
+<img src="media/14714451686233/14714455030414.jpg" alt=""/></p>
+
+<ul>
+<li><p>标记—整理算法</p>
+
+<p>复制算法比较适合于新生代，在老年代中，对象存活率比较高，如果执行较多的复制操作，效率将会变低，所以老年代一般会选用其他算法，如标记—整理算法。该算法标记的过程与标记—清除算法中的标记过程一样，但对标记后出的垃圾对象的处理情况有所不同，它不是直接对可回收对象进行清理，而是让所有的对象都向一端移动，然后直接清理掉端边界以外的内存。标记—整理算法的回收情况如下所示：</p></li>
+</ul>
+
+<p>回收前状态：</p>
+
+<p><img src="media/14714451686233/14714455172648.jpg" alt=""/></p>
+
+<p>回收后状态：<br/>
+<img src="media/14714451686233/14714455231926.jpg" alt=""/></p>
+
+<ul>
+<li>分代收集</li>
+</ul>
+
+<p>当前商业虚拟机的垃圾收集 都采用分代收集，它根据对象的存活周期的不同将内存划分为几块，一般是把Java堆分为新生代和老年代。在新生代中，每次垃圾收集时都会发现有大量对象死去，只有少量存活，因此可选用复制算法来完成收集，而老年代中因为对象存活率高、没有额外空间对它进行分配担保，就必须使用标记—清除算法或标记—整理算法来进行回收。</p>
+
+<ul>
+<li>垃圾收集器
+垃圾收集器是内存回收算法的具体实现，Java虚拟机规范中对垃圾收集器应该如何实现并没有任何规定，因此不同厂商、不同版本的虚拟机所提供的垃圾收集器都可能会有很大的差别。Sun  HotSpot虚拟机1.6版包含了如下收集器：Serial、ParNew、Parallel Scavenge、CMS、Serial Old、Parallel Old。这些收集器以不同的组合形式配合工作来完成不同分代区的垃圾收集工作。</li>
+</ul>
+
+<h2 id="toc_3">性能调优</h2>
+
+<p>Java虚拟机的内存管理与垃圾收集是虚拟机结构体系中最重要的组成部分，对程序（尤其服务器端）的性能和稳定性有着非常重要的影响。性能调优需要具体情况具体分析，而且实际分析时可能需要考虑的方面很多，这里仅就一些简单常用的情况作简要介绍。</p>
+
+<ul>
+<li><p>我们可以通过给Java虚拟机分配超大堆（前提是物理机的内存足够大）来提升服务器的响应速度，但分配超大堆的前提是有把握把应用程序的Full GC频率控制得足够低，因为一次Full GC的时间造成比较长时间的停顿。控制Full GC频率的关键是保证应用中绝大多数对象的生存周期不应太长，尤其不能产生批量的、生命周期长的大对象，这样才能保证老年代的稳定。</p></li>
+<li><p>Direct Memory在堆内存外分配，而且二者均受限于物理机内存，且成负相关关系，因此分配超大堆时，如果用到了NIO机制分配使用了很多的Direct Memory，则有可能导致Direct Memory的OutOfMemoryError异常，这时可以通过-XX:MaxDirectMemorySize参数调整Direct Memory的大小。</p></li>
+<li><p>除了Java堆和永久代以及直接内存外，还要注意下面这些区域也会占用较多的内存，这些内存的总和会受到操作系统进程最大内存的限制：</p>
+
+<p>1、线程堆栈：可通过-Xss调整大小，内存不足时抛出StackOverflowError（纵向无法分配，即无法分配新的栈帧）或OutOfMemoryError（横向无法分配，即无法建立新的线程）。</p>
+
+<p>2、Socket缓冲区：每个Socket连接都有Receive和Send两个缓冲区，分别占用大约37KB和25KB的内存。如果无法分配，可能会抛出IOException：Too many open files异常。关于Socket缓冲区的详细介绍参见我的Java网络编程系列中深入剖析Socket的几篇文章。</p>
+
+<p>3、JNI代码：如果代码中使用了JNI调用本地库，那本地库使用的内存也不在堆中。</p>
+
+<p>4、虚拟机和GC：虚拟机和GC的代码执行也要消耗一定的内存。</p></li>
+</ul>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/8/17</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='java.html'>java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14696149737175.html">
+                
+                  <h1>scala base</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li><p>什么时候应该使用特质而不是抽象类？ 如果你想定义一个类似接口的类型,你可能会在特质和抽象类之间难以取舍。这两种形式都可以让你定义一个类型的一些行为，并要求继承者定义一些其他行为。一些经验法则:</p>
+
+<ul>
+<li><p>优先使用特质。一个类扩展多个特质是很方便的，但却只能扩展一个抽象类</p></li>
+<li><p>如果你需要构造函数参数，使用抽象类。因为抽象类可以定义带参数的构造函数，而特质不行。例如，你不能说trait t(i: Int) {}，参数i是非法的。</p></li>
+</ul></li>
+</ul>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/7/27</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='scala.html'>scala</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14630228188603.html">
+                
+                  <h1>design of schedule</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">总体设计</h2>
+
+<h3 id="toc_1">功能特性：</h3>
+
+<ul>
+<li>master-savle 架构</li>
+<li>支持任务的自动唤醒</li>
+<li>支持依赖配置</li>
+<li>自动重试</li>
+<li>失败，延时报警</li>
+<li>在线编辑脚本</li>
+<li>日志实时显示</li>
+<li>支持hadoop工作流</li>
+<li>简单的配置方式（任务名，执行命令，依赖任务，执行时间【可选】）</li>
+<li><em>资源隔离</em>
+&lt;!-- more --&gt;</li>
+</ul>
+
+<h3 id="toc_2">greathole核心实现</h3>
+
+<p><img src="media/14630228188603/14630285732590.jpg" alt=""/></p>
+
+<ul>
+<li>客户端提交job 到调度中心</li>
+<li>调度中心分配任务给worker 节点</li>
+<li>worker负责具体任务的执行，任务状态判断，报警，子任务唤醒等</li>
+</ul>
+
+<h3 id="toc_3">greathole 数据库设计</h3>
+
+<pre><code>CREATE TABLE `hole_job` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT &#39;任务ID&#39;,
+  `name` varchar(100) NOT NULL COMMENT &#39;任务名称&#39;,
+  `description` varchar(300) DEFAULT &#39;&#39; COMMENT &#39;任务描述&#39;,
+  `crontab` varchar(200) NOT NULL DEFAULT &#39;&#39; COMMENT &#39;任务执行时间,定时任务填写,依赖任务不用填写&#39;,
+  `command` varchar(500) NOT NULL COMMENT &#39;任务启动命令,hadoop ,hive ,shell&#39;,
+  `alarm_lazy_minute` int(10) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;任务启动失败后触发报警的时间 0:立即报警 n:任务重试n分钟后报警&#39;,
+  `alarm_email` varchar(500) DEFAULT NULL COMMENT &#39;依赖报警邮件列表，逗号间隔&#39;,
+  `alarm_phone` varchar(300) DEFAULT NULL COMMENT &#39;依赖报警手机号列表，逗号间隔&#39;,
+  `enable` tinyint(1) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;是否启用 0:未启用 1:启用&#39;,
+  `auto_retry` tinyint(1) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;执行失败后是否自动重试 0:不自动重试 1:执行失败后自动重试,最多重试三次&#39;,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,
+  `params` varchar(1000) NOT NULL DEFAULT &#39;&#39; COMMENT &#39;传递给命令的额外参数&#39;,
+  `task_type` varchar(10) NOT NULL DEFAULT &#39;hadoop,shell...&#39;,
+  `owner` varchar(200) NOT NULL DEFAULT &#39;&#39;,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unq_name` (`name`) USING BTREE
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT=&#39;任务元信息&#39; ;
+
+CREATE TABLE `hole_depend` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `job_id` bigint(20) NOT NULL COMMENT &#39;任务ID&#39;,
+  `depend_job_id` bigint(20) NOT NULL COMMENT &#39;依赖任务ID&#39;,
+  `description` varchar(300) DEFAULT NULL COMMENT &#39;依赖描述&#39;,
+  `depend_date_format` varchar(15) NOT NULL DEFAULT &#39;days ago&#39;  COMMENT &#39;依赖日期计算纬度 minutes,hours,days,months,weeks,years [ago]&#39;,
+  `depend_values` varchar(240) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;多个依赖值用逗号分割 如:depend_field=hours ago时 1,2表示当前任务前1小时及前2小时的任务实例已执行成功&#39;,
+  `match_minute` tinyint(1) NOT NULL DEFAULT 0 COMMENT &#39;分 依赖匹配 0:不匹配 1:匹配&#39;,
+  `match_hour` tinyint(1) NOT NULL DEFAULT 0 COMMENT &#39;时 依赖匹配 0:不匹配 1:匹配&#39;,
+  `match_day` tinyint(1) NOT NULL DEFAULT 1 COMMENT &#39;日 依赖匹配 0:不匹配 1:匹配&#39;,
+  `match_month` tinyint(1) NOT NULL DEFAULT 1 COMMENT &#39;月 依赖匹配 0:不匹配 1:匹配&#39;,
+  `match_year` tinyint(1) NOT NULL DEFAULT 1 COMMENT &#39;年 依赖匹配 0:不匹配 1:匹配&#39;,
+  `enable` tinyint(1) NOT NULL DEFAULT &#39;1&#39; COMMENT &#39;是否启用 0:未启用 1:启用&#39;,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,
+  PRIMARY KEY (`id`),
+  KEY `idx_meta` (`meta_id`) USING BTREE
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT=&#39;任务依赖配置&#39;;
+
+CREATE TABLE `hole_instance_run` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT &#39;自增id,taskid&#39;,
+  `job_id` bigint(20) NOT NULL COMMENT &#39;jobID&#39;,
+  `minute` char(2) NOT NULL COMMENT &#39;分&#39;,
+  `hour` char(2) NOT NULL COMMENT &#39;时&#39;,
+  `day` char(2) NOT NULL COMMENT &#39;日&#39;,
+  `month` char(2) NOT NULL COMMENT &#39;月&#39;,
+  `year` char(4) NOT NULL COMMENT &#39;年&#39;,
+  `pid` int(11) NOT NULL COMMENT &#39;0:依赖未满足，待重试 !0:正在执行的进程PID&#39;,
+  `alarmed` tinyint(1) NOT NULL COMMENT &#39;是否已触发报警 0:尚未报警 1:已报警&#39;,
+  `exec_count` INT NOT NULL DEFAULT 1 COMMENT &#39;执行次数,用户自动重试限制次数&#39;,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unq_idx` (`meta_id`,`minute`,`hour`,`day`,`month`,`year`) USING BTREE
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT=&#39;执行中的任务实例&#39;;
+
+CREATE TABLE `hole_instance_done` (
+  `id` bigint(20) NOT NULL COMMENT &#39;task_id,hole_instance_done中id&#39;,
+  `meta_id` bigint(20) NOT NULL COMMENT &#39;jobID&#39;,
+  `minute` char(2) NOT NULL COMMENT &#39;分&#39;,
+  `hour` char(2) NOT NULL COMMENT &#39;时&#39;,
+  `day` char(2) NOT NULL COMMENT &#39;日&#39;,
+  `month` char(2) NOT NULL COMMENT &#39;月&#39;,
+  `year` char(4) NOT NULL COMMENT &#39;年&#39;,
+  `stat` bigint(20) NOT NULL COMMENT &#39;0:成功 -1:失败 &gt;0:依赖任务失败(任务实例ID)&#39;,
+  `exec_count` INT NOT NULL DEFAULT 1 COMMENT &#39;执行次数,用户自动重试限制次数&#39;,
+  `start_time` timestamp NOT NULL DEFAULT &#39;0000-00-00 00:00:00&#39; COMMENT &#39;任务开始时间&#39;,
+  `start_time_real` timestamp NOT NULL DEFAULT &#39;0000-00-00 00:00:00&#39; COMMENT &#39;任务实际开始时间&#39;,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间,也是任务的结束时间&#39;,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unq_idx` (`meta_id`,`minute`,`hour`,`day`,`month`,`year`) USING BTREE
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT=&#39;已完成的任务实例&#39;;
+
+create table `hole_job_info`(
+  `id` BIGINT(20) PRIMARY KEY NOT NULL COMMENT &#39;id&#39;,
+  `job_id` BIGINT(20) NOT NULL COMMENT &#39;任务id&#39;,
+  `file_name` BIGINT(20) NOT NULL COMMENT &#39;job 文件名&#39;
+)ENGINE =MyISAM DEFAULT CHARSET=utf8 COMMENT &#39;job运行时的所依赖的文件&#39;;
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/12</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='datahole.html'>datahole</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14622541510551.html">
+                
+                  <h1>msyql 常用命令</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>1.删除主键约束：<br/>
+alter table COLUMNS_V2 drop primary key;<br/>
+2.添加主键约束<br/>
+alter table COLUMNS_V2 add constraint pk_columns_v2 primary key COLUMNS_V2(table_name,DB_NAME,COLUMN_NAME);</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/5/3</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='mysql.html'>mysql</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14606961293143.html">
+                
+                  <h1>storm 入门</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>Storm组件和Hadoop组件对比</p>
+
+<p><img src="media/14606961293143/14606961535766.jpg" alt=""/><br/>
+/data/workspace/model_user/production/task_error_logs/psr_user_parameter</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/4/15</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='storm.html'>storm</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14586441823476.html">
+                
+                  <h1>kafka架构介绍</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">Kafka简介</h2>
+
+<p>Kafka是一种分布式的，基于发布/订阅的消息系统。主要设计目标如下：</p>
+
+<p>以时间复杂度为O(1)的方式提供消息持久化能力，即使对TB级以上数据也能保证常数时间复杂度的访问性能。<br/>
+高吞吐率。即使在非常廉价的商用机器上也能做到单机支持每秒100K条以上消息的传输。<br/>
+支持Kafka Server间的消息分区，及分布式消费，同时保证每个Partition内的消息顺序传输。<br/>
+同时支持离线数据处理和实时数据处理。<br/>
+Scale out：支持在线水平扩展。</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14586441823476.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2016/3/22</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='kafka.html'>kafka</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14580277750123.html">
+                
+                  <h1>hive udf 添加方式</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>UDF永久生效现在是只能修改源代码.不过可以变通一下处理也可以实现.<br/>
+在HIVE_HOME的bin目录下新建一个.hiverc的文件,把写好的udf的注册语句写在这里就可以类似HIVE内置的用法一样用<br/>
+原理是，在运行./hive命令时，同时会加载HIVE_HOME/bin/.hiverc and $HOME/.hiverc作为初始化所需要的文件 <br/>
+在.hiverc文件中加入以下内容：<br/>
+add jar /run/jar/Avg_test.jar<br/>
+create temporary function avg_test &#39;hive.udaf.Avg&#39;;</p>
+
+<p>CDH:/opt/cloudera/parcels/CDH-5.3.1-1.cdh5.3.1.p0.5/lib/hive/bin</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/3/15</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='hive.html'>hive</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14566304025438.html">
+                
+                  <h1>日志收集系统&日志ETL 实践</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">flume 简单入门</a>
+</li>
+<li>
+<a href="#toc_1">日志收集系统简介</a>
+</li>
+<li>
+<a href="#toc_2">日志收集系统架构</a>
+</li>
+<li>
+<a href="#toc_3">架构考虑</a>
+<ul>
+<li>
+<a href="#toc_4">可用性</a>
+<ul>
+<li>
+<a href="#toc_5">Agent死掉</a>
+</li>
+<li>
+<a href="#toc_6">Collector死掉</a>
+</li>
+<li>
+<a href="#toc_7">Hdfs正常停机或异常停机</a>
+</li>
+<li>
+<a href="#toc_8">Hdfs变慢</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_9">可靠性</a>
+</li>
+<li>
+<a href="#toc_10">可扩展性(scalability)</a>
+<ul>
+<li>
+<a href="#toc_11">Agent层</a>
+</li>
+<li>
+<a href="#toc_12">Collector层</a>
+</li>
+<li>
+<a href="#toc_13">Store层</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_14">提供实时流</a>
+</li>
+<li>
+<a href="#toc_15">系统监控</a>
+<ul>
+<li>
+<a href="#toc_16">flume写hfds状态的监控</a>
+</li>
+<li>
+<a href="#toc_17">日志大小异常监控</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_18">日志ETL</a>
+
+
+<p>我司的日志收集系统负责我司的所有业务日志的收集，并分别给Hadoop平台提供离线数据和实时平台提供实时数据流。17作业的日志收集系统基于Flume设计和搭建而成。</p>
+
+<!--more -->
+
+<h2 id="toc_0">flume 简单入门</h2>
+
+<p>Flume的架构主要有一下几个核心概念：</p>
+
+<p>Event：一个数据单元，带有一个可选的消息头<br/>
+Flow：Event从源点到达目的点的迁移的抽象<br/>
+Client：操作位于源点处的Event，将其发送到Flume Agent<br/>
+Agent：一个独立的Flume进程，包含组件Source、Channel、Sink<br/>
+Source：用来消费传递到该组件的Event<br/>
+Channel：中转Event的一个临时存储，保存有Source组件传递过来的Event<br/>
+Sink：从Channel中读取并移除Event，将Event传递到Flow Pipeline中的下一个Agent（如果有的话）</p>
+
+<p><img src="media/14566304025438/14569258246622.jpg" alt=""/></p>
+
+<ul>
+<li>每个Flume Agent 包含三个主要组件：Source、Channel、Sink</li>
+<li>Source 可以监听一个或者多个网络端口，用于接收数据或者可以从本地文件系统读取数据。每个Source 必须至少连接一个Channel。基于一些标准，一个Source 可以写入几个Channel，复制事件到所有或某些Channe</li>
+<li><p>Channel 是被动组件（虽然它们可以为了清理或者垃圾回收运行自己的线程），缓冲Agent 已经接收，但尚未写出到另一个Agent 或者存储系统的数据。Channel 的行为像队列，Source 写入到它们，Sink 从它们中读取。多个Source 可以安全地写入到相同的Channel，并且多个Sink 可以从相同的Channel 进行读取。可是一个Sink 只能从一个Channel 读取。</p></li>
+<li><p>Sink 连续轮询各自的Channel 来读取和删除事件。Sink 将事件推送到下一阶段（RPCSink 的情况下），或到最终目的地。一旦在下一阶段或其目的地中数据是安全的，Sink通过事务提交通知Channel，可以从Channel 中删除这些事件。</p></li>
+</ul>
+
+<p>source channel sink 自由组合  </p>
+
+<h2 id="toc_1">日志收集系统简介</h2>
+
+<p>日志收集是大数据的基石<br/>
+业务平台每天会产生大量的日志数据。收集业务日志数据，供离线和在线的分析和使用，正是日志系统要做的事情。高可用性，和高可靠性，可扩展性是日志系统具备的基本特征</p>
+
+<p>目前常用的开源日志收集系统有Flume, Scribe等。Flume是Cloudera提供的一个高可用的，高可靠的，分布式的海量日志采集、聚合和传输的系统，目前已经是Apache的一个子项目。Scribe是Facebook开源的日志收集系统，它为日志的分布式收集，统一处理提供一个可扩展的，高容错的简单方案。</p>
+
+<h2 id="toc_2">日志收集系统架构</h2>
+
+<p><img src="media/14566304025438/14566323231652.jpg" alt=""/></p>
+
+<ul>
+<li><p>整个系统分为三层：Agent层，Collector层和Store层。其中agent层即是线上业务方，通过调用接口发送数据；Collector层部署在中心服务器上，负责接收Agent层发送的日志，并且将日志根据路由规则写到相应的Store层中；Store层负责提供永久或者临时的日志存储服务，或者将日志流导向其它服务器。</p></li>
+<li><p>Agent到Collector使用LoadBalance策略，将所有的日志均衡地发到所有的Collector上，达到负载均衡的目标，同时并处理单个Collector失效的问题。</p></li>
+<li><p>Collector层的目标主要有两个：SinkHdfs, SinkKafka。分别提供离线的数据到Hdfs，和提供实时的日志流到Kafka。</p></li>
+<li><p>对于Store来说，Hdfs负责永久地存储所有日志；Kafka存储最新的3天日志，并给Storm,spark等系统提供实时日志流；</p></li>
+</ul>
+
+<p>下图是日志收集系统的模块分解图，详解Agent, Collector和Bypass中的Source, Channel和Sink的关系。</p>
+
+<p><img src="media/14566304025438/14566354199401.jpg" alt=""/></p>
+
+<p>a. 模块命名规则：所有的Source以src开头，所有的Channel以ch开头，所有的Sink以sink开头；</p>
+
+<p>b. Channel统一使用flume1.6 SPILLABLEMEMORY，</p>
+
+<p>c. 模块之间内部通信统一使用Avro接口</p>
+
+<h2 id="toc_3">架构考虑</h2>
+
+<h3 id="toc_4">可用性</h3>
+
+<ul>
+<li>对日志收集系统来说，可用性(availablity)指固定周期内系统无故障运行总时间。要想提高系统的可用性，就需要消除系统的单点，提高系统的冗余度。下面来看看17作业的日志收集系统在可用性方面的考虑。</li>
+</ul>
+
+<h4 id="toc_5">Agent死掉</h4>
+
+<ul>
+<li>机器死机。线上部署多台agent服务器，通过ng转发，只要保证有一台服务器可用，则服务可用。</li>
+<li>agent进程进程死掉。原理同机器down掉一样，ng会自动转发到服务可用的机器</li>
+</ul>
+
+<h4 id="toc_6">Collector死掉</h4>
+
+<ul>
+<li>采用多个collector服务，agent通过轮询方式发送到collector，当某一collector死掉之后，自动寻找下一个可用的collector服务。所以整体服务不受影响</li>
+</ul>
+
+<h4 id="toc_7">Hdfs正常停机或异常停机</h4>
+
+<ul>
+<li>采用flume最新SPILLABLEMEMORY,当写入hdfs失败，达到重试次数。channel中event数量累计到一定程度，flume将会采用FILECHANNEL，写入本地磁盘，保证数据不丢失。当HDFS恢复服务，collector再将FILECHANNEL中数据写到HDFS</li>
+</ul>
+
+<h4 id="toc_8">Hdfs变慢</h4>
+
+<ul>
+<li><p>当Hadoop上的任务较多且有大量的读写操作时，Hdfs的读写数据往往变的很慢。由于每天，每周都有高峰使用期，所以这种情况非常普遍。</p></li>
+<li><p>对于Hdfs变慢的问题，我们同样使用SPILLABLEMEMORY来解决。当Hdfs写入较快时，所有的events只经过MemChannel传递数据，减少磁盘IO，获得较高性能。当Hdfs写入较慢时，超过MEMEORYCHANNEL容纳范围的EVENTS将会被写到FILECHANNEL，有一个较大的数据缓存空间。</p></li>
+</ul>
+
+<h3 id="toc_9">可靠性</h3>
+
+<p>对日志收集系统来说，可靠性(reliability)是指Flume在数据流的传输过程中，保证events的可靠传递。</p>
+
+<ul>
+<li>对Flume来说，所有的events都被保存在Agent的Channel中，然后被发送到数据流中的下一个Agent或者最终的存储服务中。那么一个Agent的Channel中的events什么时候被删除呢？当且仅当它们被保存到下一个Agent的Channel中或者被保存到最终的存储服务中。这就是Flume提供数据流中点到点的可靠性保证的最基本的单跳消息传递语义。</li>
+</ul>
+
+<p>那么Flume是如何做到上述最基本的消息传递语义呢？</p>
+
+<ul>
+<li>首先，Agent间的事务交换。Flume使用事务的办法来保证event的可靠传递。Source和Sink分别被封装在   事务中，这些事务由保存event的存储提供或者由Channel提供。这就保证了event在数据流的点对点传输中是可靠的。在多级数据流中，如下图，上一级的Sink和下一级的Source都被包含在事务中，保证数据可靠地从一个Channel到另一个Channel转移</li>
+</ul>
+
+<p><img src="media/14566304025438/14566659029080.jpg" alt=""/></p>
+
+<ul>
+<li>其次，数据流中 Channel的持久性。Flume中MemoryChannel是可能丢失数据的（当Agent死掉时），而FileChannel是持久性的，提供类似mysql的日志机制，保证数据不丢失。而我们采用FLUME最新的SPILLABLECHANNEL，该CHANNEL结合MEMORYCHANNEL,FILECHANNEL的优点，当MEMEORYCHANNEL中容纳不下，将会自动采用FILECHANNEL，保证数据不丢失</li>
+</ul>
+
+<h3 id="toc_10">可扩展性(scalability)</h3>
+
+<p>对日志收集系统来说，可扩展性(scalability)是指系统能够线性扩展。当日志量增大时，系统能够以简单的增加机器来达到线性扩容的目的</p>
+
+<p>对于基于Flume的日志收集系统来说，需要在设计的每一层，都可以做到线性扩展地提供服务。下面将对每一层的可扩展性做相应的说明。</p>
+
+<h4 id="toc_11">Agent层</h4>
+
+<p>对于Agent这一层来说，以HTTP方式提供接口，可以水平扩展，不受限制。一个方面，Agent收集日志的能力受限于机器的性能，正常情况下一个Agent可以为单机提供足够服务。另一方面，如果机器比较多，可能受限于后端Collector提供的服务，但Agent到Collector是有Load Balance机制，使得Collector可以线性扩展提高能力。</p>
+
+<h4 id="toc_12">Collector层</h4>
+
+<p>对于Collector这一层，Agent到Collector是有Load Balance机制，并且Collector提供无差别服务，所以可以线性扩展。其性能主要受限于Store层提供的能力。</p>
+
+<h4 id="toc_13">Store层</h4>
+
+<p>对于Store这一层来说，Hdfs和Kafka都是分布式系统，可以做到线性扩展。</p>
+
+<p>在FLUME 1.5之前提供了MEMEORYCHANNEL 和 FILECHANNEL，1.5以及之后提供新的复合CHANNEL，SPILLABLECHANNEL</p>
+
+<ul>
+<li>MemoryChannel: 所有的events被保存在内存中。优点是高吞吐。缺点是容量有限并且Agent死掉时会丢失内存中的数据。</li>
+<li>FileChannel: 所有的events被保存在文件中。优点是容量较大且死掉时数据可恢复。缺点是速度较慢。</li>
+</ul>
+
+<p>上述两种Channel，优缺点相反，分别有自己适合的场景。然而，对于大部分应用来说，我们希望Channel可以同提供高吞吐和大缓存。基于此，我们采用新的复合SPILLABLECHANNEL。</p>
+
+<p>当堆积在Channel中的events数小于阈值时，所有的events被保存在MemoryChannel中，Sink从MemoryChannel中读取数据； 当堆积在Channel中的events数大于阈值时， 所有的events被自动存放在FileChannel中，Sink从FileChannel中读取数据。这样当系统正常运行时，我们可以使用MemoryChannel的高吞吐特性；当系统有异常时，我们可以利用FileChannel的大缓存的特性。</p>
+
+<h2 id="toc_14">提供实时流</h2>
+
+<p>17作业的部分业务，如实时监控等服务，需要处理实时的数据流。因此我们希望Flume能够导出一份实时流给Kafka</p>
+
+<p>一个非常重要的要求是实时数据流不应该受到其它Sink的速度影响，保证实时数据流的速度。这一点，我们是通过Collector中设置不同的Channel进行隔离。</p>
+
+<h2 id="toc_15">系统监控</h2>
+
+<p>监控是必不可少的部分。设计合理的监控，可以对异常情况及时发现，只要有一部手机，就可以知道系统是否正常运作。对于17作业的日志收集系统，我们建立了多维度的监控，防止未知的异常发生</p>
+
+<p>通过发送给zabbix的数据，我们可以绘制出发送数量、拥堵情况和写Hdfs速度的图表，对于超预期的拥堵，</p>
+
+<h3 id="toc_16">flume写hfds状态的监控</h3>
+
+<p>对于非常重要的日志，我们每个小时会运行程序去检查日志，当发生异常我们会通过邮件短信报警</p>
+
+<h3 id="toc_17">日志大小异常监控</h3>
+
+<p>我们会每天监控重要日志量的大小，当日志量有较大的波动，能及时反馈出来</p>
+
+<p>通过以上分析17作业日志服务具备高可用性，高可靠性，可扩展等特性的分布式服务</p>
+
+<h1 id="toc_18">日志ETL</h1>
+
+<p>ETL目的：清洗原始数据，让数据可靠，易用</p>
+
+<p>日志ETL 整体流程如下图：<br/>
+<img src="media/14566304025438/14569273534221.jpg" alt=""/></p>
+
+<p>实现关键：</p>
+
+<pre><code>public class GroovyServiceImpl implements IGroovyService {
+    private Logger logger = LoggerFactory.getLogger(GroovyServiceImpl.class);
+
+    @Override
+    Object execute(String groovyScript, Map params) {
+        Class&lt;GroovyObject&gt; groovyObjectClass = parseScript(groovyScript)
+        GroovyObject groovyObject
+        try {
+            groovyObject = groovyObjectClass.newInstance()
+        } catch (any) {
+            logger.error(&quot;error when execute groovyScript:{}&quot;, any)
+            throw new RuntimeException(&quot;error,when execute groovyScript&quot;, any)
+        }
+        ArrayList&lt;String&gt; list = Lists.newArrayList();
+        return groovyObject.invokeMethod(&quot;validate&quot;, [params, list] as Object[])
+    }
+
+    private Class&lt;GroovyObject&gt; parseScript(String script) {
+        GroovyClassLoader loader = new GroovyClassLoader();
+        Class&lt;GroovyObject&gt; clazz = loader.parseClass(script)
+        clazz
+    }
+}
+</code></pre>
+
+<p>example:</p>
+
+<pre><code>class AdrNormal {
+    private static bldr
+    private static writer
+    static {
+        bldr = new groovy.json.JsonBuilder()
+        writer = new StringWriter()
+    }
+
+    def validate(Map dataMap) {
+        def otherField = [&quot;ktwelve&quot;, &quot;native_version&quot;]
+        def returnList = []
+        List&lt;String&gt; keys = dataMap.get(&quot;keys&quot;)
+        Set&lt;String&gt; keySet = dataMap.keySet()
+        List&lt;String&gt; keyList = Lists.newArrayList(keySet)
+        List&lt;String&gt; diffList = keyList - keys
+        diffList.remove(&quot;keys&quot;)
+        for (key in keys) {
+            if (otherField.contains(key)) {
+                continue
+            }
+            String value = dataMap.get(key)
+            if (Strings.isNullOrEmpty(value)) {
+                value = &quot;null&quot;;
+            }
+            returnList.add(value)
+        }
+
+        def map = [:]
+        for (key in diffList) {
+            map[key] = dataMap.get(key)
+        }
+        bldr.call(map)
+        returnList.add(bldr.toString())
+
+        for (key in otherField) {
+            String value = dataMap.get(key)
+            if (Strings.isNullOrEmpty(value)) {
+                value = &quot;null&quot;;
+            }
+            returnList.add(value)
+        }
+        returnList
+    }
+}
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2016/2/28</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14526737654716.html">
+                
+                  <h1>hive 基础知识</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">hive查看rcfile文件内容</h2>
+
+<pre><code>hive --service rcfilecat /primary/storage/log/normal_adr/dt=2016-01-10/hour=11/part-r-00000 | more
+</code></pre>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14526737654716.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2016/1/13</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='hive.html'>hive</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14512202904632.html">
+                
+                  <h1>zookeeper 集群搭建</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">所需软件：</a>
+</li>
+<li>
+<a href="#toc_1">zk配置如下：</a>
+</li>
+<li>
+<a href="#toc_2">启动zk</a>
+</li>
+<li>
+<a href="#toc_3">配置参数</a>
+</li>
+</ul>
+
+
+<h2 id="toc_0">所需软件：</h2>
+
+<p>1.jdk 1.7.0<br/>
+2.zookeeper-3.4.7<br/>
+3.服务器三台：192.168.100.30 192.168.100.31 192.168.100.32</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14512202904632.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/27</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='zookeeper.html'>zookeeper</a></span>
+          				  
+          					    <span class="posted-in"><a href='kafka.html'>kafka</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14509667777496.html">
+                
+                  <h1>kafa 消费者和生产者实例</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">Kafka消费者编程模型</a>
+<ul>
+<li>
+<a href="#toc_1">分区消费模型</a>
+</li>
+<li>
+<a href="#toc_2">组消费模型</a>
+</li>
+<li>
+<a href="#toc_3">两种消费模型对比</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_4">kafka Consumer Java客户端实现</a>
+</li>
+<li>
+<a href="#toc_5">kafka生产者消费模型</a>
+<ul>
+<li>
+<a href="#toc_6">同步生产模型</a>
+</li>
+<li>
+<a href="#toc_7">异步生产模型</a>
+</li>
+<li>
+<a href="#toc_8">两种生产模型的伪代码</a>
+</li>
+<li>
+<a href="#toc_9">两种生产模型对比</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_10">生产者消费者实现</a>
+</li>
+</ul>
+
+
+<h2 id="toc_0">Kafka消费者编程模型</h2>
+
+<h3 id="toc_1">分区消费模型</h3>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14509667777496.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/24</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='kafka.html'>kafka</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14507946663861.html">
+                
+                  <h1>kafa集群搭建</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">所需软件</a>
+</li>
+<li>
+<a href="#toc_1">kafa server.properties</a>
+<ul>
+<li>
+<a href="#toc_2">启动kafka</a>
+</li>
+<li>
+<a href="#toc_3">进入zk客户端查看目录</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<h2 id="toc_0">所需软件</h2>
+
+<ul>
+<li>jdk 1.7</li>
+<li>kafka_2.11-0.8.2.2</li>
+<li>已安装好的zk集群</li>
+<li>服务器三台：192.168.100.30 192.168.100.31 192.168.100.32</li>
+</ul>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14507946663861.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/22</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='kafka.html'>kafka</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14505898898089.html">
+                
+                  <h1>Awk 语言</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">程序格式</a>
+</li>
+<li>
+<a href="#toc_1">模式汇总</a>
+<ul>
+<li>
+<a href="#toc_2">BEGIN 与 END</a>
+</li>
+<li>
+<a href="#toc_3">将表达式用作模式</a>
+</li>
+<li>
+<a href="#toc_4">字符串匹配模式</a>
+<ul>
+<li>
+<a href="#toc_5">正则表达式</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_6">范围模式</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_7">动作</a>
+</li>
+</ul>
+
+
+<p>最简单的 awk 程序是一个由多个 模式–动作 语句构成的序列:</p>
+
+<pre><code>pattern { action } 
+pattern { action } 
+...
+</code></pre>
+
+<p>在某些语句中, 模式可以不存在; 还有些语句, 动作及其包围它的花括号也可以不存在. 如果程序经过 awk 检查后没有发现语法错误, 它就会每次读取一个输入行, 对读取到的每一行, 按顺序检查每一个模 式. 对每一个与当前行匹配的模式, 对应的动作就会执行. 一个缺失的模式匹配每一个输入行, 因此每一 个不带有模式的动作对每一个输入行都会执行. 只含有模式而没有动作的语句, 会打印每一个匹配模式 的输入行<br/>
+&lt;!-- more --&gt;</p>
+
+<h2 id="toc_0">程序格式</h2>
+
+<ul>
+<li>模式–动作 语句, 以及动作内的语句通常用换行符分隔, 但是若干条语句也可以出现在同一行, 只要 它们之间用分号分开即可. 一个分号可以放在任何语句的末尾.</li>
+<li><strong>动作的左花括号必须与它的模式在同一行</strong>; 而剩下的部分, 包括右花括号, 则可以出现在下面几行.</li>
+<li>空行会被忽略; 它们可以插入在语句之前或之后, 用来提高程序的可读性. 空格与制表符可以出现在 运算符与操作数的周围, 同样也是为了提高可读性.</li>
+<li>注释可以出现在任意一行的末尾. 一个注释以井号 (#) 开始, 以换行符结束,</li>
+</ul>
+
+<h2 id="toc_1">模式汇总</h2>
+
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>BEGIN{STATEMENT}</td>
+<td>在输入被读取之前, statements 执行一次.</td>
+</tr>
+<tr>
+<td>END{STATEMENT}</td>
+<td>当所有输入被读取完毕之后, statements 执行一次</td>
+</tr>
+<tr>
+<td>expression{SATEMENT}</td>
+<td>每碰到一个使 expression 为真的输入行, statements 就执行. expression 为真指的是其值非 零或非空.</td>
+</tr>
+<tr>
+<td>/regular expression/ { statements}</td>
+<td>当碰到这样一个输入行时, statements 就执行: 输入行含有一段字符串, 而该字符串可以被regular expression 匹配.</td>
+</tr>
+<tr>
+<td>compound pattern { statements}</td>
+<td>一个复合模式将表达式用 &amp;&amp;(AND),</td>
+</tr>
+<tr>
+<td>pattern1, pattern2 { statements}</td>
+<td>一个范围模式匹配多个输入行, 这些输入行从匹配 pattern1 的行开始, 到匹配 pattern2 的行结束 (包括这两行), 对这其中的每一行执行 statements.</td>
+</tr>
+</tbody>
+</table>
+
+<p>BEGIN 与 END 不与其他模式组合. 一个范围模式不能是其他模式的一部分. BEGIN 与 END 是唯一 两个不能省略动作的模式.</p>
+
+<h3 id="toc_2">BEGIN 与 END</h3>
+
+<p>BEGIN 与 END 这两个模式匹配任何输入行. 实际情况是, 当 awk 从输入读取数据之前, BEGIN 的 语句开始执行; 当所有输入数据被读取完毕, END 的语句开始执行. 于是, BEGIN 与 END 分别提供了一 种控制初始化与扫尾的方式. BEGIN 与 END 不能与其他模式作组合. 如果有多个 BEGIN, 与其关联的动 作会按照它们在程序中出现的顺序执行, 这种行为对多个 END 同样适用. 我们通常将 BEGIN 放在程序 开头, 将 END 放在程序末尾, 虽然这并不是强制的</p>
+
+<p>BEGIN 的一个常用用途是更改输入行被分割为字段的默认方式. 分割字符由一个内建变量 FS 控 制. 默认情况下字段由空格或 (和) 制表符分割, 此时 FS 的值被设置为一个空格符. 将 FS 设置成一个非 空格字符, 就会使该字符成为字段分割符</p>
+
+<p>下面这个程序在 BEGIN 的动作里将字段字割符设置为制表符 (\t), 并在输出之前打印标题. 第二 个 printf 语句 (对每一个输入行它都会执行) 将输出格式化成一张表格, 使得每一列都刚好与标题的 列表头对齐. END 打印总和. </p>
+
+<pre><code>awk &#39;BEGIN{
+FS=&quot;\t&quot;
+area=0
+pop=0
+printf(&quot;%10s %6s %5s    %s\n\n&quot;,&quot;COUNTRY&quot;,&quot;AREA&quot;,&quot;POP&quot;,&quot;CONTINENT&quot;)}{
+     printf(&quot;%10s %6s %5d    %s\n&quot;,$1,$2,$3,$4)
+     area+=$2
+     pop+=$3
+}
+END{printf(&quot;\n %10s %6d %5d\n&quot;,&quot;TOTAL&quot;,area,pop)}
+&#39; countries
+</code></pre>
+
+<p>输出如下:</p>
+
+<pre><code> COUNTRY   AREA   POP    CONTINENT
+
+      USSR   8649   275    Asia
+    Canada   3852    25    North America
+     China   3705  1032    Asia
+       USA   3615   237          North America
+    Brazil   3286   134          South America
+     India   1267   746          Asia
+    Mexico    762    78          North America
+    France    211    55          Europe
+     Japan    144   120          Asia
+   Germany     96    61          Europe
+   England     94    56          Europe
+
+      TOTAL  25681  2819
+</code></pre>
+
+<h3 id="toc_3">将表达式用作模式</h3>
+
+<p>就像大多数程序设计语言一样, awk 拥有非常丰富的用来描述数值计算的表达式, 但是与许多语言 不同的是, awk 还有用于描述字符串操作的表达式. 贯穿全书, string 都表示一个由 0 个或多个字符组 成的序列. 这些字符串可以存储在变量中, 也可以以字符串常量的形式出现, 就像 &quot;&quot; 或 &quot;Asia&quot;. 字符 串 &quot;&quot; 不包括任何字符, 叫做 空字符串 (null string). 术语 子字符串 (substring) 表示一个字符串内部 的, 由 0 个或多个字符组成的连续序列. 对任意一个字符串, 空字符串都可以看作是该字符串第一个字 符之前的, 长度为 0 的子字符串, 或者是一对相邻字符之间的子字符串, 又或者是最后一个字符之后的子 字符串</p>
+
+<p>任意一个表达式都可以用作任意一个运算符的操作数. 如果一个表达式拥有一个数值形式的值, 而 运算符要求一个字符串值, 那么该数值会自动转换成字符串, 类似地, 当运算符要求一个数值时, 字符串 被自动转换成数值.</p>
+
+<p>任意一个表达式都可以当作模式来使用. 如果一个作为模式使用的表达式, 对当前输入行的求值结 果不空或非零, 那么该模式就匹配该行. 典型的表达式模式是那些涉及到数值或字符串比较的表达式. 一个比较表达式包含 6 种关系运算符中的一种, 或者包含两种字符串匹配运算符中的一种</p>
+
+<p>如果模式是一个比较表达式, 就像 NF &gt; 10, 当当前行使该条件满足时, 这个模式就算是匹配该输 入行, 在这里条件满足指的是当前输入行的字段数大于 10. <strong>如果模式是一个算术表达式, 就像 NF, 如果 该表达式的值非零, 那么当前输入行被匹配. 如果模式是一个字符串表达式, 当表达式的字符串值非空 时, 当前输入行被匹配.</strong></p>
+
+<p>在一个关系比较中, 如果两个操作数都是数值, 关系比较将会按照数值比较进行; <strong>否则的话, 数值操 作数会被转换成字符串, 再将操作数按字符串的形式进行比较</strong>. 两个字符串间的比较以字符为单位逐个 相比, 字符间的先后顺序依赖于机器的字符集 (大多数情况下是 ASCII 字符集). 一个字符串 “小于” 另 一个,指的是它比另一个字符串更早出现,例如&quot;Canada&quot; &lt; &quot;China&quot;,&quot;Asia&quot; &lt; &quot;Asian&quot;.</p>
+
+<h3 id="toc_4">字符串匹配模式</h3>
+
+<p>一个 字符串匹配模式 (string-matching pattern) 测试一个字符串是否包含一段可以被正则表达式 匹配的子字符串.<br/>
+最简单的正则表达式是仅由数字与字母组成的字符串, 就像 Asia, 它匹配的就是它本身. 为了将一 个正则表达式切换成一个模式, 只需要用一对斜杆包围起来即可:</p>
+
+<pre><code>/Asia/
+</code></pre>
+
+<p>字符串匹配模式</p>
+
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>/regexpr/</td>
+<td>当当前输入行包含一段能够被 regexpr 匹配的子字符串时, 该模式被匹配.</td>
+</tr>
+<tr>
+<td>regular expression ~ /regexpr/</td>
+<td>如果 expression 的字符串值包含一段能够被 regexpr 匹配的子字符时, 该模式被匹配.</td>
+</tr>
+<tr>
+<td>expression !~ /regexpr/</td>
+<td>如果 expression 的字符串值不包含能够被 regexpr 匹配的子字符串, 该模式被匹配</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>notice：</strong><br/>
+<code>/Asia/</code> 是<code>$0 ~ /Asia/</code> 的简写</p>
+
+<h4 id="toc_5">正则表达式</h4>
+
+<ol>
+<li>正则表达式的元字符包括: ^$.[]|()*+?</li>
+<li>一个基本的表达式包括下面几种:
+一个不是元字符的字符, 例如 A, 这个正则表达式匹配的就是它本身. 一个匹配特殊符号的转义字符: \t 匹配一个制表符 (见表 2.2). 一个被引用的元字符, 例如 *, 按字面意义匹配元字符.
+^ 匹配一行的开始.
+$ 匹配一行的结束.
+. 匹配任意一个字符.
+一个字符类: [ABC] 匹配字符 A, B 或 C.
+字符类可能包含缩写形式: [A-Za-z] 匹配单个字母. 一个互补的字符类: [<sup>0-9]</sup> 匹配任意一个字符, 但是除了数字.</li>
+<li>这些运算符将正则表达式组合起来:
+
+<ul>
+<li>选择: A|B匹配A或B.</li>
+<li>拼接: AB 匹配后面紧跟着 B 的 A.</li>
+<li> 闭包: A* 匹配 0 个或多个 A. </li>
+<li> 正闭包: A+ 匹配一个或多个 A. </li>
+<li> 零或一: A? 匹配空字符串或 A. </li>
+<li> 括号: (r) 匹配与 r 相同的字符串.</li>
+</ul></li>
+</ol>
+
+<p>基本的正则表达式在上面的表格中列出. 字符 <strong><code>\^$.[]|()*+?</code></strong> 叫做元字符<br/>
+为了在正则表达式中保留元字符的字面意义, 需要在字符的前面加上反斜杆. 于是, <code>\$</code> 匹配普通字符 <code>$</code>. 如果某个字符前面冠有 <code>\</code>, 我们就说该字符是被 引用 (quoted) 的.</p>
+
+<p>由一组被包围在方括号中的字符组成的正则表达式称为 字符类 (character class); 这个表达式匹配 字符类中的任意一个字符. 例如, [AEIOU] 匹配 A, E, I, O 或 U.</p>
+
+<p>符号 <code>*, + 与 ? 是一元运算符, 用来指定正则表达式的重复次数. 如果 r 是一个正则表达式, 那么 (r)*</code> 所匹配的字符串含有零个或连续多个能被 r 匹配的子符串. r? 匹配的字符串, 要么是空字符串, 要 么是能够被 r 匹配的字符串. 如果 r 是一个基本的正则表达式, 那么括号可以省略</p>
+
+<pre><code>B* 匹配空字符串, 或 B, BB, 等等. 
+AB*C 匹配 AC, 或 ABC, ABBC, 等等. 
+AB+C 匹配 ABC, 或 ABBC, ABBBC, 等等. 
+AB?C 匹配 AC 或 ABC
+[A-Z]+ 匹配由一个或多个大写字母组成的字符串. 
+(AB)+C 匹配 ABC, ABABC, ABABABC, 等等.
+</code></pre>
+
+<p>在正则表达式中, 选择运算符 | 的优先级最低, 然后是拼接运算, 最后是重复运算符 <code>*</code>, +, 与 ?. 与 算术表达式的规则一样, 优先级高的运算符优先处理. 这种规则经常使得括号被省略: <code>ab|cd 等价于 (ab)|(cd), ^ab|cd*e$ 等价于 (^ab)|(c(d*)e$)</code></p>
+
+<p>在一个匹配表达中, 一个被双引号包围的字符串, 可以与一个被斜杆包围的正则 达式互换着使用, 例如 <code>&quot;^[0-9]+$&quot;</code> 与 <code>/^[0-9]+$/</code>. 然而有一个例外, 如果被双引号包围的字符串想要匹配一个正则表达式 元字符的字面值, 当写成被斜杆包围的形式时, 就要在反斜杆的前面再加一个反斜杆来保护它</p>
+
+<pre><code>$0 ~ /(\+|-)[0-9]+/
+与
+$0 ~ &quot;(\\+|-)[0-9]+&quot;
+是等价的.
+</code></pre>
+
+<h3 id="toc_6">范围模式</h3>
+
+<p>一个范围模式由两个被逗号分开的模式组成, 正如<br/>
+pat1, pat2<br/>
+一个范围模式匹配多个输入行, 这些输入行从匹配 pat1 的行开始, 到匹配 pat2 的行结束, 包括这两行;<br/>
+pat2 可以与 pat1 匹配到同一行, 这时候模式的范围大小就退化到了一行. 作为一个例子, 模式 /Canada/, /USA/<br/>
+匹配的行从包含 Canada 的行开始, 到包含 USA 的行结束<br/>
+一旦范围的第一个模式匹配到了某个输入行, 那么整个范围模式的匹配就开始了; 如果范围模式的<br/>
+第二个模式一直都没有匹配到某个输入行, 那么范围模式会一直匹配到输入结束</p>
+
+<p>变量 FNR 表示从当前输入文件中, 到目前为止读取到的行数, 变量 FILENAME 表 示当前输入文件名; 它们两个都是内建变量. 于是, 程序</p>
+
+<p>变量 FNR 表示从当前输入文件中, 到目前为止读取到的行数, 变量 FILENAME 表 示当前输入文件名; 它们两个都是内建变量. 于是, 程序</p>
+
+<p>变量 FNR 表示从当前输入文件中, 到目前为止读取到的行数, 变量 FILENAME 表 示当前输入文件名; 它们两个都是内建变量. 于是, 程序</p>
+
+<pre><code>awk &#39;FNR == 1, FNR==5  {print FILENAME &quot;: &quot; $0 }&#39; countries
+</code></pre>
+
+<p>打印每一个输入文件的前 5 行, 并在每一行的左边加上文件名. 这个程序也可以写成下面这种形式: FNR &lt;= 5 { print FILENAME &quot;: &quot; $0 }<br/>
+一个范围模式不能是其他模式的一部分</p>
+
+<h2 id="toc_7">动作</h2>
+
+<p>动作中的语句可以包括：<br/>
+    expression, 包括常量, 变量, 赋值, 函数调用等等.</p>
+
+<pre><code>print expression-list
+printf(format, expression-list)
+if (expression) statements
+if (expression) statements else statements
+while (expression) statements
+for (expression; expression; expression) statements for (expression in array) statements
+do statements while (expression)
+break
+continue
+</code></pre>
+
+<p>内建变量</p>
+
+<p>变量</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2015/12/20</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='awk.html'>awk</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14502784682846.html">
+                
+                  <h1>kafka集群</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">服务器</h2>
+
+<pre><code>10.0.1.15x,10.0.1.15x,10.0.1.15x,10.0.1.15x
+</code></pre>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14502784682846.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/16</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='kafka.html'>kafka</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14501938059630.html">
+                
+                  <h1>AWK 语言设计</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">快速入门</a>
+<ul>
+<li>
+<a href="#toc_1">简单实例</a>
+</li>
+<li>
+<a href="#toc_2">AWK 程序的结构</a>
+</li>
+<li>
+<a href="#toc_3">运行 AWK 程序</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_4">简单的输出</a>
+</li>
+<li>
+<a href="#toc_5">更精美的输出</a>
+<ul>
+<li>
+<a href="#toc_6">字段排列</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_7">模式的组合</a>
+<ul>
+<li>
+<a href="#toc_8">BEGIN 和 END</a>
+</li>
+<li>
+<a href="#toc_9">利用awk进行计算</a>
+</li>
+<li>
+<a href="#toc_10">操作文本</a>
+</li>
+<li>
+<a href="#toc_11">字符串拼接：</a>
+</li>
+<li>
+<a href="#toc_12">打印最后一行</a>
+</li>
+<li>
+<a href="#toc_13">内建函数</a>
+<ul>
+<li>
+<a href="#toc_14">行, 单词与字符的计数</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_15">流程控制语句</a>
+<ul>
+<li>
+<a href="#toc_16">If-Else 语句</a>
+</li>
+<li>
+<a href="#toc_17">While 语句</a>
+</li>
+<li>
+<a href="#toc_18">For 语句</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_19">数组</a>
+</li>
+</ul>
+
+
+<h2 id="toc_0">快速入门</h2>
+
+<h3 id="toc_1">简单实例</h3>
+
+<ol>
+<li>数据准备 emp.data</li>
+</ol>
+
+<pre><code>name    salary  hour
+Beth    4.00    0
+Dan     3.75    0
+Kathy   4.00    10
+Mark    5.00    20
+Mary    5.50    22
+Susie   4.25    18
+</code></pre>
+
+<ol>
+<li>打印出员工工作时长大于0的员工和薪资</li>
+</ol>
+
+<pre><code>awk &#39;$3&gt;0 { print $1 ,$2*$3}&#39; emp.data
+</code></pre>
+
+<p>该命令告诉操作系统运行awk命令，被运行的程序用单引号包起来，从输入文件emp.data获取数据。被<br/>
+单引号包围的部分是完整的awk程序。它由单独的一个<strong>模式-动作</strong>语句组成，模式<code>$3&gt;0</code>匹配每一行输入，如果该行的第三列大于0，则动作<strong>{print <code>$1</code>,<code>$2</code>*<code>$3</code>}</strong>就会执行，打印出每一行的第一个字段，以及第二个字段和第三个字段的乘积</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14501938059630.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/15</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='awk.html'>awk</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14501716390726.html">
+                
+                  <h1>flume日志架构</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">日志收集系统整体架构如下图：</h2>
+
+<p><img src="media/14501716390726/14501753699574.jpg" alt=""/></p>
+
+<ul>
+<li>整个系统分为三层：Agent层，Collector和Store层。其中agent层部署在三台机器，并通过resion集群进行均衡负载。外界通过调用API，将日志传入给agent，agent负责收集外界所有日志。collector层在部署在三台服务器（共22个节点），负责收集agent传输过来的日志，并将日志持久化到hdfs，发送到kafka消息队列，供storm使用</li>
+<li>agent到collector使用LoadBalance策略，将日志均衡的发送到所有的collector上，达到负载均衡的目的</li>
+<li><p>store层，hdfs负责持久化存储消息，供离线分析使用。kafka 则给storm提供实时计算流</p>
+
+<pre><code>在agent的实际部署中，部署程序在xx1，xx2,xx3分别一套。
+xxx,xxx agent中收集的数据将会均衡负载到xx1,xx2的collector上，
+而114上agent收集到的日志将只会分发给114上的collector
+</code></pre></li>
+</ul>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14501716390726.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/15</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='flume.html'>flume</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14501042514953.html">
+                
+                  <h1>kafka入门</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">kafka 相关概念</a>
+<ul>
+<li>
+<a href="#toc_1">AMQP协议</a>
+</li>
+<li>
+<a href="#toc_2">kafka的架构</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<h2 id="toc_0">kafka 相关概念</h2>
+
+<h3 id="toc_1">AMQP协议</h3>
+
+<p><img src="media/14501042514953/14501049622527.jpg" alt=""/></p>
+
+<ul>
+<li>消费者（Consumer）:从消息队列中请求消息的客户端应用程序</li>
+<li>生产者（Producer）:向broker发布消息的客户端应用程序</li>
+<li>AMQP服务器端（broker）:用来接受生产者发送的消息并将这些消息路由给服务器中得队列</li>
+</ul>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14501042514953.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/14</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='kafka.html'>kafka</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14499219679904.html">
+                
+                  <h1>du df 命令</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>du(disk usage),顾名思义,查看目录/文件占用空间大小</p>
+
+<h2 id="toc_0">du命令</h2>
+
+<h3 id="toc_1">查看当前目录下所有目录和子目录的大小</h3>
+
+<pre><code class="language-shell">du -h
+du -ah
+</code></pre>
+
+<ul>
+<li>-h 用K,M,G易读得方式显示大小</li>
+<li>-a 显示目录和文件</li>
+</ul>
+
+<p>eg: 查看tmp目录下所有文件大小</p>
+
+<pre><code class="language-shell">du -h tmp
+du -ah tmp
+</code></pre>
+
+<p>查看当前目录及其指定深度目录的大小</p>
+
+<pre><code class="language-shell">du -h --max-depth=0
+</code></pre>
+
+<ul>
+<li>--max-depth=n 只深入到第n层目录，此处设置未0，表示不深入到子目录</li>
+</ul>
+
+<p>du命令的一些常用参数：</p>
+
+<pre><code>-a或-all 显示目录中个别文件的大小
+-b或-bytes 显示目录或文件大小时，以byte为单位
+-c或--total 除了显示个别目录或文件的大小外，同时也显示所有目录或文件的总和
+-D或--dereference-args 显示指定符号连接的源文件大小
+-h或--human-readable 以K，M，G为单位，提高信息的可读性
+-k或--kilobytes 以1024 bytes为单位
+-l或--count-links 重复计算硬件连接的文件
+-L或--dereference 显示选项中所指定符号连接的源文件大小
+-m或--megabytes 以1MB为单位
+-s或--summarize 仅显示总计
+-S或--separate-dirs 显示个别目录的大小时，并不含其子目录的大小
+-X&lt;文件&gt;或--exclude-from=&lt;文件&gt;
+--exclude=&lt;目录或文件&gt; 略过指定的目录或文件
+--exclude=&lt;目录或文件&gt; 略过指定的目录或文件
+</code></pre>
+
+<h2 id="toc_2">df 用于查看设备的空间使用率</h2>
+
+<pre><code class="language-shell">df -lh
+</code></pre>
+
+<ul>
+<li>查看设备使用率</li>
+</ul>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2015/12/12</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='liunx.html'>linux</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14498915421086.html">
+                
+                  <h1>redis3.0 config</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14498915421086.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/12</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='redis.html'>redis</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14498902282643.html">
+                
+                  <h1>redis3.0 集群搭建</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	
+
+<ul>
+<li>环境
+使用两台centos服务器，每台机器上部署三个实例，集群为三个主节点三个从节点：</li>
+</ul>
+
+<p>192.168.100.x0:6380<br/>
+192.168.100.x0:6381<br/>
+192.168.100.x0:6382</p>
+
+<p>192.158.100.x1:6380<br/>
+192.158.100.x1:6381<br/>
+192.158.100.x1:6382</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14498902282643.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/12</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='redis.html'>redis</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14498453123930.html">
+                
+                  <h1>java 和groovy的混合使用</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">开发环境搭建</a>
+</li>
+<li>
+<a href="#toc_1">groovy 中使用groovy类</a>
+</li>
+<li>
+<a href="#toc_2">利用联合编译使用混合使用Groovy和java</a>
+</li>
+<li>
+<a href="#toc_3">在Java中调用Groovy动态方法</a>
+</li>
+<li>
+<a href="#toc_4">groovy中使用java</a>
+</li>
+<li>
+<a href="#toc_5">groovy调用groovy脚本</a>
+</li>
+<li>
+<a href="#toc_6">从java中调用groovy脚本</a>
+</li>
+</ul>
+
+
+<p><strong>在应用中</strong>，我们可以在一个Java类、一个Groovy类或者一个Groovy脚本中实现某个特定功能。之后可以在Java类、Groovy类或Groovy脚本中调用该功能。图10-1展示了混合使用Java类、Groovy类和Groovy脚本的各种选择</p>
+
+<p><strong>在groovy</strong> 使用groovy类，无需做什么，直接就可以工作。我们只需要确保所依赖的类在在类路径下，要么是源码，要么是字节码。<br/>
+要再groovy类中执行groovy脚本，我们可以使用，groovyShell。<br/>
+要在java类中使用groovy脚本，则可以使用ScriptEngine API。<br/>
+如想在java中使用groovy类，或者在groovy类中使用java类，则可以使用groovy联合编译工具  </p>
+
+<p><img src="media/14498443210567/14498444142879.jpg" alt=""/></p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14498453123930.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='java.html'>java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14498451956560.html">
+                
+                  <h1>netty 入门</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">什么是netty</a>
+</li>
+<li>
+<a href="#toc_1">构成部分</a>
+<ul>
+<li>
+<a href="#toc_2">Channle</a>
+</li>
+<li>
+<a href="#toc_3">Callback</a>
+</li>
+<li>
+<a href="#toc_4">Future</a>
+</li>
+<li>
+<a href="#toc_5">Event 和 Handler</a>
+</li>
+<li>
+<a href="#toc_6">整合 Future,CallBack和Handler</a>
+</li>
+<li>
+<a href="#toc_7">Selector，Event和Event Loop</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<h2 id="toc_0">什么是netty</h2>
+
+<pre><code>Netty 是一个利用java的高级网络的的能力，隐藏了背后的复杂性而提供一个易用的api
+的客户端/服务器端框架。Netty提共高性能和高扩展性。让你可以专注自己感兴趣的东西。
+</code></pre>
+
+<h2 id="toc_1">构成部分</h2>
+
+<pre><code>非阻塞IO不迫使我们等待操作的完成。在这种能力的基础上，真正的异步IO是一个重要的一步：
+一个异步方法完成时立即返回并直接或稍后通知用户
+在一个网络环境的异步模型可以更有效的利用资源，可以快速连续执行多个调用。
+</code></pre>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14498451956560.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='java.html'>java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14498440466754.html">
+                
+                  <h1>依赖调度程序设计</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">依赖调度的意义</a>
+</li>
+<li>
+<a href="#toc_1">依赖调度设计</a>
+</li>
+<li>
+<a href="#toc_2">总结</a>
+</li>
+</ul>
+
+
+<h2 id="toc_0">依赖调度的意义</h2>
+
+<p><strong>依赖调度</strong> 故名思议实现了任务间的依赖并且能自动调度。相信大家对服务器的crontab很熟悉，简单的配置就能实现任务的自动启动，给程序员节省了大量的时间。java世界也出现了各种各样的开源任务调度，使用十分方便。</p>
+
+<p><strong>crontab 的缺点</strong> crontab 仅仅实现了任务的自动调动，对于任务间的依赖，比如A任务将要在B任务执行完成并且成功之后才启动执行，contab就显得实力不够了。</p>
+
+<p><strong>依赖</strong>的好处：</p>
+
+<p>1.可以从上二下排查任务执行情况</p>
+
+<p>2.把公司繁重的任务统一集中管理</p>
+
+<p>3.利于不同团队开发人员间的合作</p>
+
+<p><strong>crontab 的改进</strong> 我们可以基于在crontab实现可依赖任务的job调度器.</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14498440466754.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/12/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='java.html'>java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="blog.html">
+                
+                  <h1>Markdown 语法和 MWeb 写作使用说明</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">Markdown 的设计哲学</h2>
+
+<blockquote>
+<p>Markdown 的目標是實現「易讀易寫」。<br/>
+不過最需要強調的便是它的可讀性。一份使用 Markdown 格式撰寫的文件應該可以直接以純文字發佈，並且看起來不會像是由許多標籤或是格式指令所構成。<br/>
+Markdown 的語法有個主要的目的：用來作為一種網路內容的<em>寫作</em>用語言。</p>
+</blockquote>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="blog.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2015/3/21</span>
+                    
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
+
+
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
+		</div>
+	</div><!-- large 8 -->
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

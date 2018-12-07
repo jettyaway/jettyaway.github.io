@@ -1,0 +1,621 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  redis3.0 集群搭建 - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>redis3.0 集群搭建</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2015/12/12</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='redis.html'>redis</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      
+
+<ul>
+<li>环境
+使用两台centos服务器，每台机器上部署三个实例，集群为三个主节点三个从节点：</li>
+</ul>
+
+<p>192.168.100.x0:6380<br/>
+192.168.100.x0:6381<br/>
+192.168.100.x0:6382</p>
+
+<p>192.158.100.x1:6380<br/>
+192.158.100.x1:6381<br/>
+192.158.100.x1:6382</p>
+
+<span id="more"></span><!-- more -->
+
+<ul>
+<li><p>安装依赖</p>
+
+<pre><code>由于通过redis-trib.rb工具构建Redis Cluster，需要rudy环境，执行如下命令安装：
+yum -y  install zlib ruby rubygems
+安装ruby 的redis库：
+gem install redis
+</code></pre></li>
+</ul>
+
+<!-- more -->
+
+<ul>
+<li><p>安装redis3.0</p>
+
+<pre><code>  wget http://download.redis.io/releases/redis-3.0.0.tar.gz
+    tar -zxvf redis-3.0.0.tar.gz
+    mkdir redis
+    cd redis-3.0.0
+    make PREFIX=/data/redis/redis
+    make PREFIX=/data/redis/redis install
+    将集群工具复制到/data/redis/redis/bin下
+    cp /data/redis-3.0.0/src/redis-trib.rb ./bin/
+    创建数据配置目录
+    mkdir -p /data/redis/{conf,data,logs}
+</code></pre></li>
+<li><p>配置<br/>
+在两台机器上配置如下：</p></li>
+</ul>
+
+<pre><code>cd /data/redis
+cp /data/redis-3.0.0/redis.conf ./conf/redis-6380.conf 
+cp /data/redis-3.0.0/redis.conf ./conf/redis-6381.conf 
+cp /data/redis-3.0.0/redis.conf ./conf/redis-6382.conf
+</code></pre>
+
+<p>修改配置如下：</p>
+
+<pre><code>#基本配置
+daemonize  yes
+pidfile /data/redis/data/redis-6380.pid
+port 6380
+bind 192.168.36.X1
+unixsocket /data/redis/data/redis-6380.sock
+unixsocketperm 700
+timeout 300
+loglevel verbose
+logfile /data/redis/logs/redis-6380.log
+databases 16
+dbfilename dump-6380.rdb
+dir /data/redisredis/data/
+
+#aof持久化
+appendonly yes
+appendfilename appendonly-6380.aof
+appendfsync everysec
+no-appendfsync-on-rewrite yes  
+auto-aof-rewrite-percentage 80-100
+auto-aof-rewrite-min-size 64mb  
+lua-time-limit 5000
+
+#集群配置
+cluster-enabled yes
+cluster-config-file /data/redis/data/nodes-6380.conf
+cluster-node-timeout 5000
+</code></pre>
+
+<p>每个实例配置都类似，只需修改一下对应的端口，IP地址，配置文件名即可</p>
+
+<p><strong>Rdis</strong> 集群由多个运行在集群模式下的Redis实例组成，实例的集群模式需要通过配置来开启，开启集群模式的实例将可以使用集群特有的功能和命令。让集群运行至少需要三个主节点。不过建议使用6个节点，三个为主节点，三个为从节点。</p>
+
+<p>cluster-enabled：开启集群模式<br/>
+cluster-conf-file:设定了保存节点配置文件的路径，默认为nodes.conf.节点配置文件无需人为修改。它由redis在启动的时候创建，并在需要的时候自动更新<br/>
+cluster-node-timeout：集群间互相连接超时阔法值</p>
+
+<ul>
+<li><p>启动服务</p>
+
+<p>1.在两台机器上启动：</p>
+
+<pre><code> ./bin/redis-server ./conf/redis-6380.conf ;tail -f logs/redis-6380.log
+ ./bin/redis-server ./conf/redis-6381.conf ;tail -f logs/redis-6381.log
+ ./bin/redis-server ./conf/redis-6382.conf ;tail -f logs/redis-6382.log
+</code></pre>
+
+<p>启动后将看到如下日志：</p></li>
+</ul>
+
+<p><img src="media/14498902282643/14499104344968.jpg" alt=""/></p>
+
+<p>每个节点都使用 ID 而不是 IP 或者端口号来记录其他节点， 因为 IP 地址和端口号都可能会改变， 而这个独一无二的标识符（identifier）则会在节点的整个生命周期中一直保持不变</p>
+
+<p>2.集群配置</p>
+
+<p>在每台机器上启动的redis服务都是相互独立，下面我们就使用redis-trib.rb工具构建Redis Cluster。</p>
+
+<pre><code>./bin/redis-trib.rb create --replicas 1  192.168.100.x1:6380 192.168.100.x1:6381 192.168.100.x1:6382 192.168.100.x2:6380 192.168.100.x2:6381 192.168.100.x2:6382
+</code></pre>
+
+<p>命令的意义如下：<br/>
+给定 redis-trib.rb 程序的命令是 create ， 这表示我们希望创建一个新的集群。<br/>
+选项 --replicas 1 表示我们希望为集群中的每个主节点创建一个从节点。<br/>
+之后跟着的其他参数则是实例的地址列表， 我们希望程序使用这些地址所指示的实例来创建新集群。<br/>
+简单来说， 以上命令的意思就是让 redis-trib 程序创建一个包含三个主节点和三个从节点的集群</p>
+
+<p>启动日志：</p>
+
+<pre><code>[root@namenode redis]# ./bin/redis-trib.rb create --replicas 1  192.168.100.30:6380 192.168.100.30:6381 192.168.100.30:6382 192.168.100.31:6380 192.168.100.31:6381 192.168.100.31:6382
+&gt;&gt;&gt; Creating cluster
+Connecting to node 192.168.100.30:6380: OK
+Connecting to node 192.168.100.30:6381: OK
+Connecting to node 192.168.100.30:6382: OK
+Connecting to node 192.168.100.31:6380: OK
+Connecting to node 192.168.100.31:6381: OK
+Connecting to node 192.168.100.31:6382: OK
+&gt;&gt;&gt; Performing hash slots allocation on 6 nodes...
+Using 3 masters:
+192.168.100.31:6380
+192.168.100.30:6380
+192.168.100.31:6381
+Adding replica 192.168.100.30:6381 to 192.168.100.31:6380
+Adding replica 192.168.100.31:6382 to 192.168.100.30:6380
+Adding replica 192.168.100.30:6382 to 192.168.100.31:6381
+M: 8db3ab74f4a8593db3d66c2d6c902becd17b99dd 192.168.100.30:6380
+   slots:5461-10922 (5462 slots) master
+S: 5ae892c30df0e64678d769bac8f104eae0a0a421 192.168.100.30:6381
+   replicates cc35c2cb08ed6a56c2bdce72bd15d0fb442d33de
+S: 8597ba9f4598ec9f88c1d32a5b842d5ab9f0e590 192.168.100.30:6382
+   replicates c7060926abd5492cd8da9d5df80b6e599797493a
+M: cc35c2cb08ed6a56c2bdce72bd15d0fb442d33de 192.168.100.31:6380
+   slots:0-5460 (5461 slots) master
+M: c7060926abd5492cd8da9d5df80b6e599797493a 192.168.100.31:6381
+   slots:10923-16383 (5461 slots) master
+S: 3f1f9723bee1e55aed58db96791b07d1b4d766e8 192.168.100.31:6382
+   replicates 8db3ab74f4a8593db3d66c2d6c902becd17b99dd
+Can I set the above configuration? (type &#39;yes&#39; to accept): yes
+&gt;&gt;&gt; Nodes configuration updated
+&gt;&gt;&gt; Assign a different config epoch to each node
+&gt;&gt;&gt; Sending CLUSTER MEET messages to join the cluster
+Waiting for the cluster to join...
+&gt;&gt;&gt; Performing Cluster Check (using node 192.168.100.30:6380)
+M: 8db3ab74f4a8593db3d66c2d6c902becd17b99dd 192.168.100.30:6380
+   slots:5461-10922 (5462 slots) master
+M: 5ae892c30df0e64678d769bac8f104eae0a0a421 192.168.100.30:6381
+   slots: (0 slots) master
+   replicates cc35c2cb08ed6a56c2bdce72bd15d0fb442d33de
+M: 8597ba9f4598ec9f88c1d32a5b842d5ab9f0e590 192.168.100.30:6382
+   slots: (0 slots) master
+   replicates c7060926abd5492cd8da9d5df80b6e599797493a
+M: cc35c2cb08ed6a56c2bdce72bd15d0fb442d33de 192.168.100.31:6380
+   slots:0-5460 (5461 slots) master
+M: c7060926abd5492cd8da9d5df80b6e599797493a 192.168.100.31:6381
+   slots:10923-16383 (5461 slots) master
+M: 3f1f9723bee1e55aed58db96791b07d1b4d766e8 192.168.100.31:6382
+   slots: (0 slots) master
+   replicates 8db3ab74f4a8593db3d66c2d6c902becd17b99dd
+[OK] All nodes agree about slots configuration.
+&gt;&gt;&gt; Check for open slots...
+&gt;&gt;&gt; Check slots coverage...
+[OK] All 16384 slots covered.
+[root@namenode redis]#
+[root@namenode redis]# ./bin/redis-cli -packet_write_wait: Connection to 192.168.100.30: Broken pipe
+haosudeMacBook-Pro:~ hao.su$ ssh root@192.168.100.30
+Last login: Sat Dec 12 13:04:09 2015 from 192.168.100.248
+</code></pre>
+
+<p>冲启动日志中可以看出有6个节点，3个主节点为：</p>
+
+<pre><code>192.168.100.31:6380
+192.168.100.30:6380
+192.168.100.31:6381
+</code></pre>
+
+<p>每个主节点对应一个从节点：</p>
+
+<pre><code>Adding replica 192.168.100.30:6381 to 192.168.100.31:6380
+Adding replica 192.168.100.31:6382 to 192.168.100.30:6380
+Adding replica 192.168.100.30:6382 to 192.168.100.31:6381
+</code></pre>
+
+<p>slots 划分：</p>
+
+<pre><code>192.168.100.30:6380 5461-10922
+192.168.100.31:6380 0-5460
+192.168.100.31:6381 10923-16383
+</code></pre>
+
+<p><strong>redis-trib.rb</strong> 使用：</p>
+
+<pre><code>Usage: redis-trib &lt;command&gt; &lt;options&gt; &lt;arguments ...&gt;
+
+  check           host:port
+  call            host:port command arg arg .. arg
+  del-node        host:port node_id
+  reshard         host:port
+                  --yes
+                  --from &lt;arg&gt;
+                  --slots &lt;arg&gt;
+                  --to &lt;arg&gt;
+  fix             host:port
+  add-node        new_host:new_port existing_host:existing_port
+                  --master-id &lt;arg&gt;
+                  --slave
+  help            (show this help)
+  import          host:port
+                  --from &lt;arg&gt;
+  set-timeout     host:port milliseconds
+  create          host1:port1 ... hostN:portN
+                  --replicas &lt;arg&gt;
+</code></pre>
+
+<p>参数说明：<br/>
+call：执行redis命令<br/>
+create：创建一个新的集群。host1:port1 ... hostN:portN指定了用于构建Redis Cluster的所有redis实例，节点角色由顺序决定,先master之后是slave。而--replicas 则指定了为Redis Cluster中的每个Master节点配备几个Slave节点。<br/>
+add-node  将一个节点添加到集群里面， 第一个是新节点ip:port, 第二个是任意一个已存在节点ip:port，--master-id <br/>
+reshard：重新分片<br/>
+check：查看集群信息<br/>
+del-node：移除一个节点</p>
+
+<p>对于客户端redis-cli 要访问集群，在启动的时候需要添加一个-c参数，如查看集群所有节点</p>
+
+<p><img src="media/14498902282643/14499111333475.jpg" alt=""/></p>
+
+<p>进入cli：</p>
+
+<p>./bin/redis-cli -c -h 192.168.100.30 -p 6381</p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="14498915421086.html" 
+          title="Previous Post: redis3.0 config">&laquo; redis3.0 config</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14498453123930.html" 
+          title="Next Post: java 和groovy的混合使用">java 和groovy的混合使用 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

@@ -1,0 +1,793 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  AWK 语言设计 - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>AWK 语言设计</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2015/12/15</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='awk.html'>awk</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <ul>
+<li>
+<a href="#toc_0">快速入门</a>
+<ul>
+<li>
+<a href="#toc_1">简单实例</a>
+</li>
+<li>
+<a href="#toc_2">AWK 程序的结构</a>
+</li>
+<li>
+<a href="#toc_3">运行 AWK 程序</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_4">简单的输出</a>
+</li>
+<li>
+<a href="#toc_5">更精美的输出</a>
+<ul>
+<li>
+<a href="#toc_6">字段排列</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_7">模式的组合</a>
+<ul>
+<li>
+<a href="#toc_8">BEGIN 和 END</a>
+</li>
+<li>
+<a href="#toc_9">利用awk进行计算</a>
+</li>
+<li>
+<a href="#toc_10">操作文本</a>
+</li>
+<li>
+<a href="#toc_11">字符串拼接：</a>
+</li>
+<li>
+<a href="#toc_12">打印最后一行</a>
+</li>
+<li>
+<a href="#toc_13">内建函数</a>
+<ul>
+<li>
+<a href="#toc_14">行, 单词与字符的计数</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_15">流程控制语句</a>
+<ul>
+<li>
+<a href="#toc_16">If-Else 语句</a>
+</li>
+<li>
+<a href="#toc_17">While 语句</a>
+</li>
+<li>
+<a href="#toc_18">For 语句</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_19">数组</a>
+</li>
+</ul>
+
+
+<h2 id="toc_0">快速入门</h2>
+
+<h3 id="toc_1">简单实例</h3>
+
+<ol>
+<li>数据准备 emp.data</li>
+</ol>
+
+<pre><code>name    salary  hour
+Beth    4.00    0
+Dan     3.75    0
+Kathy   4.00    10
+Mark    5.00    20
+Mary    5.50    22
+Susie   4.25    18
+</code></pre>
+
+<ol>
+<li>打印出员工工作时长大于0的员工和薪资</li>
+</ol>
+
+<pre><code>awk &#39;$3&gt;0 { print $1 ,$2*$3}&#39; emp.data
+</code></pre>
+
+<p>该命令告诉操作系统运行awk命令，被运行的程序用单引号包起来，从输入文件emp.data获取数据。被<br/>
+单引号包围的部分是完整的awk程序。它由单独的一个<strong>模式-动作</strong>语句组成，模式<code>$3&gt;0</code>匹配每一行输入，如果该行的第三列大于0，则动作<strong>{print <code>$1</code>,<code>$2</code>*<code>$3</code>}</strong>就会执行，打印出每一行的第一个字段，以及第二个字段和第三个字段的乘积</p>
+
+<span id="more"></span><!-- more -->
+
+<h3 id="toc_2">AWK 程序的结构</h3>
+
+<p>在上面的命令行中, 被单引号包围的部分是使用 awk 语言编写的程序. 本章的每一个 awk 程序都是由一个或多个 模式–动作 语句组成的序列</p>
+
+<pre><code class="language-awk">pattern { action } 
+pattern { action } 
+...
+</code></pre>
+
+<p>awk 的基本操作是在由输入行组成的序列中, 陆续地扫描每一行, 搜索可以被模式 匹配 (match) 的行. “匹配”的精确含义依赖于问题中的模式,比如,对于$3 &gt; 0,意味着“条件为真”.<br/>
+每一个输入行轮流被每一个模式测试. 每匹配一个模式, 对应的动作 (可能包含多个步骤) 就会执行. 然后下一行被读取, 匹配重新开始. 这个过程会一起持续到所有的输入读取完毕</p>
+
+<h3 id="toc_3">运行 AWK 程序</h3>
+
+<p>1.采用以下方式</p>
+
+<pre><code>awk &#39;program&#39; input files
+</code></pre>
+
+<p>2.或者以下方式</p>
+
+<pre><code>awk &#39;program&#39;
+</code></pre>
+
+<p>在这种情况下, awk 会将 program 应用到你接下来在终端输入的内容上面, 直到你键入一个文件结束标 志 (Unix 系统是组合键 control-d).</p>
+
+<p>3.当程序的长度比较短时 (只有几行), 这种安排会比较方便. 如果程序比较长, 更好的做法是将它们放<br/>
+在一个单独的文件中, 如果文件名是 progfile 的话, 运行时只要键入</p>
+
+<pre><code>awk -f progfile optional list of files
+</code></pre>
+
+<h2 id="toc_4">简单的输出</h2>
+
+<p>awk 从它的输入中每次读取一行, 将行分解为一个个的字段 (默认将字段看作是非空白字符组成的 序列). 当前输入行的第一个字段叫作 <code>$1</code>, 第二个是 <code>$2</code>, 依次类推. 一整行记为 $0. 每行的字段数有可能 不一样.</p>
+
+<pre><code>{ print } 打印每一行
+{ print $0} 打印第一个字段
+NF,字段的数量 eg:{print NF,$1,$NF} 将打印每一行字段的数据，第一个字段和最后一个字段的值
+NR,表示行号
+将文本放入输出中：{print &quot;total pay for&quot;,$1,&quot;is&quot;,$2*$3}
+</code></pre>
+
+<h2 id="toc_5">更精美的输出</h2>
+
+<p>print 用于简单快速的输出. 如果你想要格式化输出, 那么就需要使用 printf 语句</p>
+
+<h3 id="toc_6">字段排列</h3>
+
+<p>printf 语句具有形式</p>
+
+<pre><code>printf(format, value1 , value2 , ... , valuen )
+</code></pre>
+
+<p>eg:</p>
+
+<pre><code>awk &#39;$2*$3&gt;50 {printf(&quot;$%.2f for %s\n&quot;,$2*$3,$1)}&#39; emp.data
+</code></pre>
+
+<p>输出如下：</p>
+
+<pre><code>$100.00 for Mark
+$121.00 for Mary
+$76.50 for Susie
+</code></pre>
+
+<p>通过文本选择内容：</p>
+
+<pre><code>awk &#39;/Susie/{print $2}&#39; emp.data
+</code></pre>
+
+<p>输出如下：</p>
+
+<pre><code>Susie   4.25    18
+</code></pre>
+
+<h2 id="toc_7">模式的组合</h2>
+
+<pre><code>awk &#39;$2&gt;=4 || $3&gt;20 {print}&#39; emp.data
+</code></pre>
+
+<pre><code>Beth    4.00    0
+Kathy   4.00    10
+Mark    5.00    20
+Mary    5.50    22
+Susie   4.25    18
+</code></pre>
+
+<p>注意以下程序</p>
+
+<pre><code>awk &#39;$2&gt;=4 ; $3&gt;20 &#39; emp.data
+</code></pre>
+
+<p>该程序输出两个条件都满足的行将被输出两次</p>
+
+<pre><code>Beth    4.00    0
+Kathy   4.00    10
+Mark    5.00    20
+Mary    5.50    22
+Mary    5.50    22
+Susie   4.25    18
+</code></pre>
+
+<h3 id="toc_8">BEGIN 和 END</h3>
+
+<p>特殊的模式 BEGIN 在第一个输入文件的第一行之前被匹配, END 在最后一个输入文件的最后一行 被处理之后匹配. 这个程序使用 BEGIN 打印一个标题:</p>
+
+<pre><code>BEGIN { print &quot;NAME     RATE    HOURS&quot;; print &quot;&quot; }
+      { print }
+</code></pre>
+
+<pre><code>awk &#39;BEGIN {print &quot;NAME RATE    HOUR&quot;;print &quot;&quot;}{print}&#39;  emp.data
+</code></pre>
+
+<p>输出：</p>
+
+<pre><code>NAMERATE    HOUR
+
+Beth    4.00    0
+Dan     3.75    0
+Kathy   4.00    10
+Mark    5.00    20
+Mary    5.50    22
+Susie   4.25    18
+</code></pre>
+
+<p>你可以在同一行放置多个语句, 语句之间用分号分开. 注意 print &quot;&quot; 打印一个空行, 它与一个单独的 print 并不相同, 后者打印当前行</p>
+
+<h3 id="toc_9">利用awk进行计算</h3>
+
+<p>计算工作时长超过15小时的员工数：</p>
+
+<pre><code> awk &#39;$3 &gt;15{emp=emp+1} END{print emp,&quot;work more than 15 hours&quot;}&#39; emp.data
+</code></pre>
+
+<p>输出：<br/>
+<code><br/>
+3 work more than 15 hours<br/>
+</code></p>
+
+<p>计算总共员工数：</p>
+
+<pre><code>awk &#39;END{print NR,&quot;employees&quot;}&#39; emp.data
+</code></pre>
+
+<p>内建变量 NR, 它的值是到目前为止读取到的行数; 当所有输入 都处理完毕时, 它的值就是读取到的行数.</p>
+
+<h3 id="toc_10">操作文本</h3>
+
+<p>Awk 的长处之一是它可以非常方便地对字符串进行操作, 就像大多数其他语言操作数字那样方便.<br/>
+Awk 的变量除了可以存储数值, 还可以存储字符串. 这个程序搜索每小时工资最高的雇员:</p>
+
+<pre><code>awk &#39;$2&gt;maxrate {maxrate=$2;maxemp=$1} END{print &quot;hightest hourly rate:&quot;,maxrate,&quot;for&quot;,maxemp}&#39; emp.data
+</code></pre>
+
+<p>输出：</p>
+
+<pre><code>hightest hourly rate: 5.50 for Mary
+</code></pre>
+
+<p>在这个程序里, 变量 maxrate 保存的是数值, 而 maxemp 保存的是字符串. (如果有多个雇员都拥有相 同的最高每小时工资, 这个程序只会打印第一个人的名字.)</p>
+
+<h3 id="toc_11">字符串拼接：</h3>
+
+<p>可以通过组合旧字符串来生成一个新字符串; 这个操作叫作拼接</p>
+
+<pre><code>awk &#39;{names = names $1 &quot; &quot;} END {print names}&#39;  emp.data
+</code></pre>
+
+<p>将所有雇员的名字都收集到一个单独的字符串中, 每一次拼接都是把名字与一个空格符添加到变量 names 的值的末尾. names 在 END 动作中被打印出来<br/>
+输出如下：</p>
+
+<pre><code>Beth Dan Kathy Mark Mary Susie
+</code></pre>
+
+<h3 id="toc_12">打印最后一行</h3>
+
+<p>虽然在END动作中NR值被保留，但是$0不会</p>
+
+<pre><code>awk &#39;{last=$0} END{print last}&#39; emp.data
+</code></pre>
+
+<p>输出：</p>
+
+<pre><code>Susie   4.25    18
+</code></pre>
+
+<h3 id="toc_13">内建函数</h3>
+
+<p>我们已经看到 awk 提供有内建变量, 这些变量可以用来维护经常需要用到的量, 比如字段的个数, 以及当前输入行的行号. 同样, awk 也提供用来计算其他值的内建函数. 求平方根, 取对数, 随机数, 除了 这些数学函数, 还有其他用来操作文本的函数. 其中之一是 length, 它用来计算字符串中字符的个数. 例如, 这个程序计算每一个人的名字的长度</p>
+
+<pre><code>awk &#39;{print $1,length($1)}&#39; emp.data
+</code></pre>
+
+<h4 id="toc_14">行, 单词与字符的计数</h4>
+
+<pre><code>awk &#39;{cc=cc+length($0)+1;wc=wc+NF} END{print NR,&quot;lines,&quot;,wc,&quot;words,&quot;,cc,&quot;character&quot;}&#39; emp.data
+</code></pre>
+
+<p>输出：</p>
+
+<pre><code>6 lines, 18 words, 112 character
+</code></pre>
+
+<h2 id="toc_15">流程控制语句</h2>
+
+<p> Awk 提供有用于决策的 if-else 语句, 以及循环语句, 所有的这些都来源于 C 语言. 它们只能用 在动作 (Action) 里</p>
+
+<h3 id="toc_16">If-Else 语句</h3>
+
+<p>下面这个程序计算每小时工资多于 $6.00 的雇员的总报酬与平均报酬. 在计算平均数时, 它用到了<br/>
+if 语句, 避免用 0 作除数.</p>
+
+<pre><code>awk &#39;$2&gt;6{n=n+1;pay=pay+$2*$3} END{
+ if(n&gt;0){ 
+     print n,&quot;employees,total pay is&quot;,pay,
+     &quot;average pay is&quot;,pay/n
+     }
+ else {
+     print &quot;no one &quot;
+     }
+ }&#39;  emp.data
+</code></pre>
+
+<p>输出是:</p>
+
+<pre><code>no one
+</code></pre>
+
+<pre><code class="language- 在"></code></pre>
+
+<h3 id="toc_17">While 语句</h3>
+
+<p>一个 while 含有一个条件判断与一个循环体. 当条件为真时, 循环体执行. 下面这个程序 展示了一笔钱在一个特定的利率下, 其价值如何随着投资时间的增长而增加, 价值计算的公式是 value = amount(1 + rate)years.</p>
+
+<pre><code>awk &#39;{
+i=1
+while(i&lt;$3){
+    printf(&quot;\t%.2f\n&quot;,$1*($2+1)^i)
+    i=i+1
+}
+}&#39; 
+</code></pre>
+
+<p>你可以键入三个数, 看一下不同的本金, 利率和时间会产生怎样的结果. 举个例子, 这个交易展示了 $1000 在 6% 与 12% 的利率下, 在 5 年的时间里如何升值</p>
+
+<pre><code>1000 0.6 5
+    1600.00
+    2560.00
+    4096.00
+    6553.60
+</code></pre>
+
+<h3 id="toc_18">For 语句</h3>
+
+<p>大多数循环都包括初始化, 测试, 增值, 而 for 语句将这三者压缩成一行,<br/>
+这里是前一个计算投资回报的程序, 不过这次用 for 循环:</p>
+
+<pre><code>awk &#39;
+{
+    for (i=1 ; i&lt;$3 ;i++ ) {
+        printf(&quot;\t%.2f\n&quot;, $1*($2+1)^i)
+    }
+}
+&#39;
+</code></pre>
+
+<h2 id="toc_19">数组</h2>
+
+<p>Awk 提供了数组, 用来存储一组相关的值. 虽然数组给予了 awk 非常可观的力量, 但是我们在这 里只展示一个简单的例子. 下面这个程序按行逆序显示输入数据. 第一个动作将输入行放入数组 line 的下一个元素中; 也就是说, 第一行放入 line[1], 第二行放入 line[2], 依次类推. END 动作用一个 while 循环, 从数组的最后一个元素开始打印, 一直打印到第一个元素为止:</p>
+
+<pre><code>awk &#39;{
+line[NR]=$0
+}
+END{
+ i=NR
+ while(i&gt;0){
+    print line[i]
+    i--
+ }
+}
+&#39; emp.data
+
+</code></pre>
+
+<p>输出如下：</p>
+
+<pre><code>Susie   4.25    18
+Mary    5.50    22
+Mark    5.00    20
+Kathy   4.00    10
+Dan     3.75    0
+Beth    4.00    0
+</code></pre>
+
+<p>用for循环实现等价程序</p>
+
+<pre><code>awk &#39;{line[NR]=$0}END{
+for(i=NR;i&gt;0;i--){
+    print line[i]
+}
+}&#39; emp.data
+
+</code></pre>
+
+<p>总结:</p>
+
+<p>每个程序都是由多个 模式–动作 语句组成的序列. Awk 用模 式测试每一个输入行, 如果模式匹配, <br/>
+对应的动作就会执行. 模式可以包括数值或字符串比较, 动作也可 以包含计算和格式化输出. <br/>
+除了可以自动从输入文件中读取数据, awk 还会将每一个输入行分割为字段. <br/>
+它还提供了一系列的内建变量与函数, 当然你也可以自己定义. <br/>
+有了这些特征的帮助, 许多实用的计算可 以用非常简短的程序实现 </p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="14502784682846.html" 
+          title="Previous Post: kafka集群">&laquo; kafka集群</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14501716390726.html" 
+          title="Next Post: flume日志架构">flume日志架构 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

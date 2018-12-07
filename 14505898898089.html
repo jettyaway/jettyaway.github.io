@@ -1,0 +1,647 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  Awk 语言 - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>Awk 语言</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2015/12/20</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='awk.html'>awk</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <ul>
+<li>
+<a href="#toc_0">程序格式</a>
+</li>
+<li>
+<a href="#toc_1">模式汇总</a>
+<ul>
+<li>
+<a href="#toc_2">BEGIN 与 END</a>
+</li>
+<li>
+<a href="#toc_3">将表达式用作模式</a>
+</li>
+<li>
+<a href="#toc_4">字符串匹配模式</a>
+<ul>
+<li>
+<a href="#toc_5">正则表达式</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_6">范围模式</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_7">动作</a>
+</li>
+</ul>
+
+
+<p>最简单的 awk 程序是一个由多个 模式–动作 语句构成的序列:</p>
+
+<pre><code>pattern { action } 
+pattern { action } 
+...
+</code></pre>
+
+<p>在某些语句中, 模式可以不存在; 还有些语句, 动作及其包围它的花括号也可以不存在. 如果程序经过 awk 检查后没有发现语法错误, 它就会每次读取一个输入行, 对读取到的每一行, 按顺序检查每一个模 式. 对每一个与当前行匹配的模式, 对应的动作就会执行. 一个缺失的模式匹配每一个输入行, 因此每一 个不带有模式的动作对每一个输入行都会执行. 只含有模式而没有动作的语句, 会打印每一个匹配模式 的输入行<br/>
+&lt;!-- more --&gt;</p>
+
+<h2 id="toc_0">程序格式</h2>
+
+<ul>
+<li>模式–动作 语句, 以及动作内的语句通常用换行符分隔, 但是若干条语句也可以出现在同一行, 只要 它们之间用分号分开即可. 一个分号可以放在任何语句的末尾.</li>
+<li><strong>动作的左花括号必须与它的模式在同一行</strong>; 而剩下的部分, 包括右花括号, 则可以出现在下面几行.</li>
+<li>空行会被忽略; 它们可以插入在语句之前或之后, 用来提高程序的可读性. 空格与制表符可以出现在 运算符与操作数的周围, 同样也是为了提高可读性.</li>
+<li>注释可以出现在任意一行的末尾. 一个注释以井号 (#) 开始, 以换行符结束,</li>
+</ul>
+
+<h2 id="toc_1">模式汇总</h2>
+
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>BEGIN{STATEMENT}</td>
+<td>在输入被读取之前, statements 执行一次.</td>
+</tr>
+<tr>
+<td>END{STATEMENT}</td>
+<td>当所有输入被读取完毕之后, statements 执行一次</td>
+</tr>
+<tr>
+<td>expression{SATEMENT}</td>
+<td>每碰到一个使 expression 为真的输入行, statements 就执行. expression 为真指的是其值非 零或非空.</td>
+</tr>
+<tr>
+<td>/regular expression/ { statements}</td>
+<td>当碰到这样一个输入行时, statements 就执行: 输入行含有一段字符串, 而该字符串可以被regular expression 匹配.</td>
+</tr>
+<tr>
+<td>compound pattern { statements}</td>
+<td>一个复合模式将表达式用 &amp;&amp;(AND),</td>
+</tr>
+<tr>
+<td>pattern1, pattern2 { statements}</td>
+<td>一个范围模式匹配多个输入行, 这些输入行从匹配 pattern1 的行开始, 到匹配 pattern2 的行结束 (包括这两行), 对这其中的每一行执行 statements.</td>
+</tr>
+</tbody>
+</table>
+
+<p>BEGIN 与 END 不与其他模式组合. 一个范围模式不能是其他模式的一部分. BEGIN 与 END 是唯一 两个不能省略动作的模式.</p>
+
+<h3 id="toc_2">BEGIN 与 END</h3>
+
+<p>BEGIN 与 END 这两个模式匹配任何输入行. 实际情况是, 当 awk 从输入读取数据之前, BEGIN 的 语句开始执行; 当所有输入数据被读取完毕, END 的语句开始执行. 于是, BEGIN 与 END 分别提供了一 种控制初始化与扫尾的方式. BEGIN 与 END 不能与其他模式作组合. 如果有多个 BEGIN, 与其关联的动 作会按照它们在程序中出现的顺序执行, 这种行为对多个 END 同样适用. 我们通常将 BEGIN 放在程序 开头, 将 END 放在程序末尾, 虽然这并不是强制的</p>
+
+<p>BEGIN 的一个常用用途是更改输入行被分割为字段的默认方式. 分割字符由一个内建变量 FS 控 制. 默认情况下字段由空格或 (和) 制表符分割, 此时 FS 的值被设置为一个空格符. 将 FS 设置成一个非 空格字符, 就会使该字符成为字段分割符</p>
+
+<p>下面这个程序在 BEGIN 的动作里将字段字割符设置为制表符 (\t), 并在输出之前打印标题. 第二 个 printf 语句 (对每一个输入行它都会执行) 将输出格式化成一张表格, 使得每一列都刚好与标题的 列表头对齐. END 打印总和. </p>
+
+<pre><code>awk &#39;BEGIN{
+FS=&quot;\t&quot;
+area=0
+pop=0
+printf(&quot;%10s %6s %5s    %s\n\n&quot;,&quot;COUNTRY&quot;,&quot;AREA&quot;,&quot;POP&quot;,&quot;CONTINENT&quot;)}{
+     printf(&quot;%10s %6s %5d    %s\n&quot;,$1,$2,$3,$4)
+     area+=$2
+     pop+=$3
+}
+END{printf(&quot;\n %10s %6d %5d\n&quot;,&quot;TOTAL&quot;,area,pop)}
+&#39; countries
+</code></pre>
+
+<p>输出如下:</p>
+
+<pre><code> COUNTRY   AREA   POP    CONTINENT
+
+      USSR   8649   275    Asia
+    Canada   3852    25    North America
+     China   3705  1032    Asia
+       USA   3615   237          North America
+    Brazil   3286   134          South America
+     India   1267   746          Asia
+    Mexico    762    78          North America
+    France    211    55          Europe
+     Japan    144   120          Asia
+   Germany     96    61          Europe
+   England     94    56          Europe
+
+      TOTAL  25681  2819
+</code></pre>
+
+<h3 id="toc_3">将表达式用作模式</h3>
+
+<p>就像大多数程序设计语言一样, awk 拥有非常丰富的用来描述数值计算的表达式, 但是与许多语言 不同的是, awk 还有用于描述字符串操作的表达式. 贯穿全书, string 都表示一个由 0 个或多个字符组 成的序列. 这些字符串可以存储在变量中, 也可以以字符串常量的形式出现, 就像 &quot;&quot; 或 &quot;Asia&quot;. 字符 串 &quot;&quot; 不包括任何字符, 叫做 空字符串 (null string). 术语 子字符串 (substring) 表示一个字符串内部 的, 由 0 个或多个字符组成的连续序列. 对任意一个字符串, 空字符串都可以看作是该字符串第一个字 符之前的, 长度为 0 的子字符串, 或者是一对相邻字符之间的子字符串, 又或者是最后一个字符之后的子 字符串</p>
+
+<p>任意一个表达式都可以用作任意一个运算符的操作数. 如果一个表达式拥有一个数值形式的值, 而 运算符要求一个字符串值, 那么该数值会自动转换成字符串, 类似地, 当运算符要求一个数值时, 字符串 被自动转换成数值.</p>
+
+<p>任意一个表达式都可以当作模式来使用. 如果一个作为模式使用的表达式, 对当前输入行的求值结 果不空或非零, 那么该模式就匹配该行. 典型的表达式模式是那些涉及到数值或字符串比较的表达式. 一个比较表达式包含 6 种关系运算符中的一种, 或者包含两种字符串匹配运算符中的一种</p>
+
+<p>如果模式是一个比较表达式, 就像 NF &gt; 10, 当当前行使该条件满足时, 这个模式就算是匹配该输 入行, 在这里条件满足指的是当前输入行的字段数大于 10. <strong>如果模式是一个算术表达式, 就像 NF, 如果 该表达式的值非零, 那么当前输入行被匹配. 如果模式是一个字符串表达式, 当表达式的字符串值非空 时, 当前输入行被匹配.</strong></p>
+
+<p>在一个关系比较中, 如果两个操作数都是数值, 关系比较将会按照数值比较进行; <strong>否则的话, 数值操 作数会被转换成字符串, 再将操作数按字符串的形式进行比较</strong>. 两个字符串间的比较以字符为单位逐个 相比, 字符间的先后顺序依赖于机器的字符集 (大多数情况下是 ASCII 字符集). 一个字符串 “小于” 另 一个,指的是它比另一个字符串更早出现,例如&quot;Canada&quot; &lt; &quot;China&quot;,&quot;Asia&quot; &lt; &quot;Asian&quot;.</p>
+
+<h3 id="toc_4">字符串匹配模式</h3>
+
+<p>一个 字符串匹配模式 (string-matching pattern) 测试一个字符串是否包含一段可以被正则表达式 匹配的子字符串.<br/>
+最简单的正则表达式是仅由数字与字母组成的字符串, 就像 Asia, 它匹配的就是它本身. 为了将一 个正则表达式切换成一个模式, 只需要用一对斜杆包围起来即可:</p>
+
+<pre><code>/Asia/
+</code></pre>
+
+<p>字符串匹配模式</p>
+
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>/regexpr/</td>
+<td>当当前输入行包含一段能够被 regexpr 匹配的子字符串时, 该模式被匹配.</td>
+</tr>
+<tr>
+<td>regular expression ~ /regexpr/</td>
+<td>如果 expression 的字符串值包含一段能够被 regexpr 匹配的子字符时, 该模式被匹配.</td>
+</tr>
+<tr>
+<td>expression !~ /regexpr/</td>
+<td>如果 expression 的字符串值不包含能够被 regexpr 匹配的子字符串, 该模式被匹配</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>notice：</strong><br/>
+<code>/Asia/</code> 是<code>$0 ~ /Asia/</code> 的简写</p>
+
+<h4 id="toc_5">正则表达式</h4>
+
+<ol>
+<li>正则表达式的元字符包括: ^$.[]|()*+?</li>
+<li>一个基本的表达式包括下面几种:
+一个不是元字符的字符, 例如 A, 这个正则表达式匹配的就是它本身. 一个匹配特殊符号的转义字符: \t 匹配一个制表符 (见表 2.2). 一个被引用的元字符, 例如 *, 按字面意义匹配元字符.
+^ 匹配一行的开始.
+$ 匹配一行的结束.
+. 匹配任意一个字符.
+一个字符类: [ABC] 匹配字符 A, B 或 C.
+字符类可能包含缩写形式: [A-Za-z] 匹配单个字母. 一个互补的字符类: [<sup>0-9]</sup> 匹配任意一个字符, 但是除了数字.</li>
+<li>这些运算符将正则表达式组合起来:
+
+<ul>
+<li>选择: A|B匹配A或B.</li>
+<li>拼接: AB 匹配后面紧跟着 B 的 A.</li>
+<li> 闭包: A* 匹配 0 个或多个 A. </li>
+<li> 正闭包: A+ 匹配一个或多个 A. </li>
+<li> 零或一: A? 匹配空字符串或 A. </li>
+<li> 括号: (r) 匹配与 r 相同的字符串.</li>
+</ul></li>
+</ol>
+
+<p>基本的正则表达式在上面的表格中列出. 字符 <strong><code>\^$.[]|()*+?</code></strong> 叫做元字符<br/>
+为了在正则表达式中保留元字符的字面意义, 需要在字符的前面加上反斜杆. 于是, <code>\$</code> 匹配普通字符 <code>$</code>. 如果某个字符前面冠有 <code>\</code>, 我们就说该字符是被 引用 (quoted) 的.</p>
+
+<p>由一组被包围在方括号中的字符组成的正则表达式称为 字符类 (character class); 这个表达式匹配 字符类中的任意一个字符. 例如, [AEIOU] 匹配 A, E, I, O 或 U.</p>
+
+<p>符号 <code>*, + 与 ? 是一元运算符, 用来指定正则表达式的重复次数. 如果 r 是一个正则表达式, 那么 (r)*</code> 所匹配的字符串含有零个或连续多个能被 r 匹配的子符串. r? 匹配的字符串, 要么是空字符串, 要 么是能够被 r 匹配的字符串. 如果 r 是一个基本的正则表达式, 那么括号可以省略</p>
+
+<pre><code>B* 匹配空字符串, 或 B, BB, 等等. 
+AB*C 匹配 AC, 或 ABC, ABBC, 等等. 
+AB+C 匹配 ABC, 或 ABBC, ABBBC, 等等. 
+AB?C 匹配 AC 或 ABC
+[A-Z]+ 匹配由一个或多个大写字母组成的字符串. 
+(AB)+C 匹配 ABC, ABABC, ABABABC, 等等.
+</code></pre>
+
+<p>在正则表达式中, 选择运算符 | 的优先级最低, 然后是拼接运算, 最后是重复运算符 <code>*</code>, +, 与 ?. 与 算术表达式的规则一样, 优先级高的运算符优先处理. 这种规则经常使得括号被省略: <code>ab|cd 等价于 (ab)|(cd), ^ab|cd*e$ 等价于 (^ab)|(c(d*)e$)</code></p>
+
+<p>在一个匹配表达中, 一个被双引号包围的字符串, 可以与一个被斜杆包围的正则 达式互换着使用, 例如 <code>&quot;^[0-9]+$&quot;</code> 与 <code>/^[0-9]+$/</code>. 然而有一个例外, 如果被双引号包围的字符串想要匹配一个正则表达式 元字符的字面值, 当写成被斜杆包围的形式时, 就要在反斜杆的前面再加一个反斜杆来保护它</p>
+
+<pre><code>$0 ~ /(\+|-)[0-9]+/
+与
+$0 ~ &quot;(\\+|-)[0-9]+&quot;
+是等价的.
+</code></pre>
+
+<h3 id="toc_6">范围模式</h3>
+
+<p>一个范围模式由两个被逗号分开的模式组成, 正如<br/>
+pat1, pat2<br/>
+一个范围模式匹配多个输入行, 这些输入行从匹配 pat1 的行开始, 到匹配 pat2 的行结束, 包括这两行;<br/>
+pat2 可以与 pat1 匹配到同一行, 这时候模式的范围大小就退化到了一行. 作为一个例子, 模式 /Canada/, /USA/<br/>
+匹配的行从包含 Canada 的行开始, 到包含 USA 的行结束<br/>
+一旦范围的第一个模式匹配到了某个输入行, 那么整个范围模式的匹配就开始了; 如果范围模式的<br/>
+第二个模式一直都没有匹配到某个输入行, 那么范围模式会一直匹配到输入结束</p>
+
+<p>变量 FNR 表示从当前输入文件中, 到目前为止读取到的行数, 变量 FILENAME 表 示当前输入文件名; 它们两个都是内建变量. 于是, 程序</p>
+
+<p>变量 FNR 表示从当前输入文件中, 到目前为止读取到的行数, 变量 FILENAME 表 示当前输入文件名; 它们两个都是内建变量. 于是, 程序</p>
+
+<p>变量 FNR 表示从当前输入文件中, 到目前为止读取到的行数, 变量 FILENAME 表 示当前输入文件名; 它们两个都是内建变量. 于是, 程序</p>
+
+<pre><code>awk &#39;FNR == 1, FNR==5  {print FILENAME &quot;: &quot; $0 }&#39; countries
+</code></pre>
+
+<p>打印每一个输入文件的前 5 行, 并在每一行的左边加上文件名. 这个程序也可以写成下面这种形式: FNR &lt;= 5 { print FILENAME &quot;: &quot; $0 }<br/>
+一个范围模式不能是其他模式的一部分</p>
+
+<h2 id="toc_7">动作</h2>
+
+<p>动作中的语句可以包括：<br/>
+    expression, 包括常量, 变量, 赋值, 函数调用等等.</p>
+
+<pre><code>print expression-list
+printf(format, expression-list)
+if (expression) statements
+if (expression) statements else statements
+while (expression) statements
+for (expression; expression; expression) statements for (expression in array) statements
+do statements while (expression)
+break
+continue
+</code></pre>
+
+<p>内建变量</p>
+
+<p>变量</p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="14507946663861.html" 
+          title="Previous Post: kafa集群搭建">&laquo; kafa集群搭建</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14502784682846.html" 
+          title="Next Post: kafka集群">kafka集群 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

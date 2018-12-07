@@ -1,0 +1,695 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  剖析spark-shell - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>剖析spark-shell</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/12/20</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='spark.html'>spark</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <p>我们首先来看看spark-shell 到底做了什么，spark-shell 中有一段脚本内容如下:</p>
+
+<pre><code>function main() {
+  if $cygwin; then
+    # Workaround for issue involving JLine and Cygwin
+    # (see http://sourceforge.net/p/jline/bugs/40/).
+    # If you&#39;re using the Mintty terminal emulator in Cygwin, may need to set the
+    # &quot;Backspace sends ^H&quot; setting in &quot;Keys&quot; section of the Mintty options
+    # (see https://github.com/sbt/sbt/issues/562).
+    stty -icanon min 1 -echo &gt; /dev/null 2&gt;&amp;1
+    export SPARK_SUBMIT_OPTS=&quot;$SPARK_SUBMIT_OPTS -Djline.terminal=unix&quot;
+    &quot;${SPARK_HOME}&quot;/bin/spark-submit --class org.apache.spark.repl.Main --name &quot;Spark shell&quot; &quot;$@&quot;
+    stty icanon echo &gt; /dev/null 2&gt;&amp;1
+  else
+    export SPARK_SUBMIT_OPTS
+    &quot;${SPARK_HOME}&quot;/bin/spark-submit --class org.apache.spark.repl.Main --name &quot;Spark shell&quot; &quot;$@&quot;
+  fi
+}
+</code></pre>
+
+<span id="more"></span><!-- more -->
+
+<p>在上面的脚本中，实际上市执行了spark-submit,查看spark-submit代码：</p>
+
+<pre><code>if [ -z &quot;${SPARK_HOME}&quot; ]; then
+  export SPARK_HOME=&quot;$(cd &quot;`dirname &quot;$0&quot;`&quot;/..; pwd)&quot;
+fi
+
+# disable randomized hash for string in Python 3.3+
+export PYTHONHASHSEED=0
+
+exec &quot;${SPARK_HOME}&quot;/bin/spark-class org.apache.spark.deploy.SparkSubmit &quot;$@&quot;
+</code></pre>
+
+<p>非常简单，执行spark-class 并传入参数.继续查看spark-class 脚本内容:</p>
+
+<pre><code>if [ -z &quot;${SPARK_HOME}&quot; ]; then
+  export SPARK_HOME=&quot;$(cd &quot;`dirname &quot;$0&quot;`&quot;/..; pwd)&quot;
+fi
+
+. &quot;${SPARK_HOME}&quot;/bin/load-spark-env.sh
+</code></pre>
+
+<blockquote>
+<p>执行load-spark-env.sh 加载环境变量，稍后在讨论这个脚本</p>
+</blockquote>
+
+<pre><code>......
+build_command() {
+  &quot;$RUNNER&quot; -Xmx128m -cp &quot;$LAUNCH_CLASSPATH&quot; org.apache.spark.launcher.Main &quot;$@&quot;
+  printf &quot;%d\0&quot; $?
+}
+......
+CMD=()
+while IFS= read -d &#39;&#39; -r ARG; do
+  CMD+=(&quot;$ARG&quot;)
+done &lt; &lt;(build_command &quot;$@&quot;)
+......
+CMD=(&quot;${CMD[@]:0:$LAST}&quot;)
+exec &quot;${CMD[@]}&quot;
+
+</code></pre>
+
+<p>c从上面可以看出执行了org.apache.spark.launcher.Main ,继续打开org.apache.spark.launcher.Main 查看代码</p>
+
+<pre><code>public static void main(String[] argsArray) throws Exception {
+    checkArgument(argsArray.length &gt; 0, &quot;Not enough arguments: missing class name.&quot;);
+
+    List&lt;String&gt; args = new ArrayList&lt;&gt;(Arrays.asList(argsArray));
+    String className = args.remove(0);
+
+    boolean printLaunchCommand = !isEmpty(System.getenv(&quot;SPARK_PRINT_LAUNCH_COMMAND&quot;));
+    AbstractCommandBuilder builder;
+    if (className.equals(&quot;org.apache.spark.deploy.SparkSubmit&quot;)) {
+      try {
+        builder = new SparkSubmitCommandBuilder(args);
+      } catch (IllegalArgumentException e) {
+        printLaunchCommand = false;
+        System.err.println(&quot;Error: &quot; + e.getMessage());
+        System.err.println();
+
+        MainClassOptionParser parser = new MainClassOptionParser();
+        try {
+          parser.parse(args);
+        } catch (Exception ignored) {
+          // Ignore parsing exceptions.
+        }
+
+        List&lt;String&gt; help = new ArrayList&lt;&gt;();
+        if (parser.className != null) {
+          help.add(parser.CLASS);
+          help.add(parser.className);
+        }
+        help.add(parser.USAGE_ERROR);
+        builder = new SparkSubmitCommandBuilder(help);
+      }
+    } else {
+      builder = new SparkClassCommandBuilder(className, args);
+    }
+
+    Map&lt;String, String&gt; env = new HashMap&lt;&gt;();
+    List&lt;String&gt; cmd = builder.buildCommand(env);
+    if (printLaunchCommand) {
+      System.err.println(&quot;Spark Command: &quot; + join(&quot; &quot;, cmd));
+      System.err.println(&quot;========================================&quot;);
+    }
+
+    if (isWindows()) {
+      System.out.println(prepareWindowsCommand(cmd, env));
+    } else {
+      // In bash, use NULL as the arg separator since it cannot be used in an argument.
+      List&lt;String&gt; bashCmd = prepareBashCommand(cmd, env);
+      for (String c : bashCmd) {
+        System.out.print(c);
+        System.out.print(&#39;\0&#39;);
+      }
+    }
+  }
+</code></pre>
+
+<p>从上面的分析我们可知,spark-submit 传递给spark-class 的参数为org.apache.spark.deploy.SparkSubmit,所以在org.apache.spark.launcher.Main 执行的应该是</p>
+
+<pre><code>builder = new SparkSubmitCommandBuilder(args);
+</code></pre>
+
+<p>设置一些参数信息</p>
+
+<p>继续往下执行<strong>builder.buildCommand(env);</strong> 查看 buildCommand 内容</p>
+
+<pre><code>@Override
+  public List&lt;String&gt; buildCommand(Map&lt;String, String&gt; env)
+      throws IOException, IllegalArgumentException {
+    if (PYSPARK_SHELL.equals(appResource) &amp;&amp; isAppResourceReq) {
+      return buildPySparkShellCommand(env);
+    } else if (SPARKR_SHELL.equals(appResource) &amp;&amp; isAppResourceReq) {
+      return buildSparkRCommand(env);
+    } else {
+      return buildSparkSubmitCommand(env);
+    }
+  }
+</code></pre>
+
+<p>判断启动时的哪种环境py,shell,or submit 然后构建命令，继续查看<strong>buildSparkSubmitCommand</strong>函数</p>
+
+<p>其中有如下代码:</p>
+
+<pre><code>...
+addPermGenSizeOpt(cmd);
+    cmd.add(&quot;org.apache.spark.deploy.SparkSubmit&quot;);
+    cmd.addAll(buildSparkSubmitArgs());
+    return cmd;
+</code></pre>
+
+<p>好了继续查看org.apache.spark.deploy.SparkSubmit</p>
+
+<p>spark main 线程dump 信息</p>
+
+<pre><code>&quot;main&quot; #1 prio=5 os_prio=31 tid=0x00007f807180c800 nid=0x1c03 runnable [0x0000700003b08000]
+   java.lang.Thread.State: RUNNABLE
+    at java.io.FileInputStream.read0(Native Method)
+    at java.io.FileInputStream.read(FileInputStream.java:207)
+    at jline.internal.NonBlockingInputStream.read(NonBlockingInputStream.java:169)
+    - locked &lt;0x00000007830bf508&gt; (a jline.internal.NonBlockingInputStream)
+    at jline.internal.NonBlockingInputStream.read(NonBlockingInputStream.java:137)
+    at jline.internal.NonBlockingInputStream.read(NonBlockingInputStream.java:246)
+    at jline.internal.InputStreamReader.read(InputStreamReader.java:261)
+    - locked &lt;0x00000007830bf508&gt; (a jline.internal.NonBlockingInputStream)
+    at jline.internal.InputStreamReader.read(InputStreamReader.java:198)
+    - locked &lt;0x00000007830bf508&gt; (a jline.internal.NonBlockingInputStream)
+    at jline.console.ConsoleReader.readCharacter(ConsoleReader.java:2145)
+    at jline.console.ConsoleReader.readLine(ConsoleReader.java:2349)
+    at jline.console.ConsoleReader.readLine(ConsoleReader.java:2269)
+    at scala.tools.nsc.interpreter.jline.InteractiveReader.readOneLine(JLineReader.scala:57)
+    at scala.tools.nsc.interpreter.InteractiveReader$$anonfun$readLine$2.apply(InteractiveReader.scala:37)
+    at scala.tools.nsc.interpreter.InteractiveReader$$anonfun$readLine$2.apply(InteractiveReader.scala:37)
+    at scala.tools.nsc.interpreter.InteractiveReader$.restartSysCalls(InteractiveReader.scala:44)
+    at scala.tools.nsc.interpreter.InteractiveReader$class.readLine(InteractiveReader.scala:37)
+    at scala.tools.nsc.interpreter.jline.InteractiveReader.readLine(JLineReader.scala:28)
+    at scala.tools.nsc.interpreter.ILoop.readOneLine(ILoop.scala:404)
+        at scala.tools.nsc.interpreter.ILoop.loop(ILoop.scala:413)
+    at scala.tools.nsc.interpreter.ILoop$$anonfun$process$1.apply$mcZ$sp(ILoop.scala:923)
+    at scala.tools.nsc.interpreter.ILoop$$anonfun$process$1.apply(ILoop.scala:909)
+    at scala.tools.nsc.interpreter.ILoop$$anonfun$process$1.apply(ILoop.scala:909)
+    at scala.reflect.internal.util.ScalaClassLoader$.savingContextLoader(ScalaClassLoader.scala:97)
+    at scala.tools.nsc.interpreter.ILoop.process(ILoop.scala:909)
+    at org.apache.spark.repl.Main$.doMain(Main.scala:68)
+    at org.apache.spark.repl.Main$.main(Main.scala:51)
+    at org.apache.spark.repl.Main.main(Main.scala)
+    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    at java.lang.reflect.Method.invoke(Method.java:497)
+    at org.apache.spark.deploy.SparkSubmit$.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:736)
+    at org.apache.spark.deploy.SparkSubmit$.doRunMain$1(SparkSubmit.scala:185)
+    at org.apache.spark.deploy.SparkSubmit$.submit(SparkSubmit.scala:210)
+    at org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:124)
+    at org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)
+
+   Locked ownable synchronizers:
+    - None
+
+</code></pre>
+
+<p>从堆栈中信息中我们可以看出程序的调用顺序:SparkSubmit.main =&gt; repl.Main.main =&gt; ILoop.process<br/>
+ILoop.process 中如下代码:</p>
+
+<pre><code>def process(settings: Settings): Boolean = savingContextLoader {
+    this.settings = settings
+    createInterpreter()
+
+    // sets in to some kind of reader depending on environmental cues
+    in = in0.fold(chooseReader(settings))(r =&gt; SimpleReader(r, out, interactive = true))
+    globalFuture = future {
+      intp.initializeSynchronous()
+      loopPostInit()
+      !intp.reporter.hasErrors
+    }
+    loadFiles(settings)
+    printWelcome()
+
+    try loop() match {
+      case LineResults.EOF =&gt; out print Properties.shellInterruptedString
+      case _               =&gt;
+    }
+    catch AbstractOrMissingHandler()
+    finally closeInterpreter()
+
+    true
+  }
+</code></pre>
+
+<p>在process中我们发现调用了loadFiles并且打印Welcome信息</p>
+
+<p>SparkLoop 继承了loadFiles并且复写了loadFiles 方法 如下:</p>
+
+<pre><code>override def loadFiles(settings: Settings): Unit = {
+    initializeSpark()
+    super.loadFiles(settings)
+  }
+</code></pre>
+
+<p>在loadFiles中调度initalizeSpark ,查看源码如下:</p>
+
+<pre><code>def initializeSpark() {
+    intp.beQuietDuring {
+      processLine(&quot;&quot;&quot;
+        @transient val spark = if (org.apache.spark.repl.Main.sparkSession != null) {
+            org.apache.spark.repl.Main.sparkSession
+          } else {
+            org.apache.spark.repl.Main.createSparkSession()
+          }
+        @transient val sc = {
+          val _sc = spark.sparkContext
+          _sc.uiWebUrl.foreach(webUrl =&gt; println(s&quot;Spark context Web UI available at ${webUrl}&quot;))
+          println(&quot;Spark context available as &#39;sc&#39; &quot; +
+            s&quot;(master = ${_sc.master}, app id = ${_sc.applicationId}).&quot;)
+          println(&quot;Spark session available as &#39;spark&#39;.&quot;)
+          _sc
+        }
+        &quot;&quot;&quot;)
+      processLine(&quot;import org.apache.spark.SparkContext._&quot;)
+      processLine(&quot;import spark.implicits._&quot;)
+      processLine(&quot;import spark.sql&quot;)
+      processLine(&quot;import org.apache.spark.sql.functions._&quot;)
+      replayCommandStack = Nil // remove above commands from session history.
+    }
+  }
+</code></pre>
+
+<p>从上面可以看出，如果SparkSession 已存在，那么直接返回，否则调用<strong>createSparkSession</strong></p>
+
+<p>最后从SparkSession中返回SparkContext 查看<strong>createSparkSession</strong>源码</p>
+
+<pre><code>def createSparkSession(): SparkSession = {
+    val execUri = System.getenv(&quot;SPARK_EXECUTOR_URI&quot;)
+    conf.setIfMissing(&quot;spark.app.name&quot;, &quot;Spark shell&quot;)
+    // SparkContext will detect this configuration and register it with the RpcEnv&#39;s
+    // file server, setting spark.repl.class.uri to the actual URI for executors to
+    // use. This is sort of ugly but since executors are started as part of SparkContext
+    // initialization in certain cases, there&#39;s an initialization order issue that prevents
+    // this from being set after SparkContext is instantiated.
+    conf.set(&quot;spark.repl.class.outputDir&quot;, outputDir.getAbsolutePath())
+    if (execUri != null) {
+      conf.set(&quot;spark.executor.uri&quot;, execUri)
+    }
+    if (System.getenv(&quot;SPARK_HOME&quot;) != null) {
+      conf.setSparkHome(System.getenv(&quot;SPARK_HOME&quot;))
+    }
+
+    val builder = SparkSession.builder.config(conf)
+    if (conf.get(CATALOG_IMPLEMENTATION.key, &quot;hive&quot;).toLowerCase == &quot;hive&quot;) {
+      if (SparkSession.hiveClassesArePresent) {
+        // In the case that the property is not set at all, builder&#39;s config
+        // does not have this value set to &#39;hive&#39; yet. The original default
+        // behavior is that when there are hive classes, we use hive catalog.
+        sparkSession = builder.enableHiveSupport().getOrCreate()
+        logInfo(&quot;Created Spark session with Hive support&quot;)
+      } else {
+        // Need to change it back to &#39;in-memory&#39; if no hive classes are found
+        // in the case that the property is set to hive in spark-defaults.conf
+        builder.config(CATALOG_IMPLEMENTATION.key, &quot;in-memory&quot;)
+        sparkSession = builder.getOrCreate()
+        logInfo(&quot;Created Spark session&quot;)
+      }
+    } else {
+      // In the case that the property is set but not to &#39;hive&#39;, the internal
+      // default is &#39;in-memory&#39;. So the sparkSession will use in-memory catalog.
+      sparkSession = builder.getOrCreate()
+      logInfo(&quot;Created Spark session&quot;)
+    }
+    sparkContext = sparkSession.sparkContext
+    Signaling.cancelOnInterrupt(sparkContext)
+    sparkSession
+  }
+</code></pre>
+
+<p>这里最后使用SparkConf 设置一些必要的参数并且通过Builder 创建sparkSession 并且判断是否需要启用Hive的支持。</p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="14891158030188.html" 
+          title="Previous Post: flume 注意事项">&laquo; flume 注意事项</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14815990344230.html" 
+          title="Next Post: spark 源码编译流程">spark 源码编译流程 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

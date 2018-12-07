@@ -1,0 +1,459 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  flume 总结 - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>flume 总结</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2017/3/31</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='flume.html'>flume</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <p>这里只考虑flume本身的一些东西，对于JVM、HDFS、HBase等得暂不涉及。。。。</p>
+
+<h2 id="toc_0">一、关于Source：</h2>
+
+<p>1、spool-source：适合静态文件，即文件本身不是动态变化的；</p>
+
+<p>2、avro source可以适当提高线程数量来提高此source性能；</p>
+
+<p>3、ThriftSource在使用时有个问题需要注意，使用批量操作时出现异常并不会打印异常内容而是&quot;Thrift source %s could not append events to the channel.&quot;，这是因为源码中在出现异常时，它并未捕获异常而是获取组件名称，这是源码中的一个bug，也可以说明thrift很少有人用，否则这个问题也不会存在在很多版本中；</p>
+
+<p>4、如果一个source对应多个channel，默认就是每个channel是同样的一份数据，会把这批数据复制N份发送到N个channel中，所以如果某个channel满了会影响整体的速度的哦；</p>
+
+<p>5、ExecSource官方文档已经说明是异步的，可能会丢数据哦，尽量使用tail -F，注意是大写的；</p>
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_1">二、关于Channel：</h2>
+
+<p>1、采集节点建议使用新的复合类型的SpillableMemoryChannel，汇总节点建议采用memory channel，具体还要看实际的数据量，一般每分钟数据量超过120MB大小的flume agent都建议用memory channel(自己测的file channel处理速率大概是2M/s，不同机器、不同环境可能不同，这里只提供参考)，因为一旦此agent的channel出现溢出情况，将会导致大多数时间处于file channel(SpillableMemoryChannel本身是file channel的一个子类，而且复合channel会保证一定的event的顺序的使得读完内存中的数据后，再需要把溢出的拿走，可能这时内存已满又会溢出。。。)，性能大大降低，汇总一旦成为这样后果可想而知；</p>
+
+<p>2、调整memory 占用物理内存空间，需要两个参数byteCapacityBufferPercentage(默认是20)和byteCapacity(默认是JVM最大可用内存的0.8)来控制，计算公式是：byteCapacity = (int)((context.getLong(&quot;byteCapacity&quot;, defaultByteCapacity).longValue() * (1 - byteCapacityBufferPercentage * .01 )) /byteCapacitySlotSize)，很明显可以调节这两个参数来控制，至于byteCapacitySlotSize默认是100，将物理内存转换成槽(slot)数，这样易于管理，但是可能会浪费空间，至少我是这样想的。。。；</p>
+
+<p>3、还有一个有用的参数&quot;keep-alive&quot;这个参数用来控制channel满时影响source的发送，channel空时影响sink的消费，就是等待时间，默认是3s，超过这个时间就甩异常，一般不需配置，但是有些情况很有用，比如你得场景是每分钟开头集中发一次数据，这时每分钟的开头量可能比较大，后面会越来越小，这时你可以调大这个参数，不至于出现channel满了得情况；</p>
+
+<h2 id="toc_2">三、关于Sink：</h2>
+
+<p>1、avro sink的batch-size可以设置大一点，默认是100，增大会减少RPC次数，提高性能；</p>
+
+<p>2、内置hdfs sink的解析时间戳来设置目录或者文件前缀非常损耗性能，因为是基于正则来匹配的，可以通过修改源码来替换解析时间功能来极大提升性能，稍后我会写一篇文章来专门说明这个问题；</p>
+
+<p>3、RollingFileSink文件名不能自定义，而且不能定时滚动文件，只能按时间间隔滚动，可以自己定义sink，来做定时写文件；</p>
+
+<p>4、hdfs sink的文件名中的时间戳部分不能省去，可增加前缀、后缀以及正在写的文件的前后缀等信息；&quot;hdfs.idleTimeout&quot;这个参数很有意义，指的是正在写的hdfs文件多长时间不更新就关闭文件，建议都配置上，比如你设置了解析时间戳存不同的目录、文件名，而且rollInterval=0、rollCount=0、rollSize=1000000，如果这个时间内的数据量达不到rollSize的要求而且后续的写入新的文件中了，就是一直打开，类似情景不注意的话可能很多；&quot;hdfs.callTimeout&quot;这个参数指的是每个hdfs操作(读、写、打开、关闭等)规定的最长操作时间，每个操作都会放入&quot;hdfs.threadsPoolSize&quot;指定的线程池中得一个线程来操作；</p>
+
+<p>5、关于HBase sink(非异步hbase sink：AsyncHBaseSink)，rowkey不能自定义，而且一个serializer只能写一列，一个serializer按正则匹配多个列，性能可能存在问题，建议自己根据需求写一个hbase sink；</p>
+
+<p>6、avro sink可以配置failover和loadbalance，所用的组件和sinkgroup中的是一样的，而且也可以在此配置压缩选项，需要在avro source中配置解压缩；</p>
+
+<h2 id="toc_3">四、关于SinkGroup：</h2>
+
+<p>1、不管是loadbalance或者是failover的多个sink需要共用一个channel；</p>
+
+<p>2、loadbalance的多个sink如果都是直接输出到同一种设备，比如都是hdfs，性能并不会有明显增加，因为sinkgroup是单线程的它的process方法会轮流调用每个sink去channel中take数据，并确保处理正确，使得是顺序操作的，但是如果是发送到下一级的flume agent就不一样了，take操作是顺序的，但是下一级agent的写入操作是并行的，所以肯定是快的；</p>
+
+<p>3、其实用loadbalance在一定意义上可以起到failover的作用，生产环境量大建议loadbalance；</p>
+
+<h2 id="toc_4">五、关于监控monitor：</h2>
+
+<p>1、监控我这边做得还是比较少的，但是目前已知的有以下几种吧：cloudera manager（前提是你得安装CDH版本）、ganglia(这个天生就是支持的)、http(其实就是将统计信息jmx信息，封装成json串，使用jetty展示在浏览器中而已)、再一个就是自己实现收集监控信息，自己做(可以收集http的信息或者自己实现相应的接口实现自己的逻辑，具体可以参考我以前的博客)；</p>
+
+<p>2、简单说一下cloudera manager这种监控，最近在使用，确实很强大，可以查看实时的channel进出数据速率、channel实时容量、sink的出速率、source的入速率等等，图形化的东西确实很丰富很直观，可以提供很多flume agent整体运行情况的信息和潜在的一些信息；</p>
+
+<h2 id="toc_5">六、关于flume启动：</h2>
+
+<p>1、flume组件启动顺序：channels——&gt;sinks——&gt;sources，关闭顺序：sources——&gt;sinks——&gt;channels；</p>
+
+<p>2、自动加载配置文件功能，会先关闭所有组件，再重启所有组件；</p>
+
+<p>3、关于AbstractConfigurationProvider中的Map<Class<? extends Channel>, Map<String, Channel>&gt; channelCache这个对象，始终存储着agent中得所有channel对象，因为在动态加载时，channel中可能还有未消费完的数据，但是需要对channel重新配置，所以用以来缓存channel对象的所有数据及配置信息；</p>
+
+<p>4、通过在启动命令中添加 &quot;no-reload-conf&quot;参数为true来取消自动加载配置文件功能；</p>
+
+<h2 id="toc_6">七、关于interceptor：</h2>
+
+<p>请看我的关于这个组件的博客，传送门；</p>
+
+<p>八、关于自定义组件：sink、source、channel：</p>
+
+<p>1、channel不建议自定义哦，这个要求比较高，其他俩都是框架式的开发，往指定的方法填充自己配置、启动、关闭、业务逻辑即可，以后有机会单独写一篇文章来介绍；</p>
+
+<p>2、关于自定义组件请相信github，上面好多好多好多，可以直接用的自定义组件....；</p>
+
+<p>九、关于Flume-NG集群网络拓扑方案：</p>
+
+<p>1、在每台采集节点上部署一个flume agent，然后做一到多个汇总flume agent(loadbalance)，采集只负责收集数据发往汇总，汇总可以写HDFS、HBase、spark、本地文件、kafka等等，这样一般修改会只在汇总，agent少，维护工作少；</p>
+
+<p>2、采集节点没有部署flume agent，可能发往mongo、redis等，这时你需要自定义source或者使用sdk来将其中的数据取出并发往flume agent，这样agent就又可以充当“采集节点”或者汇总节点了，但是这样在前面相当于加了一层控制，就又多了一层风险；</p>
+
+<p>3、由于能力有限，其它未知，上面两种，第一种好些，这里看看美团的架构———— 传送门 ；</p>
+
+<p>东西比较简单，容易消化。</p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="14953349711216.html" 
+          title="Previous Post: flume-ng 源码分析-整体架构1【启动篇】">&laquo; flume-ng 源码分析-整体架构1【启动篇】</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14891158030188.html" 
+          title="Next Post: flume 注意事项">flume 注意事项 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

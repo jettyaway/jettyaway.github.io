@@ -1,0 +1,676 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  java 和groovy的混合使用 - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>java 和groovy的混合使用</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2015/12/11</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='java.html'>java</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <ul>
+<li>
+<a href="#toc_0">开发环境搭建</a>
+</li>
+<li>
+<a href="#toc_1">groovy 中使用groovy类</a>
+</li>
+<li>
+<a href="#toc_2">利用联合编译使用混合使用Groovy和java</a>
+</li>
+<li>
+<a href="#toc_3">在Java中调用Groovy动态方法</a>
+</li>
+<li>
+<a href="#toc_4">groovy中使用java</a>
+</li>
+<li>
+<a href="#toc_5">groovy调用groovy脚本</a>
+</li>
+<li>
+<a href="#toc_6">从java中调用groovy脚本</a>
+</li>
+</ul>
+
+
+<p><strong>在应用中</strong>，我们可以在一个Java类、一个Groovy类或者一个Groovy脚本中实现某个特定功能。之后可以在Java类、Groovy类或Groovy脚本中调用该功能。图10-1展示了混合使用Java类、Groovy类和Groovy脚本的各种选择</p>
+
+<p><strong>在groovy</strong> 使用groovy类，无需做什么，直接就可以工作。我们只需要确保所依赖的类在在类路径下，要么是源码，要么是字节码。<br/>
+要再groovy类中执行groovy脚本，我们可以使用，groovyShell。<br/>
+要在java类中使用groovy脚本，则可以使用ScriptEngine API。<br/>
+如想在java中使用groovy类，或者在groovy类中使用java类，则可以使用groovy联合编译工具  </p>
+
+<p><img src="media/14498443210567/14498444142879.jpg" alt=""/></p>
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">开发环境搭建</h2>
+
+<ul>
+<li>使用maven管理项目</li>
+<li>依赖最新版本groovy ，groovy-all</li>
+<li>确保你的ide下载了groovy插件。本次使用idea开发</li>
+</ul>
+
+<p>使用ide自动编译，可以帮我们省去很多手动编译的麻烦</p>
+
+<h2 id="toc_1">groovy 中使用groovy类</h2>
+
+<p>在Groovy代码中使用一个groovy类，只需要确保该类在我们的classpath下。当我们在groovy代码中引用一个groovy类时，Groovy会以该类的名字，在我们的classpath下查找.groovy文件，如果找不到则以相同的名字查找.class文件</p>
+
+<p><strong>code</strong></p>
+
+<pre><code>package com.xxx.groovy.service
+
+import groovy.transform.TypeChecked
+import groovy.transform.TypeCheckingMode
+
+
+ class GroovySerice {
+
+    @TypeChecked
+    def shoutString(String str) {
+        println &quot;Printing in uppercase&quot;
+        println str.toUpperCase()
+        println &quot;Printing again in uppercase&quot;
+        println str.toUpperCase()
+    }
+
+    @TypeChecked
+    def printInReverse(String str) {
+        println str.reverse()
+    }
+
+    @TypeChecked(TypeCheckingMode.SKIP)
+    def use(Object instance) {
+        if (instance instanceof String) {
+            println instance.length()
+        } else {
+            println instance
+        }
+    }
+
+    def pickEven(n, b, block) {//传递闭包
+        println b
+        for (int i = 0; i &lt;= n; i += 2) {
+            block(i)
+        }
+    }
+}
+</code></pre>
+
+<p>在另一个groovy类中调用groovy</p>
+
+<pre><code>package com.xxx.groovy.service
+
+class RunGroovy {
+    private GroovySerice groovySerice = new GroovySerice()
+
+    public static void main(String[] args) {
+        new RunGroovy().groovySerice.shoutString(&quot;hello world&quot;)
+    }
+}
+</code></pre>
+
+<h2 id="toc_2">利用联合编译使用混合使用Groovy和java</h2>
+
+<p>如果<strong>Groovy</strong>类是预先编译好的，那我们就可以方便地在Java中使用.class文件或JAR包。来自Java的字节码和来自Groovy的字节码，对Java而言没什么区别.</p>
+
+<p>如果我们只有<strong>Groovy源代码</strong>，而非字节码，又会怎样呢？请记住，当我们的Java类依赖其他Java类时，如果没有找到字节码，javac将编译它认为必要的任何Java类。不过javac对Groovy可没这么友好。幸好groovyc支持联合编译.当我们编译Groovy代码时，它会确定是否有任何需要编译的Java类，并负责编译它们</p>
+
+<pre><code>public class AJavaClass {
+  {
+    System.out.println(&quot;Created Java Class&quot;);
+  }
+
+  public void sayHello() { System.out.println(&quot;hello&quot;); }
+} 
+</code></pre>
+
+<hr/>
+
+<pre><code>//groovy
+new AJavaClass().sayHello() 
+</code></pre>
+
+<p>要联合编译这两个文件，我们输入这个命令：groovyc -j AJavaClass.java<br/>
+UseJavaClass.groovy -Jsource 1.6。-Jsource 1.6会把可选的选项source = 1.6发送给Java编译器。使用javap检查生成的字节码，会发现AJavaClass作为一个普通的Java类<br/>
+执行以下代码</p>
+
+<pre><code>java -classpath $GROOVY_HOME/embeddable/groovy-all-2.1.0.jar:. UseJavaClass
+</code></pre>
+
+<hr/>
+
+<p>输入如下：</p>
+
+<pre><code>Created Java Class
+hello 
+</code></pre>
+
+<p><strong><em>当然我们使用ide执行执行即可</em></strong></p>
+
+<h2 id="toc_3">在Java中调用Groovy动态方法</h2>
+
+<p>每个Groovy对象都实现了GroovyObject接口，该接口有一个叫作invokeMethod()的特殊方法。该方法接受要调用的方法的名字，以及要传递的参数。在Java这一端，invokeMethod()可以用来调用Groovy中使用元编程</p>
+
+<p>创建一个Groovy类，其中包含一个特殊方法——methodMissing()，当某个不存在的方法被调用时，该方法会介入</p>
+
+<pre><code class="language-java">    class DynamicGroovyClass {
+      def methodMissing(String name, args) {
+        println &quot;You called $name with ${args.join(&#39;, &#39;)}.&quot;
+        args.size()
+      }
+    } 
+</code></pre>
+
+<p>要从Java端调用我们期望的方法，可调用invokeMethod()，并将方法的名字和一个由参数组成的数组传给它</p>
+
+<pre><code>public class CallDynamicMethod {
+  public static void main(String[] args) {
+    groovy.lang.GroovyObject instance = new DynamicGroovyClass(); 
+
+    Object result1 = instance.invokeMethod(&quot;squeak&quot;, new Object[] {});
+    System.out.println(&quot;Received: &quot; + result1);
+
+    Object result2 =
+      instance.invokeMethod(&quot;quack&quot;, new Object[] {&quot;like&quot;, &quot;a&quot;, &quot;duck&quot;});
+    System.out.println(&quot;Received: &quot; + result2); 
+  }
+} 
+</code></pre>
+
+<p>输出结果如下：</p>
+
+<blockquote>
+<p>You called squeak with .</p>
+
+<p>Received: 0</p>
+
+<p>You called quack with like, a, duck.</p>
+
+<p>Received: 3 </p>
+</blockquote>
+
+<p>当然我们亦可以把groovy脚本当成一个字符串传入：</p>
+
+<pre><code>//groovy 代码
+package com.xxx.logclean.services
+
+import com.google.common.collect.Lists
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+/**
+ * Created by hao.su on 15/11/23.
+ */
+public class GroovyServiceImpl implements IGroovyService {
+    private Logger logger = LoggerFactory.getLogger(GroovyServiceImpl.class);
+
+    @Override
+    Object execute(String groovyScript, Map params) {
+        Class&lt;GroovyObject&gt; groovyObjectClass = parseScript(groovyScript)
+        GroovyObject groovyObject
+        try {
+            groovyObject = groovyObjectClass.newInstance()
+        } catch (any) {
+            logger.error(&quot;error when execute groovyScript:{}&quot;, any)
+            throw new RuntimeException(&quot;error,when execute groovyScript&quot;, any)
+        }
+        ArrayList&lt;String&gt; list = Lists.newArrayList();
+        return groovyObject.invokeMethod(&quot;validate&quot;, [params, list] as Object[])
+    }
+
+    private Class&lt;GroovyObject&gt; parseScript(String script) {
+        GroovyClassLoader loader = new GroovyClassLoader();
+        Class&lt;GroovyObject&gt; clazz = loader.parseClass(script)
+        clazz
+    }
+}
+</code></pre>
+
+<p>java 代码</p>
+
+<pre><code>public static void main(String[] args) {
+        Map&lt;String, Object&gt; map = Maps.newHashMap();
+        map.put(&quot;a&quot;, 1);
+        map.put(&quot;b&quot;, 2);
+        map.put(&quot;c&quot;, 3);
+        map.put(&quot;d&quot;, 4);
+        List&lt;String&gt; list = Lists.newArrayList(new String[]{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;});
+        map.put(&quot;d&quot;, 5);
+        map.put(&quot;keys&quot;,list);
+        String groovyScript = &quot;import java.util.regex.Matcher\n&quot; +
+                &quot;import java.util.regex.Pattern\n&quot; +
+                &quot;def validate(Map dataMap,List list) {\n&quot; +
+                &quot;    def returnList = []\n&quot; +
+                &quot;    List&lt;String&gt; keys = dataMap.get(\&quot;keys\&quot;)\n&quot; +
+                &quot;    for (key in keys) {\n&quot; +
+                &quot;        if (dataMap.containsKey(key)) {\n&quot; +
+                &quot;            String value = dataMap.get(key);\n&quot; +
+                &quot;            if (key == \&quot;userId\&quot;) {\n&quot; +
+                &quot;                Pattern pattern = Pattern.compile(\&quot;[0-9]*\&quot;)\n&quot; +
+                &quot;                Matcher isNum = pattern.matcher(value);\n&quot; +
+                &quot;                if (!isNum.matches()) {//过滤脏数据\n&quot; +
+                &quot;                    return []\n&quot; +
+                &quot;                }\n&quot; +
+                &quot;            }\n&quot; +
+                &quot;            returnList.add(value)\n&quot; +
+                &quot;        }\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    returnList\n&quot; +
+                &quot;}&quot;;
+        IGroovyService impl = new GroovyServiceImpl();
+        List&lt;String&gt; returnList = (List&lt;String&gt;) impl.execute(groovyScript, map);
+        for(String str:returnList){
+            System.out.println(str);
+        }
+    }
+</code></pre>
+
+<p>输出结果如下：</p>
+
+<blockquote>
+<p>1<br/>
+2<br/>
+3</p>
+</blockquote>
+
+<h2 id="toc_4">groovy中使用java</h2>
+
+<p>在Groovy中使用Java类简单且直接。如果我们想使用的Java类是JDK的一部分，可以像在Java中那样导入这些类或它们的包<br/>
+如果想使用一个自己的Java类，或者不是标准JDK中的类，在Groovy中可以像在Java中那样导入它们。请确保导入了必要的包或类，或者使用类的全限定名来引用它们</p>
+
+<pre><code>public class GreetJava {
+  public static void sayHello() {
+    System.out.println(&quot;Hello Java&quot;);
+  } 
+} 
+</code></pre>
+
+<p><strong>UseGreetJava.groovy</strong></p>
+
+<pre><code>//groovy
+com.agiledeveloper.GreetJava.sayHello() 
+</code></pre>
+
+<p>我们想从一个Groovy脚本中调用该方法，因此首先编译Java类GreetJava.<br/>
+要运行该脚本，只需要输入groovy UseGreetJava。该脚本会顺利运行，并调用GreetJava类中的sayHello()方法</p>
+
+<blockquote>
+<p>Hello Java </p>
+</blockquote>
+
+<p>在这个例子中，我们显式地编译了Java代码，然后在Groovy脚本中使用了字节码。如果想显式地编译Groovy代码，不必分别编译Java和Groovy。可以使用<strong>联合编译代替</strong></p>
+
+<h2 id="toc_5">groovy调用groovy脚本</h2>
+
+<h2 id="toc_6">从java中调用groovy脚本</h2>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="14498902282643.html" 
+          title="Previous Post: redis3.0 集群搭建">&laquo; redis3.0 集群搭建</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14498451956560.html" 
+          title="Next Post: netty 入门">netty 入门 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

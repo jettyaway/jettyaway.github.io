@@ -1,0 +1,737 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  sql 好习惯 - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>sql 好习惯</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2016/8/17</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='hive.html'>hive</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <p>我们做软件开发的，大部分人都离不开跟数据库打交道，特别是erp开发的，跟数据库打交道更是频繁，存储过程动不动就是上千行，如果数据量大，人员流动大，那么我么还能保证下一段时间系统还能流畅的运行吗？我么还能保证下一个人能看懂我么的存储过程吗？那么我结合公司平时的培训和平时个人工作经验和大家分享一下，希望对大家有帮助。</p>
+
+<p>要知道sql语句，我想我们有必要知道sqlserver查询分析器怎么执行我么sql语句的，我么很多人会看执行计划，或者用profile来监视和调优查询语句或者存储过程慢的原因，但是如果我们知道查询分析器的执行逻辑顺序，下手的时候就胸有成竹，那么下手是不是有把握点呢？<br/>
+&lt;!-- more --&gt;</p>
+
+<h2 id="toc_0">一：查询的逻辑执行顺序</h2>
+
+<p>(1) FROM &lt; left_table&gt; </p>
+
+<p>(3) &lt; join_type&gt;  JOIN &lt; right_table&gt;   (2) ON &lt; join_condition&gt; </p>
+
+<p>(4) WHERE &lt; where_condition&gt; </p>
+
+<p>(5) GROUP BY &lt; group_by_list&gt; </p>
+
+<p>(6) WITH {cube | rollup}</p>
+
+<p>(7) HAVING &lt; having_condition&gt; </p>
+
+<p>(8) SELECT  (9) DISTINCT (11) &lt; top_specification&gt;  &lt; select_list&gt; </p>
+
+<p>(10) ORDER BY &lt; order_by_list&gt; </p>
+
+<p><strong>标准的SQL 的解析顺序为:</strong></p>
+
+<p>(1).FROM 子句 组装来自不同数据源的数据</p>
+
+<p>(2).WHERE 子句 基于指定的条件对记录进行筛选</p>
+
+<p>(3).GROUP BY 子句 将数据划分为多个分组</p>
+
+<p>(4).使用聚合函数进行计算</p>
+
+<p>(5).使用HAVING子句筛选分组</p>
+
+<p>(6).计算所有的表达式</p>
+
+<p>(7).使用ORDER BY对结果集进行排序</p>
+
+<h2 id="toc_1">二 执行顺序：</h2>
+
+<p>1.FROM：对FROM子句中前两个表执行笛卡尔积生成虚拟表vt1</p>
+
+<p>2.ON:对vt1表应用ON筛选器只有满足&lt; join_condition&gt; 为真的行才被插入vt2</p>
+
+<p>3.OUTER(join)：如果指定了 OUTER JOIN保留表(preserved table)中未找到的行将行作为外部行添加到vt2 生成t3如果from包含两个以上表则对上一个联结生成的结果表和下一个表重复执行步骤和步骤直接结束</p>
+
+<p>4.WHERE：对vt3应用 WHERE 筛选器只有使&lt; where_condition&gt; 为true的行才被插入vt4</p>
+
+<p>5.GROUP BY：按GROUP BY子句中的列列表对vt4中的行分组生成vt5</p>
+
+<p>6.CUBE|ROLLUP：把超组(supergroups)插入vt6 生成vt6</p>
+
+<p>7.HAVING：对vt6应用HAVING筛选器只有使&lt; having_condition&gt; 为true的组才插入vt7</p>
+
+<p>8.SELECT：处理select列表产生vt8</p>
+
+<p>9.DISTINCT：将重复的行从vt8中去除产生vt9</p>
+
+<p>10.ORDER BY：将vt9的行按order by子句中的列列表排序生成一个游标vc10</p>
+
+<p>11.TOP：从vc10的开始处选择指定数量或比例的行生成vt11 并返回调用者</p>
+
+<p>看到这里，那么用过linqtosql的语法有点相似啊？如果我们我们了解了sqlserver执行顺序，那么我们就接下来进一步养成日常sql好习惯，也就是在实现功能同时有考虑性能的思想，数据库是能进行集合运算的工具，我们应该尽量的利用这个工具，所谓集合运算实际就是批量运算，就是尽量减少在客户端进行大数据量的循环操作，而用SQL语句或者存储过程代替。</p>
+
+<h2 id="toc_2">三、只返回需要的数据</h2>
+
+<p>返回数据到客户端至少需要数据库提取数据、网络传输数据、客户端接收数据以及客户端处理数据等环节，如果返回不需要的数据，就会增加服务器、网络和客户端的无效劳动，其害处是显而易见的，避免这类事件需要注意：</p>
+
+<p>A、横向来看，</p>
+
+<p>(1)不要写SELECT *的语句，而是选择你需要的字段。</p>
+
+<p>(2)当在SQL语句中连接多个表时, 请使用表的别名并把别名前缀于每个Column上.这样一来,就可以减少解析的时间并减少那些由Column歧义引起的语法错误。</p>
+
+<p>如有表table1（ID,col1）和table2 （ID,col2）</p>
+
+<p>Select A.ID, A.col1, B.col2</p>
+
+<p>-- Select A.ID, col1, col2 –不要这么写，不利于将来程序扩展</p>
+
+<p>from table1 A inner join table2 B on A.ID=B.ID Where …</p>
+
+<p>B、纵向来看，</p>
+
+<p>(1)合理写WHERE子句，不要写没有WHERE的SQL语句。</p>
+
+<p>(2) SELECT TOP N * --没有WHERE条件的用此替代 </p>
+
+<h2 id="toc_3">四 ：尽量少做重复的工作</h2>
+
+<p>A、控制同一语句的多次执行，特别是一些基础数据的多次执行是很多程序员很少注意的。</p>
+
+<p>B、减少多次的数据转换，也许需要数据转换是设计的问题，但是减少次数是程序员可以做到的。</p>
+
+<p>C、杜绝不必要的子查询和连接表，子查询在执行计划一般解释成外连接，多余的连接表带来额外的开销。</p>
+
+<p>D、合并对同一表同一条件的多次UPDATE，比如</p>
+
+<p>UPDATE EMPLOYEE SET FNAME=&#39;HAIWER&#39;<br/>
+WHERE EMP_ID=&#39; VPA30890F&#39; UPDATE EMPLOYEE SET LNAME=&#39;YANG&#39;<br/>
+WHERE EMP_ID=&#39; VPA30890F&#39;</p>
+
+<p>这两个语句应该合并成以下一个语句</p>
+
+<p>UPDATE EMPLOYEE SET FNAME=&#39;HAIWER&#39;,LNAME=&#39;YANG&#39;  WHERE EMP_ID=&#39; VPA30890F&#39;</p>
+
+<p>E、UPDATE操作不要拆成DELETE操作+INSERT操作的形式，虽然功能相同，但是性能差别是很大的。</p>
+
+<h2 id="toc_4">五、注意临时表和表变量的用法</h2>
+
+<p>在复杂系统中，临时表和表变量很难避免，关于临时表和表变量的用法，需要注意：</p>
+
+<p>A、如果语句很复杂，连接太多，可以考虑用临时表和表变量分步完成。</p>
+
+<p>B、如果需要多次用到一个大表的同一部分数据，考虑用临时表和表变量暂存这部分数据。</p>
+
+<p>C、如果需要综合多个表的数据，形成一个结果，可以考虑用临时表和表变量分步汇总这多个表的数据。</p>
+
+<p>D、其他情况下，应该控制临时表和表变量的使用。</p>
+
+<p>E、关于临时表和表变量的选择，很多说法是表变量在内存，速度快，应该首选表变量，但是在实际使用中发现，</p>
+
+<p>(1)主要考虑需要放在临时表的数据量，在数据量较多的情况下，临时表的速度反而更快。</p>
+
+<p>(2)执行时间段与预计执行时间(多长)</p>
+
+<p>F、关于临时表产生使用SELECT INTO和CREATE TABLE + INSERT INTO的选择，一般情况下，</p>
+
+<p>SELECT INTO会比CREATE TABLE + INSERT INTO的方法快很多，</p>
+
+<p>但是SELECT INTO会锁定TEMPDB的系统表SYSOBJECTS、SYSINDEXES、SYSCOLUMNS，在多用户并发环境下，容易阻塞其他进程，</p>
+
+<p>所以我的建议是，在并发系统中，尽量使用CREATE TABLE + INSERT INTO，而大数据量的单个语句使用中，使用SELECT INTO。</p>
+
+<h2 id="toc_5">六、子查询的用法（1）</h2>
+
+<p>子查询是一个 SELECT 查询，它嵌套在 SELECT、INSERT、UPDATE、DELETE 语句或其它子查询中。</p>
+
+<p>任何允许使用表达式的地方都可以使用子查询，子查询可以使我们的编程灵活多样，可以用来实现一些特殊的功能。但是在性能上，</p>
+
+<p>往往一个不合适的子查询用法会形成一个性能瓶颈。如果子查询的条件中使用了其外层的表的字段，这种子查询就叫作相关子查询。</p>
+
+<p>相关子查询可以用IN、NOT IN、EXISTS、NOT EXISTS引入。 关于相关子查询，应该注意：</p>
+
+<p>(1)</p>
+
+<p>A、NOT IN、NOT EXISTS的相关子查询可以改用LEFT JOIN代替写法。比如： SELECT PUB_NAME FROM PUBLISHERS WHERE PUB_ID NOT IN (SELECT PUB_ID FROM TITLES WHERE TYPE = &#39;BUSINESS&#39;) 可以改写成： SELECT A.PUB_NAME FROM PUBLISHERS A LEFT JOIN TITLES B ON B.TYPE = &#39;BUSINESS&#39; AND A.PUB_ID=B. PUB_ID WHERE B.PUB_ID IS NULL</p>
+
+<p>(2)</p>
+
+<p>SELECT TITLE FROM TITLES <br/>
+WHERE NOT EXISTS <br/>
+ (SELECT TITLE_ID FROM SALES <br/>
+WHERE TITLE_ID = TITLES.TITLE_ID)</p>
+
+<p>可以改写成：</p>
+
+<p>SELECT TITLE <br/>
+FROM TITLES LEFT JOIN SALES <br/>
+ON SALES.TITLE_ID = TITLES.TITLE_ID <br/>
+WHERE SALES.TITLE_ID IS NULL</p>
+
+<p>B、 如果保证子查询没有重复 ，IN、EXISTS的相关子查询可以用INNER JOIN 代替。比如：</p>
+
+<p>SELECT PUB_NAME <br/>
+FROM PUBLISHERS <br/>
+WHERE PUB_ID IN<br/>
+ (SELECT PUB_ID <br/>
+ FROM TITLES <br/>
+ WHERE TYPE = &#39;BUSINESS&#39;)</p>
+
+<p>可以改写成：</p>
+
+<p>SELECT A.PUB_NAME --SELECT DISTINCT A.PUB_NAME <br/>
+FROM PUBLISHERS A INNER JOIN TITLES B <br/>
+ON        B.TYPE = &#39;BUSINESS&#39; AND<br/>
+A.PUB_ID=B. PUB_ID</p>
+
+<p>(3)</p>
+
+<p>C、 IN的相关子查询用EXISTS代替，比如</p>
+
+<p>SELECT PUB_NAME FROM PUBLISHERS <br/>
+WHERE PUB_ID IN<br/>
+(SELECT PUB_ID FROM TITLES WHERE TYPE = &#39;BUSINESS&#39;)</p>
+
+<p>可以用下面语句代替：</p>
+
+<p>SELECT PUB_NAME FROM PUBLISHERS WHERE EXISTS <br/>
+(SELECT 1 FROM TITLES WHERE TYPE = &#39;BUSINESS&#39; AND<br/>
+PUB_ID= PUBLISHERS.PUB_ID)</p>
+
+<p>D、不要用COUNT(*)的子查询判断是否存在记录，最好用LEFT JOIN或者EXISTS，比如有人写这样的语句：</p>
+
+<p>SELECT JOB_DESC FROM JOBS <br/>
+WHERE (SELECT COUNT(*) FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID)=0</p>
+
+<p>应该改成：</p>
+
+<p>SELECT JOBS.JOB_DESC FROM JOBS LEFT JOIN EMPLOYEE<br/><br/>
+ON EMPLOYEE.JOB_ID=JOBS.JOB_ID <br/>
+WHERE EMPLOYEE.EMP_ID IS NULL</p>
+
+<p>SELECT JOB_DESC FROM JOBS <br/>
+WHERE (SELECT COUNT(*) FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID)&lt;&gt;0</p>
+
+<p>应该改成：</p>
+
+<p>SELECT JOB_DESC FROM JOBS <br/>
+WHERE EXISTS (SELECT 1 FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID) </p>
+
+<h2 id="toc_6">七：尽量使用索引</h2>
+
+<p>建立索引后，并不是每个查询都会使用索引，在使用索引的情况下，索引的使用效率也会有很大的差别。只要我们在查询语句中没有强制指定索引，</p>
+
+<p>索引的选择和使用方法是SQLSERVER的优化器自动作的选择，而它选择的根据是查询语句的条件以及相关表的统计信息，这就要求我们在写SQL</p>
+
+<p>语句的时候尽量使得优化器可以使用索引。为了使得优化器能高效使用索引，写语句的时候应该注意：</p>
+
+<p>（1</p>
+
+<p>A、不要对索引字段进行运算，而要想办法做变换，比如</p>
+
+<pre><code>SELECT ID FROM T WHERE NUM/2=100
+应改为:
+SELECT ID FROM T WHERE NUM=100*2
+
+SELECT ID FROM T WHERE NUM/2=NUM1
+如果NUM有索引应改为:
+SELECT ID FROM T WHERE NUM=NUM1*2
+
+如果NUM1有索引则不应该改。
+</code></pre>
+
+<p>(2)</p>
+
+<p>发现过这样的语句：</p>
+
+<pre><code>SELECT 年,月,金额 FROM 结余表  WHERE 100*年+月=2010*100+10
+应该改为：
+
+SELECT 年,月,金额 FROM 结余表 WHERE 年=2010 AND月=10
+</code></pre>
+
+<p>B、 不要对索引字段进行格式转换</p>
+
+<p>日期字段的例子：</p>
+
+<p>WHERE CONVERT(VARCHAR(10), 日期字段,120)=&#39;2010-07-15&#39;</p>
+
+<p>应该改为</p>
+
+<p>WHERE日期字段〉=&#39;2010-07-15&#39;   AND   日期字段&lt;&#39;2010-07-16&#39;</p>
+
+<p>ISNULL转换的例子：</p>
+
+<p>WHERE ISNULL(字段,&#39;&#39;)&lt;&gt;&#39;&#39;应改为:WHERE字段&lt;&gt;&#39;&#39;<br/>
+WHERE ISNULL(字段,&#39;&#39;)=&#39;&#39;不应修改<br/>
+WHERE ISNULL(字段,&#39;F&#39;) =&#39;T&#39;应改为: WHERE字段=&#39;T&#39;<br/>
+WHERE ISNULL(字段,&#39;F&#39;)&lt;&gt;&#39;T&#39;不应修改</p>
+
+<p>(3)</p>
+
+<p>C、 不要对索引字段使用函数</p>
+
+<p>WHERE LEFT(NAME, 3)=&#39;ABC&#39; 或者WHERE SUBSTRING(NAME,1, 3)=&#39;ABC&#39;</p>
+
+<p>应改为: WHERE NAME LIKE &#39;ABC%&#39;</p>
+
+<p>日期查询的例子：</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)=0<br/>
+应改为:WHERE 日期&gt;=&#39;2010-06-30&#39; AND 日期 &lt;&#39;2010-07-01&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&gt;0<br/>
+应改为:WHERE 日期 &lt;&#39;2010-06-30&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&gt;=0<br/>
+应改为:WHERE 日期 &lt;&#39;2010-07-01&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)<0<br/>
+应改为:WHERE 日期>=&#39;2010-07-01&#39;</p>
+
+<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&lt;=0<br/>
+应改为:WHERE 日期&gt;=&#39;2010-06-30&#39;</p>
+
+<p>D、不要对索引字段进行多字段连接</p>
+
+<p>比如：</p>
+
+<p>WHERE FAME+ &#39;. &#39;+LNAME=&#39;HAIWEI.YANG&#39;</p>
+
+<p>应改为:</p>
+
+<p>WHERE FNAME=&#39;HAIWEI&#39; AND LNAME=&#39;YANG&#39;</p>
+
+<h2 id="toc_7">八：多表连接的连接条件对索引的选择有着重要的意义，所以我们在写连接条件条件的时候需要特别注意。</h2>
+
+<p>A、多表连接的时候，连接条件必须写全，宁可重复，不要缺漏。</p>
+
+<p>B、连接条件尽量使用聚集索引</p>
+
+<p>C、注意ON、WHERE和HAVING部分条件的区别</p>
+
+<p>ON是最先执行， WHERE次之，HAVING最后，因为ON是先把不符合条件的记录过滤后才进行统计，它就可以减少中间运算要处理的数据，按理说应该速度是最快的，WHERE也应该比 HAVING快点的，因为它过滤数据后才进行SUM，在两个表联接时才用ON的，所以在一个表的时候，就剩下WHERE跟HAVING比较了</p>
+
+<p>考虑联接优先顺序：</p>
+
+<p>(1)INNER JOIN<br/>
+(2)LEFT JOIN (注：RIGHT JOIN 用 LEFT JOIN 替代)<br/>
+(3)CROSS JOIN</p>
+
+<p>其它注意和了解的地方有：</p>
+
+<p>A、在IN后面值的列表中，将出现最频繁的值放在最前面，出现得最少的放在最后面，减少判断的次数</p>
+
+<p>B、注意UNION和UNION ALL的区别。--允许重复数据用UNION ALL好  </p>
+
+<p>C、注意使用DISTINCT，在没有必要时不要用</p>
+
+<p>D、TRUNCATE TABLE 与 DELETE 区别</p>
+
+<p>E、减少访问数据库的次数</p>
+
+<p>还有就是我们写存储过程，如果比较长的话，最后用标记符标开，因为这样可读性很好，即使语句写的不怎么样但是语句工整，C# 有region</p>
+
+<p>sql我比较喜欢用的就是</p>
+
+<p>--startof  查询在职人数<br/>
+     sql语句<br/>
+  --end of</p>
+
+<p>正式机器上我们一般不能随便调试程序，但是很多时候程序在我们本机上没问题，但是进正式系统就有问题，但是我们又不能随便在正式机器上操作，那么怎么办呢？我们可以用回滚来调试我们的存储过程或者是sql语句，从而排错。</p>
+
+<p>BEGIN TRAN<br/>
+ UPDATE a SET 字段=&#39;&#39;<br/>
+ROLLBACK</p>
+
+<p>作业存储过程我一般会加上下面这段，这样检查错误可以放在存储过程，如果执行错误回滚操作，但是如果程序里面已经有了事务回滚，那么存储过程就不要写事务了，这样会导致事务回滚嵌套降低执行效率，但是我们很多时候可以把检查放在存储过程里，这样有利于我们解读这个存储过程，和排错。</p>
+
+<p>BEGIN TRANSACTION<br/><br/>
+--事务回滚开始       </p>
+
+<p>--检查报错<br/>
+ IF ( @@ERROR &gt; 0 )<br/><br/>
+                    BEGIN<br/><br/>
+--回滚操作<br/>
+                        ROLLBACK TRANSACTION<br/><br/>
+                        RAISERROR(&#39;删除工作报告错误&#39;, 16, 3)<br/><br/>
+                        RETURN<br/><br/>
+                    END         </p>
+
+<p>--结束事务<br/>
+  COMMIT TRANSACTION     </p>
+
+<p>好久没有写博文了，工作项目一个接一个，再加上公司人员流动，新人很多事情接不下来，加班成了家常便饭，仓促写下这些希望对大家有帮助，不对的也欢迎指点，交流互相提高。</p>
+
+<p>有错误的地方欢迎大家拍砖,希望交流和共享。</p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="14812978853380.html" 
+          title="Previous Post: 提交spark应用">&laquo; 提交spark应用</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="14714457247718.html" 
+          title="Next Post: 深入浅出 Redis Cluster 原理">深入浅出 Redis Cluster 原理 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15011626313885.html">java double 精度问题</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14967618384549.html">docker 常用命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14965523697004.html">使用 Dockerfile 定制镜像</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14962015887709.html">shell十三问之8: $(())与$()还有${}差在哪？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14961334971521.html">flume-ng源码分析-核心组件分析</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>
