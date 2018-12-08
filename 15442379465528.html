@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  flume日志架构 - IT framer
+  【转】shell 基础二十篇 - IT framer
   
   </title>
   
@@ -129,14 +129,14 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>flume日志架构</h1>
+          <h1>【转】shell 基础二十篇</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2015/12/15</span>
+          <span class="date">2018/12/8</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='flume.html'>flume</a></span>
+              <span class="posted-in"><a href='shell.html'>shell</a></span>
            
          
           <span class="comments">
@@ -149,144 +149,73 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <h2 id="toc_0">日志收集系统整体架构如下图：</h2>
+      <p><a href="http://bbs.chinaunix%5B.NET%5D(http://lib.csdn.net/base/dotnet">http://bbs.chinaunix[.NET](http://lib.csdn.net/base/dotnet</a> “.NET知识库”)/forum.PHP?mod=viewthread&amp;tid=452942</p>
 
-<p><img src="media/14501716390726/14501753699574.jpg" alt=""/></p>
+<p>编者按：由 wingger 整理的　shell基础十二篇 以及L_kernel补充的第十三——二十篇，涉及shell　编程及使用的各个方面，又附有大量的例子，极适合初学者系统学习。如果配合網中人的shell 十三問? ，效果更加明显。</p>
 
-<ul>
-<li>整个系统分为三层：Agent层，Collector和Store层。其中agent层部署在三台机器，并通过resion集群进行均衡负载。外界通过调用API，将日志传入给agent，agent负责收集外界所有日志。collector层在部署在三台服务器（共22个节点），负责收集agent传输过来的日志，并将日志持久化到hdfs，发送到kafka消息队列，供storm使用</li>
-<li>agent到collector使用LoadBalance策略，将日志均衡的发送到所有的collector上，达到负载均衡的目的</li>
-<li><p>store层，hdfs负责持久化存储消息，供离线分析使用。kafka 则给storm提供实时计算流</p>
-
-<pre><code>在agent的实际部署中，部署程序在xx1，xx2,xx3分别一套。
-xxx,xxx agent中收集的数据将会均衡负载到xx1,xx2的collector上，
-而114上agent收集到的日志将只会分发给114上的collector
-</code></pre></li>
-</ul>
+<p>这里是其中的第十章 sed. 其他各章可察看相应的 link. 　</p>
 
 <span id="more"></span><!-- more -->
 
-<h2 id="toc_1">flume详情配置</h2>
+<p>shell基础1：文件安全与权限<br/>
+<a href="http://bbs.chinaunix.net/thread-434579-1-1.html">http://bbs.chinaunix.net/thread-434579-1-1.html</a></p>
 
-<h3 id="toc_2">安装位置：</h3>
+<p>附：Linux的用户和用户组管理<br/>
+<a href="http://bbs.chinaunix.net/thread-438660-1-1.html">http://bbs.chinaunix.net/thread-438660-1-1.html</a></p>
 
-<pre><code>```
-/home/flume/flume
-```
-</code></pre>
+<p>shell基础二：查找技巧,find及xargs的使用<br/>
+<a href="http://bbs.chinaunix.net/thread-441883-1-1.html">http://bbs.chinaunix.net/thread-441883-1-1.html</a></p>
 
-<p>10.0.x.xxx 供八个节点 10.0.x.xxx 8个节点 10.0.x.xxx 6个节点    </p>
+<p>shell基础三和四：后台(crontab,at,&amp;,nohup)及(*,?,[]等)<br/>
+<a href="http://bbs.chinaunix.net/thread-442596-1-1.html">http://bbs.chinaunix.net/thread-442596-1-1.html</a></p>
 
-<h3 id="toc_3">配置详解：</h3>
+<p>shell基础五：输入和输出(echo,read,cat,管道,tee,重定向等)<br/>
+<a href="http://bbs.chinaunix.net/thread-444209-1-1.html">http://bbs.chinaunix.net/thread-444209-1-1.html</a></p>
 
-<pre><code># Name the components on this agent
+<p>shell基础六七：命令执行顺序(||及&amp;&amp;，{}及())和正则表?<br/>
+<a href="http://bbs.chinaunix.net/thread-445229-1-1.html">http://bbs.chinaunix.net/thread-445229-1-1.html</a></p>
 
-agent1.sources = source1
+<p>shell基础八：文本过滤工具（grep）<br/>
+<a href="http://bbs.chinaunix.net/thread-446683-1-1.html">http://bbs.chinaunix.net/thread-446683-1-1.html</a></p>
 
-agent1.sinks = hdfssink1 kafkasink
+<p>shell基础九：awk<br/>
+<a href="http://bbs.chinaunix.net/thread-448687-1-1.html">http://bbs.chinaunix.net/thread-448687-1-1.html</a></p>
 
-agent1.channels = hdfschannel kafkachannel
+<p>shell基础十：sed<br/>
+<a href="http://bbs.chinaunix.net/thread-452942-1-1.html">http://bbs.chinaunix.net/thread-452942-1-1.html</a></p>
 
-# Describe/configure the source
+<p>shell基础11：文件分类、合并和分割(sort,uniq,join,cut,paste,split)<br/>
+<a href="http://bbs.chinaunix.net/thread-457730-1-1.html">http://bbs.chinaunix.net/thread-457730-1-1.html</a></p>
 
-#avro source 将通过嵌入式客户端生产数据
-agent1.sources.source1.type = avro
+<p>shell基础十二:tr<br/>
+<a href="http://bbs.chinaunix.net/thread-459099-1-1.html">http://bbs.chinaunix.net/thread-459099-1-1.html</a></p>
 
-agent1.sources.source1.channels = hdfschannel kafkachannel
+<p>感谢L_kernel补充的第十三——二十篇（cjaizss添加）<br/>
+shell基础第十三篇-登录环境<br/>
+<a href="http://bbs.chinaunix.net/thread-1820174-1-1.html">http://bbs.chinaunix.net/thread-1820174-1-1.html</a></p>
 
-agent1.sources.source1.bind = 0.0.0.0
+<p>shell基础第十四篇-环境和shell变量<br/>
+<a href="http://bbs.chinaunix.net/thread-1820194-1-1.html">http://bbs.chinaunix.net/thread-1820194-1-1.html</a></p>
 
-agent1.sources.source1.port = 41414
+<p>shell基础第十五篇-引号<br/>
+<a href="http://bbs.chinaunix.net/thread-1820220-1-1.html">http://bbs.chinaunix.net/thread-1820220-1-1.html</a></p>
 
-agent1.sources.source1.interceptors = i1
+<p>shell基础第十六篇-shell脚本介绍<br/>
+<a href="http://bbs.chinaunix.net/thread-1820301-1-1.html">http://bbs.chinaunix.net/thread-1820301-1-1.html</a></p>
 
-agent1.sources.source1.interceptors.i1.type = org.apache.flume.interceptor.TimestampInterceptor$Builder
+<p>shell基础学习第十七篇-条件测试<br/>
+<a href="http://bbs.chinaunix.net/thread-1820304-1-1.html">http://bbs.chinaunix.net/thread-1820304-1-1.html</a></p>
 
-# Use sinkgroups
+<p>shell基础第十八篇-控制流结构<br/>
+<a href="http://bbs.chinaunix.net/thread-1820329-1-1.html">http://bbs.chinaunix.net/thread-1820329-1-1.html</a></p>
 
+<p>shell学习基础第十九篇-shell函数<br/>
+<a href="http://bbs.chinaunix.net/thread-1820454-1-1.html">http://bbs.chinaunix.net/thread-1820454-1-1.html</a></p>
 
-# use SPILLABLEMEMORY channel for HDFS
+<p>shell基础学习第二十篇-向脚本传递参数<br/>
+<a href="http://bbs.chinaunix.net/thread-1823335-1-1.html">http://bbs.chinaunix.net/thread-1823335-1-1.html</a></p>
 
-agent1.channels.hdfschannel.type = SPILLABLEMEMORY
-
-#内存channel中存储的event的最大数量
-agent1.channels.hdfschannel.memoryCapacity = 50000
-
-#用于设置file channel的容量，
-agent1.channels.hdfschannel.overflowCapacity = 5000000
-
-#slot数量，默认是JVM可使用的最大物理内存(可通过配置 &quot;byteCapacity&quot;参数来控制物理内存使用 )的#80% * (1 - byteCapacityBufferPercentage * .01 )) / avgEventSize得来；
-agent1.channels.hdfschannel.byteCapacity = 1000000
-
-agent1.channels.hdfschannel.checkpointDir = /data/flume/data1/flume1/checkpoint1
-agent1.channels.hdfschannel.dataDirs = /data/flume/data1/flume1/data1
-
-#Max size (in bytes) of a single log file
-agent1.channels.hdfschannel.maxFileSize = 1073741824
-
-#use kafkachannel for kafka
-
-#SPILLABLEMEMORY 内存通道，并且写file
-agent1.channels.kafkachannel.type = SPILLABLEMEMORY
-agent1.channels.kafkachannel.memoryCapacity = 50000
-agent1.channels.kafkachannel.overflowCapacity = 5000000
-agent1.channels.kafkachannel.byteCapacity = 1000000
-agent1.channels.kafkachannel.checkpointDir = /data/flume/data1/kafka/checkpoint1
-agent1.channels.kafkachannel.dataDirs = /data/flume/data1/kafka/data1
-agent1.channels.kafkachannel.maxFileSize = 1073741824
-
-
-agent1.sinks.hdfssink1.type = hdfs
-# db,table 等信息在header中加入
-agent1.sinks.hdfssink1.hdfs.path = hdfs://BJ-DB-150:8020/storage/logs/%{db}/%{table}/dt=%{date}/hour=%{hour}
-agent1.sinks.hdfssink1.hdfs.filePrefix = %{table}_158_agent1
-agent1.sinks.hdfssink1.hdfs.writeFormat = Text
-agent1.sinks.hdfssink1.hdfs.fileType = DataStream
-agent1.sinks.hdfssink1.hdfs.rollSize = 130000000
-agent1.sinks.hdfssink1.hdfs.batchSize = 10000
-agent1.sinks.hdfssink1.hdfs.rollCount = 0
-agent1.sinks.hdfssink1.hdfs.rollInterval = 3600
-agent1.sinks.hdfssink1.hdfs.threadsPoolSize=15
-agent1.sinks.hdfssink1.hdfs.callTimeout=60000
-agent1.sinks.hdfssink1.hdfs.idleTimeout=300
-agent1.sinks.hdfssink1.channel = hdfschannel
-
-# config the kafka sink
-agent1.sinks.kafkasink.type = org.apache.flume.sink.kafka.KafkaSink
-agent1.sinks.kafkasink.topic = default.topic
-
-#发送kafka地址
-agent1.sinks.kafkasink.brokerList = 10.0.1.xx1:9099,10.0.1.xx2:9099,10.0.1.xx4:9099,10.0.1.xx3:9099
-agent1.sinks.kafkasink.requiredAcks = 1
-agent1.sinks.kafkasink.batchSize = 2000
-
-#自定义partition
-agent1.sinks.kafkasink.kafka.partitioner.class=com.i7zuoye.plugin.MessagePartition
-agent1.sinks.kafkasink.kafka.producer.type=sync
-#agent1.sinks.kafkasink.kafka.serializer.class=kafka.serializer.StringEncoder
-agent1.sinks.kafkasink.channel = kafkachannel
-
-</code></pre>
-
-<h3 id="toc_4">plugin位置</h3>
-
-<pre><code>/home/flume/flume/lib/kafka-util.jar
-</code></pre>
-
-<h3 id="toc_5">flume启动方式：</h3>
-
-<pre><code>nohup bin/flume-ng agent -c conf -f conf/flume_hdfs_online1.conf -n agent1 &amp;
-</code></pre>
-
-<h3 id="toc_6">resion启动方式</h3>
-
-<pre><code>sh /home/flume/resin-flume-server/conf/start-resin.sh agent1
-</code></pre>
-
-<p>嵌入式agent程序部署位置：</p>
-
-<pre><code>/home/flume/deploy_web/agentxx_web
-</code></pre>
+<p>其它我的笔记都在我的BLOG上，呵呵，有兴趣的可以去看看</p>
 
 
     
@@ -297,16 +226,16 @@ agent1.sinks.kafkasink.channel = kafkachannel
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14501938059630.html" 
-          title="Previous Post: AWK 语言设计">&laquo; AWK 语言设计</a>
+          <a href="15442380789391.html" 
+          title="Previous Post: 【转】理解Heap Profling名词-Shallow和Retained Sizes">&laquo; 【转】理解Heap Profling名词-Shallow和Retained Sizes</a>
       
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14501042514953.html" 
-          title="Next Post: kafka入门">kafka入门 &raquo;</a>
+          <a  href="15442377600364.html" 
+          title="Next Post: mysql 分表分库【转】">mysql 分表分库【转】 &raquo;</a>
       
       </p>
         </div>

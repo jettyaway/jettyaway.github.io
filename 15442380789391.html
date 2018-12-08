@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
     
-  flume日志架构 - IT framer
+  【转】理解Heap Profling名词-Shallow和Retained Sizes - IT framer
   
   </title>
   
@@ -129,14 +129,14 @@
       <div class="markdown-body article-wrap">
        <div class="article">
           
-          <h1>flume日志架构</h1>
+          <h1>【转】理解Heap Profling名词-Shallow和Retained Sizes</h1>
      
         <div class="read-more clearfix">
-          <span class="date">2015/12/15</span>
+          <span class="date">2018/12/8</span>
 
           <span>posted in&nbsp;</span> 
           
-              <span class="posted-in"><a href='flume.html'>flume</a></span>
+              <span class="posted-in"><a href='java.html'>java</a></span>
            
          
           <span class="comments">
@@ -149,144 +149,33 @@
       </div><!-- article -->
 
       <div class="article-content">
-      <h2 id="toc_0">日志收集系统整体架构如下图：</h2>
-
-<p><img src="media/14501716390726/14501753699574.jpg" alt=""/></p>
-
-<ul>
-<li>整个系统分为三层：Agent层，Collector和Store层。其中agent层部署在三台机器，并通过resion集群进行均衡负载。外界通过调用API，将日志传入给agent，agent负责收集外界所有日志。collector层在部署在三台服务器（共22个节点），负责收集agent传输过来的日志，并将日志持久化到hdfs，发送到kafka消息队列，供storm使用</li>
-<li>agent到collector使用LoadBalance策略，将日志均衡的发送到所有的collector上，达到负载均衡的目的</li>
-<li><p>store层，hdfs负责持久化存储消息，供离线分析使用。kafka 则给storm提供实时计算流</p>
-
-<pre><code>在agent的实际部署中，部署程序在xx1，xx2,xx3分别一套。
-xxx,xxx agent中收集的数据将会均衡负载到xx1,xx2的collector上，
-而114上agent收集到的日志将只会分发给114上的collector
-</code></pre></li>
-</ul>
+      <p>所有包含Heap Profling功能的工具（MAT, Yourkit, JProfiler, TPTP等）都会使用到两个名词，一个是Shallow Size，另一个是 Retained Size.这是两个在平时不太常见的名词，本文会对这两个名词做一个详细的解释。</p>
 
 <span id="more"></span><!-- more -->
 
-<h2 id="toc_1">flume详情配置</h2>
+<p>Shallow Size<br/>
+    对象自身占用的内存大小，不包括它引用的对象。<br/>
+    针对非数组类型的对象，它的大小就是对象与它所有的成员变量大小的总和。当然这里面还会包括一些<a href="http://lib.csdn.net/base/java" title="Java 知识库">Java</a>语言特性的数据存储单元。<br/>
+    针对数组类型的对象，它的大小是数组元素对象的大小总和。</p>
 
-<h3 id="toc_2">安装位置：</h3>
+<p>Retained Size<br/>
+    Retained Size=当前对象大小+当前对象可直接或间接引用到的对象的大小总和。(间接引用的含义：A-&gt;B-&gt;C, C就是间接引用)<br/>
+    换句话说，Retained Size就是当前对象被GC后，从Heap上总共能释放掉的内存。不过，释放的时候还要排除被GC Roots直接或间接引用的对象。他们暂时不会被被当做Garbage。</p>
 
-<pre><code>```
-/home/flume/flume
-```
-</code></pre>
+<p><img src="http://img.my.csdn.net/uploads/201301/15/1358243519_6794.png" alt=""/></p>
 
-<p>10.0.x.xxx 供八个节点 10.0.x.xxx 8个节点 10.0.x.xxx 6个节点    </p>
+<p>上图中，GC Roots直接引用了A和B两个对象。</p>
 
-<h3 id="toc_3">配置详解：</h3>
+<p>A对象的Retained Size=A对象的Shallow Size</p>
 
-<pre><code># Name the components on this agent
+<p>B对象的Retained Size=B对象的Shallow Size + C对象的Shallow Size</p>
 
-agent1.sources = source1
+<p>这里不包括D对象，因为D对象被GC Roots直接引用。<br/>
+如果GC Roots不引用D对象呢？</p>
 
-agent1.sinks = hdfssink1 kafkasink
+<p><img src="http://img.my.csdn.net/uploads/201301/15/1358243533_9844.png" alt=""/></p>
 
-agent1.channels = hdfschannel kafkachannel
-
-# Describe/configure the source
-
-#avro source 将通过嵌入式客户端生产数据
-agent1.sources.source1.type = avro
-
-agent1.sources.source1.channels = hdfschannel kafkachannel
-
-agent1.sources.source1.bind = 0.0.0.0
-
-agent1.sources.source1.port = 41414
-
-agent1.sources.source1.interceptors = i1
-
-agent1.sources.source1.interceptors.i1.type = org.apache.flume.interceptor.TimestampInterceptor$Builder
-
-# Use sinkgroups
-
-
-# use SPILLABLEMEMORY channel for HDFS
-
-agent1.channels.hdfschannel.type = SPILLABLEMEMORY
-
-#内存channel中存储的event的最大数量
-agent1.channels.hdfschannel.memoryCapacity = 50000
-
-#用于设置file channel的容量，
-agent1.channels.hdfschannel.overflowCapacity = 5000000
-
-#slot数量，默认是JVM可使用的最大物理内存(可通过配置 &quot;byteCapacity&quot;参数来控制物理内存使用 )的#80% * (1 - byteCapacityBufferPercentage * .01 )) / avgEventSize得来；
-agent1.channels.hdfschannel.byteCapacity = 1000000
-
-agent1.channels.hdfschannel.checkpointDir = /data/flume/data1/flume1/checkpoint1
-agent1.channels.hdfschannel.dataDirs = /data/flume/data1/flume1/data1
-
-#Max size (in bytes) of a single log file
-agent1.channels.hdfschannel.maxFileSize = 1073741824
-
-#use kafkachannel for kafka
-
-#SPILLABLEMEMORY 内存通道，并且写file
-agent1.channels.kafkachannel.type = SPILLABLEMEMORY
-agent1.channels.kafkachannel.memoryCapacity = 50000
-agent1.channels.kafkachannel.overflowCapacity = 5000000
-agent1.channels.kafkachannel.byteCapacity = 1000000
-agent1.channels.kafkachannel.checkpointDir = /data/flume/data1/kafka/checkpoint1
-agent1.channels.kafkachannel.dataDirs = /data/flume/data1/kafka/data1
-agent1.channels.kafkachannel.maxFileSize = 1073741824
-
-
-agent1.sinks.hdfssink1.type = hdfs
-# db,table 等信息在header中加入
-agent1.sinks.hdfssink1.hdfs.path = hdfs://BJ-DB-150:8020/storage/logs/%{db}/%{table}/dt=%{date}/hour=%{hour}
-agent1.sinks.hdfssink1.hdfs.filePrefix = %{table}_158_agent1
-agent1.sinks.hdfssink1.hdfs.writeFormat = Text
-agent1.sinks.hdfssink1.hdfs.fileType = DataStream
-agent1.sinks.hdfssink1.hdfs.rollSize = 130000000
-agent1.sinks.hdfssink1.hdfs.batchSize = 10000
-agent1.sinks.hdfssink1.hdfs.rollCount = 0
-agent1.sinks.hdfssink1.hdfs.rollInterval = 3600
-agent1.sinks.hdfssink1.hdfs.threadsPoolSize=15
-agent1.sinks.hdfssink1.hdfs.callTimeout=60000
-agent1.sinks.hdfssink1.hdfs.idleTimeout=300
-agent1.sinks.hdfssink1.channel = hdfschannel
-
-# config the kafka sink
-agent1.sinks.kafkasink.type = org.apache.flume.sink.kafka.KafkaSink
-agent1.sinks.kafkasink.topic = default.topic
-
-#发送kafka地址
-agent1.sinks.kafkasink.brokerList = 10.0.1.xx1:9099,10.0.1.xx2:9099,10.0.1.xx4:9099,10.0.1.xx3:9099
-agent1.sinks.kafkasink.requiredAcks = 1
-agent1.sinks.kafkasink.batchSize = 2000
-
-#自定义partition
-agent1.sinks.kafkasink.kafka.partitioner.class=com.i7zuoye.plugin.MessagePartition
-agent1.sinks.kafkasink.kafka.producer.type=sync
-#agent1.sinks.kafkasink.kafka.serializer.class=kafka.serializer.StringEncoder
-agent1.sinks.kafkasink.channel = kafkachannel
-
-</code></pre>
-
-<h3 id="toc_4">plugin位置</h3>
-
-<pre><code>/home/flume/flume/lib/kafka-util.jar
-</code></pre>
-
-<h3 id="toc_5">flume启动方式：</h3>
-
-<pre><code>nohup bin/flume-ng agent -c conf -f conf/flume_hdfs_online1.conf -n agent1 &amp;
-</code></pre>
-
-<h3 id="toc_6">resion启动方式</h3>
-
-<pre><code>sh /home/flume/resin-flume-server/conf/start-resin.sh agent1
-</code></pre>
-
-<p>嵌入式agent程序部署位置：</p>
-
-<pre><code>/home/flume/deploy_web/agentxx_web
-</code></pre>
+<p>此时,B对象的Retained Size=B对象的Shallow Size + C对象的Shallow Size + D对象的Shallow Size</p>
 
 
     
@@ -297,16 +186,16 @@ agent1.sinks.kafkasink.channel = kafkachannel
         <div class="large-6 columns">
         <p class="text-left" style="padding:15px 0px;">
       
-          <a href="14501938059630.html" 
-          title="Previous Post: AWK 语言设计">&laquo; AWK 语言设计</a>
+          <a href="15442383252409.html" 
+          title="Previous Post: 【转】Java Hotspot G1 GC的一些关键技术">&laquo; 【转】Java Hotspot G1 GC的一些关键技术</a>
       
         </p>
         </div>
         <div class="large-6 columns">
       <p class="text-right" style="padding:15px 0px;">
       
-          <a  href="14501042514953.html" 
-          title="Next Post: kafka入门">kafka入门 &raquo;</a>
+          <a  href="15442379465528.html" 
+          title="Next Post: 【转】shell 基础二十篇">【转】shell 基础二十篇 &raquo;</a>
       
       </p>
         </div>

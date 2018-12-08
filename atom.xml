@@ -4,13 +4,933 @@
   <title><![CDATA[IT framer]]></title>
   <link href="http://www.blacklight.xin/atom.xml" rel="self"/>
   <link href="http://www.blacklight.xin/"/>
-  <updated>2018-12-07T23:30:40+08:00</updated>
+  <updated>2018-12-07T23:30:43+08:00</updated>
   <id>http://www.blacklight.xin/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[spark 内存调优【转】]]></title>
+    <link href="http://www.blacklight.xin/15442384370091.html"/>
+    <updated>2018-12-08T11:07:17+08:00</updated>
+    <id>http://www.blacklight.xin/15442384370091.html</id>
+    <content type="html"><![CDATA[
+<p><strong>【Spark集群并行度】</strong></p>
+
+<p>在Spark集群环境下，只有足够高的并行度才能使系统资源得到充分的利用，可以通过修改spark-env.sh来调整Executor的数量和使用资源，Standalone和YARN方式资源的调度管理是不同的。</p>
+
+<span id="more"></span><!-- more -->
+
+<p>在Standalone模式下:</p>
+
+<p>1. 每个节点使用的最大内存数：SPARK_WORKER_INSTANCES*SPARK_WORKER_MEMORY；</p>
+
+<p>2. 每个节点的最大并发task数：SPARK_WORKER_INSTANCES*SPARK_WORKER_CORES。</p>
+
+<p>在YARN模式下：</p>
+
+<p>1. 集群task并行度：SPARK_ EXECUTOR_INSTANCES* SPARK_EXECUTOR_CORES；</p>
+
+<p>2. 集群内存总量：(executor个数) * (SPARK_EXECUTOR_MEMORY+ spark.yarn.executor.memoryOverhead)+(SPARK_DRIVER_MEMORY+spark.yarn.driver.memoryOverhead)。</p>
+
+<p>重点强调：Spark对Executor和Driver额外添加堆内存大小，Executor端：由spark.yarn.executor.memoryOverhead设置，默认值executorMemory * 0.07与384的最大值。Driver端：由spark.yarn.driver.memoryOverhead设置，默认值driverMemory * 0.07与384的最大值。</p>
+
+<p>通过调整上述参数，可以提高集群并行度，让系统同时执行的任务更多，那么对于相同的任务，并行度高了，可以减少轮询次数。举例说明：如果一个stage有100task，并行度为50，那么执行完这次任务，需要轮询两次才能完成，如果并行度为100，那么一次就可以了。</p>
+
+<p>但是在资源相同的情况，并行度高了，相应的Executor内存就会减少，所以需要根据实际实况协调内存和core。此外，Spark能够非常有效的支持短时间任务（例如：200ms），因为会对所有的任务复用JVM，这样能减小任务启动的消耗，Standalone模式下，core可以允许1-2倍于物理core的数量进行超配。</p>
+
+<p><strong>【Spark任务数量调整】</strong></p>
+
+<p>Spark的任务数由stage中的起始的所有RDD的partition之和数量决定，所以需要了解每个RDD的partition的计算方法。以Spark应用从HDFS读取数据为例，HadoopRDD的partition切分方法完全继承于MapReduce中的FileInputFormat，具体的partition数量由HDFS的块大小、mapred.min.split.size的大小、文件的压缩方式等多个因素决定，详情需要参见FileInputFormat的代码。</p>
+
+<p><strong>【Spark内存调优】</strong></p>
+
+<p>内存优化有三个方面的考虑：对象所占用的内存，访问对象的消耗以及垃圾回收所占用的开销。</p>
+
+<p><strong>1. 对象所占内存，优化数据结构</strong></p>
+
+<p>Spark 默认使用Java序列化对象，虽然Java对象的访问速度更快，但其占用的空间通常比其内部的属性数据大2-5倍。为了减少内存的使用，减少Java序列化后的额外开销，下面列举一些Spark官网（<a href="http://spark.apache.org/docs/latest/tuning.html#tuning-data-structures%EF%BC%89%E6%8F%90%E4%BE%9B%E7%9A%84%E6%96%B9%E6%B3%95%E3%80%82">http://spark.apache.org/docs/latest/tuning.html#tuning-data-structures）提供的方法。</a></p>
+
+<p>（1）使用对象数组以及原始类型（primitive type）数组以替代Java或者Scala集合类（collection class)。fastutil 库为原始数据类型提供了非常方便的集合类，且兼容Java标准类库。</p>
+
+<p>（2）尽可能地避免采用含有指针的嵌套数据结构来保存小对象。</p>
+
+<p>（3）考虑采用数字ID或者枚举类型以便替代String类型的主键。</p>
+
+<p>（4）如果内存少于32GB，设置JVM参数-XX:+UseCom-pressedOops以便将8字节指针修改成4字节。与此同时，在Java 7或者更高版本，设置JVM参数-XX:+UseC-----ompressedStrings以便采用8比特来编码每一个ASCII字符。</p>
+
+<p><strong>2. 内存回收</strong></p>
+
+<p>（1）获取内存统计信息：优化内存前需要了解集群的内存回收频率、内存回收耗费时间等信息，可以在spark-env.sh中设置SPARK_JAVA_OPTS=“-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps $ SPARK_JAVA_OPTS”来获取每一次内存回收的信息。</p>
+
+<p>（2）优化缓存大小：默认情况Spark采用运行内存（spark.executor.memory）的60%来进行RDD缓存。这表明在任务执行期间，有40%的内存可以用来进行对象创建。如果任务运行速度变慢且JVM频繁进行内存回收，或者内存空间不足，那么降低缓存大小设置可以减少内存消耗，可以降低spark.storage.memoryFraction的大小。</p>
+
+<p><strong>3. 频繁GC或者OOM</strong></p>
+
+<p>针对这种情况，首先要确定现象是发生在Driver端还是在Executor端，然后在分别处理。</p>
+
+<p>Driver端：通常由于计算过大的结果集被回收到Driver端导致，需要调大Driver端的内存解决，或者进一步减少结果集的数量。</p>
+
+<p>Executor端：</p>
+
+<p>（1）以外部数据作为输入的Stage：这类Stage中出现GC通常是因为在Map侧进行map-side-combine时，由于group过多引起的。解决方法可以增加partition的数量（即task的数量）来减少每个task要处理的数据，来减少GC的可能性。</p>
+
+<p>（2）以shuffle作为输入的Stage：这类Stage中出现GC的通常原因也是和shuffle有关，常见原因是某一个或多个group的数据过多，也就是所谓的数据倾斜，最简单的办法就是增加shuffle的task数量，比如在SparkSQL中设置SET spark.sql.shuffle.partitions=400，如果调大shuffle的task无法解决问题，说明你的数据倾斜很严重，某一个group的数据远远大于其他的group，需要你在业务逻辑上进行调整，预先针对较大的group做单独处理。</p>
+
+<p><strong>【修改序列化】</strong></p>
+
+<p>使用Kryo序列化，因为Kryo序列化结果比Java标准序列化更小，更快速。具体方法：spark-default.conf 里设置spark.serializer为org.apache.spark.serializer.KryoSerializer 。</p>
+
+<p>参考官方文档（<a href="http://spark.apache.org/docs/latest/tuning.html#summary%EF%BC%89%EF%BC%9A%E5%AF%B9%E4%BA%8E%E5%A4%A7%E5%A4%9A%E6%95%B0%E7%A8%8B%E5%BA%8F%E8%80%8C%E8%A8%80%EF%BC%8C%E9%87%87%E7%94%A8Kryo%E6%A1%86%E6%9E%B6%E4%BB%A5%E5%8F%8A%E5%BA%8F%E5%88%97%E5%8C%96%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E6%80%A7%E8%83%BD%E7%9B%B8%E5%85%B3%E7%9A%84%E5%A4%A7%E9%83%A8%E5%88%86%E9%97%AE%E9%A2%98%E3%80%82">http://spark.apache.org/docs/latest/tuning.html#summary）：对于大多数程序而言，采用Kryo框架以及序列化能够解决性能相关的大部分问题。</a></p>
+
+<p><strong>【Spark 磁盘调优】</strong></p>
+
+<p>在集群环境下，如果数据分布不均匀，造成节点间任务分布不均匀，也会导致节点间源数据不必要的网络传输，从而大大影响系统性能，那么对于磁盘调优最好先将数据资源分布均匀。除此之外，还可以对源数据做一定的处理：</p>
+
+<p>1. 在内存允许范围内，将频繁访问的文件或数据置于内存中；</p>
+
+<p>2. 如果磁盘充裕，可以适当增加源数据在HDFS上的备份数以减少网络传输；</p>
+
+<p>3. Spark支持多种文件格式及压缩方式，根据不同的应用环境进行合理的选择。如果每次计算只需要其中的某几列，可以使用列式文件格式，以减少磁盘I/O，常用的列式有parquet、rcfile。如果文件过大，将原文件压缩可以减少磁盘I/O，例如：gzip、snappy、lzo。</p>
+
+<p><strong>【其他】</strong></p>
+
+<p>** 广播变量（broadcast）**</p>
+
+<p>当task中需要访问一个Driver端较大的数据时，可以通过使用SparkContext的广播变量来减小每一个任务的大小以及在集群中启动作业的消耗。参考官方文档<a href="http://spark.apache.org/docs/latest/tuning.html#broadcasting-large-variables%E3%80%82">http://spark.apache.org/docs/latest/tuning.html#broadcasting-large-variables。</a></p>
+
+<p>** 开启推测机制 **</p>
+
+<p>推测机制后，如果集群中，某一台机器的几个task特别慢，推测机制会将任务分配到其他机器执行，最后Spark会选取最快的作为最终结果。</p>
+
+<p>在spark-default.conf 中添加：spark.speculation true</p>
+
+<p>推测机制与以下几个参数有关：</p>
+
+<p>1. spark.speculation.interval 100：检测周期，单位毫秒；</p>
+
+<p>2. spark.speculation.quantile 0.75：完成task的百分比时启动推测；</p>
+
+<p>** 并行度设置 **</p>
+
+<h5 id="toc_0">1.Spark的并行度指的是什么？</h5>
+
+<p><strong>spark作业中，各个stage的task的数量，也就代表了spark作业在各个阶段stage的并行度</strong></p>
+
+<p>当分配完所能分配的最大资源了，然后对应资源去调节程序的并行度，如果并行度没有与资源相匹配，那么<strong>导致</strong> <strong>你分配下去的资源都浪费掉了。</strong> <strong>同时并行运行，还可以让每个task要处理的数量变少</strong>（很简单的原理。合理设置并行度，可以充分利用集群资源，减少每个task处理数据量，而增加性能加快运行速度。)</p>
+
+<p>举例：</p>
+
+<p>假如， 现在已经在spark-submit 脚本里面，给我们的spark作业分配了足够多的资源，比如<strong>50个executor</strong>，每个<strong>executor 有10G内存</strong>，<strong>每个executor有3个cpu core</strong> 。 基本已经达到了集群或者yarn队列的资源上限。</p>
+
+<p>task没有设置，或者设置的很少，比如就设置了，100个task 。 ** 50个executor ，每个executor 有3个core,也就是说Application 任何一个stage运行的时候,都有总数150个cpu core 可以并行运 ** 。但是，你现在只有100个task ，平均分配一下，每个executor 分配到2个task，ok，那么同时在运行的task，只有100个task，每个executor 只会并行运行 2个task。 每个executor 剩下的一个cpu core 就浪费掉了！<strong>你的资源，虽然分配充足了，但是问题是， 并行度没有与资源相匹配，导致你分配下去的资源都浪费掉了。</strong><strong>合理的并行度的设置，应该要设置的足够大，大到可以完全合理的利用你的集群资源；</strong> 比如上面的例子，总共集群有150个cpu core ，可以并行运行150个task。那么你就应该将你的Application 的并行度，至少设置成150个，才能完全有效的利用你的集群资源，让150个task ，并行执行，而且task增加到150个以后，即可以<strong>同时并行运行，还可以让每个task要处理的数量变少</strong>； 比如总共** 150G 的数据**要处理， **如果是100个task <strong>，</strong>每个task 要计算1.5G的数据<strong>。 现在</strong>增加到150个task，每个task只要处理1G数据**。</p>
+
+<h5 id="toc_1"><strong>2.如何去提高并行度？</strong></h5>
+
+<p><strong>1、task数量，至少设置成与spark Application 的总cpu core 数量相同</strong>（最理性情况，150个core，分配150task，一起运行，差不多同一时间运行完毕）**官方推荐，task数量，设置成spark Application 总cpu core数量的2~3倍 ，比如150个cpu core ，基本设置 task数量为 300~ 500. **与理性情况不同的，有些task 会运行快一点，比如50s 就完了，有些task 可能会慢一点，要一分半才运行完，所以如果你的task数量，刚好设置的跟cpu core 数量相同，可能会导致资源的浪费，因为 比如150task ，10个先运行完了，剩余140个还在运行，但是这个时候，就有10个cpu core空闲出来了，导致浪费。如果设置2~3倍，那么一个task运行完以后，另外一个task马上补上来，尽量让cpu core不要空闲。同时尽量提升spark运行效率和速度。提升性能。</p>
+
+<p>**    2、如何设置一个Spark Application的并行度？**</p>
+
+<pre><code>  **spark.defalut.parallelism** **默认是没有值的，如果设置了值比如说10，是在shuffle的过程才会起作用**（val rdd2 = rdd1.reduceByKey(_+_) //rdd2的分区数就是10，rdd1的分区数不受这个参数的影响）
+</code></pre>
+
+<p>**      new SparkConf().set(“spark.defalut.parallelism”,”“500)**</p>
+
+<p>** 3、如果读取的数据在HDFS上，增加block数**，默认情况下split与block是一对一的，而split又与RDD中的partition对应，所以增加了block数，也就提高了并行度。</p>
+
+<pre><code>**4、RDD.repartition**，给RDD重新设置partition的数量
+
+**5、reduceByKey的算子指定partition的数量**
+
+             val rdd2 = rdd1.reduceByKey(_+_,10)  val rdd3 = rdd2.map.filter.reduceByKey(_+_)
+</code></pre>
+
+<p>** 6、<strong>val rdd3 = rdd1.</strong>join**（rdd2）  <strong>rdd3里面partiiton的数量是由父RDD中最多的partition数量来决定，因此使用join算子的时候，增加父RDD中partition的数量。</strong></p>
+
+<pre><code>**7、spark.sql.shuffle.partitions //spark sql中shuffle过程中partitions的数量**
+</code></pre>
+
+<p>3. spark.speculation.multiplier 1.5：比其他的慢多少倍时启动推测。</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[【转】Java Hotspot G1 GC的一些关键技术]]></title>
+    <link href="http://www.blacklight.xin/15442383252409.html"/>
+    <updated>2018-12-08T11:05:25+08:00</updated>
+    <id>http://www.blacklight.xin/15442383252409.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">前言</h2>
+
+<p>G1 GC，全称Garbage-First Garbage Collector，通过-XX:+UseG1GC参数来启用，作为体验版随着JDK 6u14版本面世，在JDK 7u4版本发行时被正式推出，相信熟悉JVM的同学们都不会对它感到陌生。在JDK 9中，G1被提议设置为默认垃圾收集器（JEP 248）。在官网中，是这样描述G1的：</p>
+
+<span id="more"></span><!-- more -->   
+
+<blockquote>
+<p>The Garbage-First (G1) collector is a server-style garbage collector, targeted for multi-processor machines with large memories. It meets garbage collection (GC) pause time goals with a high probability, while achieving high throughput. The G1 garbage collector is fully supported in Oracle JDK 7 update 4 and later releases. The G1 collector is designed for applications that:</p>
+
+<ul>
+<li>  Can operate concurrently with applications threads like the CMS collector.</li>
+<li>  Compact free space without lengthy GC induced pause times.</li>
+<li>  Need more predictable GC pause durations.</li>
+<li>  Do not want to sacrifice a lot of throughput performance.</li>
+<li>  Do not require a much larger Java heap.</li>
+</ul>
+</blockquote>
+
+<p>从官网的描述中，我们知道G1是一种服务器端的垃圾收集器，应用在多处理器和大容量内存环境中，在实现高吞吐量的同时，尽可能的满足垃圾收集暂停时间的要求。它是专门针对以下应用场景设计的:</p>
+
+<ul>
+<li>  像CMS收集器一样，能与应用程序线程并发执行。</li>
+<li>  整理空闲空间更快。</li>
+<li>  需要GC停顿时间更好预测。</li>
+<li>  不希望牺牲大量的吞吐性能。</li>
+<li>  不需要更大的Java Heap。</li>
+</ul>
+
+<p>G1收集器的设计目标是取代CMS收集器，它同CMS相比，在以下方面表现的更出色：</p>
+
+<ul>
+<li>  G1是一个有整理内存过程的垃圾收集器，不会产生很多内存碎片。</li>
+<li>  G1的Stop The World(STW)更可控，G1在停顿时间上添加了预测机制，用户可以指定期望停顿时间。</li>
+</ul>
+
+<p>有了以上的特性，难怪有人说它是一款驾驭一切的垃圾收集器（<a href="http://www.infoq.com/articles/G1-One-Garbage-Collector-To-Rule-Them-All">G1: One Garbage Collector To Rule Them All</a>）。本文带大家来了解一下G1 GC的一些关键技术，为能正确的使用它，做好理论基础的铺垫。</p>
+
+<h2 id="toc_1">G1中几个重要概念</h2>
+
+<p>在G1的实现过程中，引入了一些新的概念，对于实现高吞吐、没有内存碎片、收集时间可控等功能起到了关键作用。下面我们就一起看一下G1中的这几个重要概念。</p>
+
+<h3 id="toc_2">Region</h3>
+
+<p>传统的GC收集器将连续的内存空间划分为新生代、老年代和永久代（JDK 8去除了永久代，引入了元空间Metaspace），这种划分的特点是各代的存储地址（逻辑地址，下同）是连续的。如下图所示：<br/>
+<img src="https://tech.meituan.com/img/g1/conventional_gc_layout.png" alt=""/></p>
+
+<p>而G1的各代存储地址是不连续的，每一代都使用了n个不连续的大小相同的Region，每个Region占有一块连续的虚拟内存地址。如下图所示：<br/>
+<img src="https://tech.meituan.com/img/g1/g1_gc_layout.png" alt=""/></p>
+
+<p>在上图中，我们注意到还有一些Region标明了H，它代表Humongous，这表示这些Region存储的是巨大对象（humongous object，H-obj），即大小大于等于region一半的对象。H-obj有如下几个特征：</p>
+
+<ul>
+<li>  H-obj直接分配到了old gen，防止了反复拷贝移动。</li>
+<li>  H-obj在global concurrent marking阶段的cleanup 和 full GC阶段回收。</li>
+<li>  在分配H-obj之前先检查是否超过 initiating heap occupancy percent和the marking threshold, 如果超过的话，就启动global concurrent marking，为的是提早回收，防止 evacuation failures 和 full GC。</li>
+</ul>
+
+<p>为了减少连续H-objs分配对GC的影响，需要把大对象变为普通的对象，建议增大Region size。</p>
+
+<p>一个Region的大小可以通过参数-XX:G1HeapRegionSize设定，取值范围从1M到32M，且是2的指数。如果不设定，那么G1会根据Heap大小自动决定。相关的设置代码如下：</p>
+
+<pre><code>// share/vm/gc_implementation/g1/heapRegion.cpp
+// Minimum region size; we won&#39;t go lower than that.
+// We might want to decrease this in the future, to deal with small
+// heaps a bit more efficiently.
+#define MIN_REGION_SIZE  (      1024 * 1024 )
+// Maximum region size; we don&#39;t go higher than that. There&#39;s a good
+// reason for having an upper bound. We don&#39;t want regions to get too
+// large, otherwise cleanup&#39;s effectiveness would decrease as there
+// will be fewer opportunities to find totally empty regions after
+// marking.
+#define MAX_REGION_SIZE  ( 32 * 1024 * 1024 )
+// The automatic region size calculation will try to have around this
+// many regions in the heap (based on the min heap size).
+#define TARGET_REGION_NUMBER          2048
+void HeapRegion::setup_heap_region_size(size_t initial_heap_size, size_t max_heap_size) {
+  uintx region_size = G1HeapRegionSize;
+  if (FLAG_IS_DEFAULT(G1HeapRegionSize)) {
+    size_t average_heap_size = (initial_heap_size + max_heap_size) / 2;
+    region_size = MAX2(average_heap_size / TARGET_REGION_NUMBER,
+                       (uintx) MIN_REGION_SIZE);
+  }
+  int region_size_log = log2_long((jlong) region_size);
+  // Recalculate the region size to make sure it&#39;s a power of
+  // 2\. This means that region_size is the largest power of 2 that&#39;s
+  // &lt;= what we&#39;ve calculated so far.
+  region_size = ((uintx)1 &lt;&lt; region_size_log);
+  // Now make sure that we don&#39;t go over or under our limits.
+  if (region_size &lt; MIN_REGION_SIZE) {
+    region_size = MIN_REGION_SIZE;
+  } else if (region_size &gt; MAX_REGION_SIZE) {
+    region_size = MAX_REGION_SIZE;
+  }
+}
+
+</code></pre>
+
+<h3 id="toc_3">SATB</h3>
+
+<p>全称是Snapshot-At-The-Beginning，由字面理解，是GC开始时活着的对象的一个快照。它是通过Root Tracing得到的，作用是维持并发GC的正确性。<br/>
+那么它是怎么维持并发GC的正确性的呢？根据三色标记算法，我们知道对象存在三种状态：</p>
+
+<ul>
+<li>  白：对象没有被标记到，标记阶段结束后，会被当做垃圾回收掉。</li>
+<li>  灰：对象被标记了，但是它的field还没有被标记或标记完。</li>
+<li>  黑：对象被标记了，且它的所有field也被标记完了。</li>
+</ul>
+
+<p>由于并发阶段的存在，Mutator和Garbage Collector线程同时对对象进行修改，就会出现白对象漏标的情况，这种情况发生的前提是：</p>
+
+<ul>
+<li>  Mutator赋予一个黑对象该白对象的引用。</li>
+<li>  Mutator删除了所有从灰对象到该白对象的直接或者间接引用。</li>
+</ul>
+
+<p>对于第一个条件，在并发标记阶段，如果该白对象是new出来的，并没有被灰对象持有，那么它会不会被漏标呢？Region中有两个top-at-mark-start（TAMS）指针，分别为prevTAMS和nextTAMS。在TAMS以上的对象是新分配的，这是一种隐式的标记。对于在GC时已经存在的白对象，如果它是活着的，它必然会被另一个对象引用，即条件二中的灰对象。如果灰对象到白对象的直接引用或者间接引用被替换了，或者删除了，白对象就会被漏标，从而导致被回收掉，这是非常严重的错误，所以SATB破坏了第二个条件。也就是说，一个对象的引用被替换时，可以通过write barrier 将旧引用记录下来。</p>
+
+<pre><code>//  share/vm/gc_implementation/g1/g1SATBCardTableModRefBS.hpp
+// This notes that we don&#39;t need to access any BarrierSet data
+// structures, so this can be called from a static context.
+template &lt;class T&gt; static void write_ref_field_pre_static(T* field, oop newVal) {
+  T heap_oop = oopDesc::load_heap_oop(field);
+  if (!oopDesc::is_null(heap_oop)) {
+    enqueue(oopDesc::decode_heap_oop(heap_oop));
+  }
+}
+// share/vm/gc_implementation/g1/g1SATBCardTableModRefBS.cpp
+void G1SATBCardTableModRefBS::enqueue(oop pre_val) {
+  // Nulls should have been already filtered.
+  assert(pre_val-&gt;is_oop(true), &quot;Error&quot;);
+  if (!JavaThread::satb_mark_queue_set().is_active()) return;
+  Thread* thr = Thread::current();
+  if (thr-&gt;is_Java_thread()) {
+    JavaThread* jt = (JavaThread*)thr;
+    jt-&gt;satb_mark_queue().enqueue(pre_val);
+  } else {
+    MutexLockerEx x(Shared_SATB_Q_lock, Mutex::_no_safepoint_check_flag);
+    JavaThread::satb_mark_queue_set().shared_satb_queue()-&gt;enqueue(pre_val);
+  }
+}
+
+</code></pre>
+
+<p>SATB也是有副作用的，如果被替换的白对象就是要被收集的垃圾，这次的标记会让它躲过GC，这就是float garbage。因为SATB的做法精度比较低，所以造成的float garbage也会比较多。</p>
+
+<h4 id="toc_4">RSet</h4>
+
+<p>全称是Remembered Set，是辅助GC过程的一种结构，典型的空间换时间工具，和Card Table有些类似。还有一种数据结构也是辅助GC的：Collection Set（CSet），它记录了GC要收集的Region集合，集合里的Region可以是任意年代的。在GC的时候，对于old-&gt;young和old-&gt;old的跨代对象引用，只要扫描对应的CSet中的RSet即可。<br/>
+逻辑上说每个Region都有一个RSet，RSet记录了其他Region中的对象引用本Region中对象的关系，属于points-into结构（谁引用了我的对象）。而Card Table则是一种points-out（我引用了谁的对象）的结构，每个Card 覆盖一定范围的Heap（一般为512Bytes）。G1的RSet是在Card Table的基础上实现的：每个Region会记录下别的Region有指向自己的指针，并标记这些指针分别在哪些Card的范围内。 这个RSet其实是一个Hash Table，Key是别的Region的起始地址，Value是一个集合，里面的元素是Card Table的Index。</p>
+
+<p>下图表示了RSet、Card和Region的关系（<a href="http://www.infoq.com/articles/tuning-tips-G1-GC">出处</a>）：<br/>
+<img src="https://tech.meituan.com/img/g1/remembered_sets.jpg" alt=""/></p>
+
+<p>上图中有三个Region，每个Region被分成了多个Card，在不同Region中的Card会相互引用，Region1中的Card中的对象引用了Region2中的Card中的对象，蓝色实线表示的就是points-out的关系，而在Region2的RSet中，记录了Region1的Card，即红色虚线表示的关系，这就是points-into。<br/>
+而维系RSet中的引用关系靠post-write barrier和Concurrent refinement threads来维护，操作伪代码如下（<a href="http://hllvm.group.iteye.com/group/topic/44381">出处</a>）：</p>
+
+<pre><code>void oop_field_store(oop* field, oop new_value) {
+  pre_write_barrier(field);             // pre-write barrier: for maintaining SATB invariant
+  *field = new_value;                   // the actual store
+  post_write_barrier(field, new_value); // post-write barrier: for tracking cross-region reference
+}
+
+</code></pre>
+
+<p>post-write barrier记录了跨Region的引用更新，更新日志缓冲区则记录了那些包含更新引用的Cards。一旦缓冲区满了，Post-write barrier就停止服务了，会由Concurrent refinement threads处理这些缓冲区日志。<br/>
+RSet究竟是怎么辅助GC的呢？在做YGC的时候，只需要选定young generation region的RSet作为根集，这些RSet记录了old-&gt;young的跨代引用，避免了扫描整个old generation。 而mixed gc的时候，old generation中记录了old-&gt;old的RSet，young-&gt;old的引用由扫描全部young generation region得到，这样也不用扫描全部old generation region。所以RSet的引入大大减少了GC的工作量。</p>
+
+<h3 id="toc_5">Pause Prediction Model</h3>
+
+<p>Pause Prediction Model 即停顿预测模型。它在G1中的作用是：</p>
+
+<blockquote>
+<p>G1 uses a pause prediction model to meet a user-defined pause time target and selects the number of regions to collect based on the specified pause time target.</p>
+</blockquote>
+
+<p>G1 GC是一个响应时间优先的GC算法，它与CMS最大的不同是，用户可以设定整个GC过程的期望停顿时间，参数-XX:MaxGCPauseMillis指定一个G1收集过程目标停顿时间，默认值200ms，不过它不是硬性条件，只是期望值。那么G1怎么满足用户的期望呢？就需要这个停顿预测模型了。G1根据这个模型统计计算出来的历史数据来预测本次收集需要选择的Region数量，从而尽量满足用户设定的目标停顿时间。<br/>
+停顿预测模型是以衰减标准偏差为理论基础实现的：</p>
+
+<pre><code>//  share/vm/gc_implementation/g1/g1CollectorPolicy.hpp
+double get_new_prediction(TruncatedSeq* seq) {
+    return MAX2(seq-&gt;davg() + sigma() * seq-&gt;dsd(),
+                seq-&gt;davg() * confidence_factor(seq-&gt;num()));
+}
+
+</code></pre>
+
+<p>在这个预测计算公式中：davg表示衰减均值，sigma()返回一个系数，表示信赖度，dsd表示衰减标准偏差，confidence_factor表示可信度相关系数。而方法的参数TruncateSeq，顾名思义，是一个截断的序列，它只跟踪了序列中的最新的n个元素。</p>
+
+<p>在G1 GC过程中，每个可测量的步骤花费的时间都会记录到TruncateSeq（继承了AbsSeq）中，用来计算衰减均值、衰减变量，衰减标准偏差等：</p>
+
+<pre><code>// src/share/vm/utilities/numberSeq.cpp
+
+void AbsSeq::add(double val) {
+  if (_num == 0) {
+    // if the sequence is empty, the davg is the same as the value
+    _davg = val;
+    // and the variance is 0
+    _dvariance = 0.0;
+  } else {
+    // otherwise, calculate both
+    _davg = (1.0 - _alpha) * val + _alpha * _davg;
+    double diff = val - _davg;
+    _dvariance = (1.0 - _alpha) * diff * diff + _alpha * _dvariance;
+  }
+}
+
+</code></pre>
+
+<p>比如要预测一次GC过程中，RSet的更新时间，这个操作主要是将Dirty Card加入到RSet中，具体原理参考前面的RSet。每个Dirty Card的时间花费通过_cost_per_card_ms_seq来记录，具体预测代码如下：</p>
+
+<pre><code>//  share/vm/gc_implementation/g1/g1CollectorPolicy.hpp
+
+ double predict_rs_update_time_ms(size_t pending_cards) {
+    return (double) pending_cards * predict_cost_per_card_ms();
+ }
+ double predict_cost_per_card_ms() {
+    return get_new_prediction(_cost_per_card_ms_seq);
+ }
+
+</code></pre>
+
+<p>get_new_prediction就是我们开头说的方法，现在大家应该基本明白停顿预测模型的实现原理了。</p>
+
+<h2 id="toc_6">GC过程</h2>
+
+<p>讲完了一些基本概念，下面我们就来看看G1的GC过程是怎样的。</p>
+
+<h3 id="toc_7">G1 GC模式</h3>
+
+<p>G1提供了两种GC模式，Young GC和Mixed GC，两种都是完全Stop The World的。</p>
+
+<ul>
+<li>  Young GC：选定所有年轻代里的Region。通过控制年轻代的region个数，即年轻代内存大小，来控制young GC的时间开销。</li>
+<li>  Mixed GC：选定所有年轻代里的Region，外加根据global concurrent marking统计得出收集收益高的若干老年代Region。在用户指定的开销目标范围内尽可能选择收益高的老年代Region。</li>
+</ul>
+
+<p>由上面的描述可知，Mixed GC不是full GC，它只能回收部分老年代的Region，如果mixed GC实在无法跟上程序分配内存的速度，导致老年代填满无法继续进行Mixed GC，就会使用serial old GC（full GC）来收集整个GC heap。所以我们可以知道，G1是不提供full GC的。</p>
+
+<p>上文中，多次提到了global concurrent marking，它的执行过程类似CMS，但是不同的是，在G1 GC中，它主要是为Mixed GC提供标记服务的，并不是一次GC过程的一个必须环节。global concurrent marking的执行过程分为四个步骤：</p>
+
+<ul>
+<li>  初始标记（initial mark，STW）。它标记了从GC Root开始直接可达的对象。</li>
+<li>  并发标记（Concurrent Marking）。这个阶段从GC Root开始对heap中的对象标记，标记线程与应用程序线程并行执行，并且收集各个Region的存活对象信息。</li>
+<li>  最终标记（Remark，STW）。标记那些在并发标记阶段发生变化的对象，将被回收。</li>
+<li>  清除垃圾（Cleanup）。清除空Region（没有存活对象的），加入到free list。</li>
+</ul>
+
+<p>第一阶段initial mark是共用了Young GC的暂停，这是因为他们可以复用root scan操作，所以可以说global concurrent marking是伴随Young GC而发生的。第四阶段Cleanup只是回收了没有存活对象的Region，所以它并不需要STW。</p>
+
+<p>Young GC发生的时机大家都知道，那什么时候发生Mixed GC呢？其实是由一些参数控制着的，另外也控制着哪些老年代Region会被选入CSet。</p>
+
+<ul>
+<li>  G1HeapWastePercent：在global concurrent marking结束之后，我们可以知道old gen regions中有多少空间要被回收，在每次YGC之后和再次发生Mixed GC之前，会检查垃圾占比是否达到此参数，只有达到了，下次才会发生Mixed GC。</li>
+<li>  G1MixedGCLiveThresholdPercent：old generation region中的存活对象的占比，只有在此参数之下，才会被选入CSet。</li>
+<li>  G1MixedGCCountTarget：一次global concurrent marking之后，最多执行Mixed GC的次数。</li>
+<li>  G1OldCSetRegionThresholdPercent：一次Mixed GC中能被选入CSet的最多old generation region数量。</li>
+</ul>
+
+<p>除了以上的参数，G1 GC相关的其他主要的参数有：</p>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>-XX:G1HeapRegionSize=n</td>
+<td>设置Region大小，并非最终值</td>
+</tr>
+<tr>
+<td>-XX:MaxGCPauseMillis</td>
+<td>设置G1收集过程目标时间，默认值200ms，不是硬性条件</td>
+</tr>
+<tr>
+<td>-XX:G1NewSizePercent</td>
+<td>新生代最小值，默认值5%</td>
+</tr>
+<tr>
+<td>-XX:G1MaxNewSizePercent</td>
+<td>新生代最大值，默认值60%</td>
+</tr>
+<tr>
+<td>-XX:ParallelGCThreads</td>
+<td>STW期间，并行GC线程数</td>
+</tr>
+<tr>
+<td>-XX:ConcGCThreads=n</td>
+<td>并发标记阶段，并行执行的线程数</td>
+</tr>
+<tr>
+<td>-XX:InitiatingHeapOccupancyPercent</td>
+<td>设置触发标记周期的 Java 堆占用率阈值。默认值是45%。这里的java堆占比指的是non_young_capacity_bytes，包括old+humongous</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="toc_8">GC日志</h3>
+
+<p>G1收集器的日志与其他收集器有很大不同，源于G1独立的体系架构和数据结构，下面这两段日志来源于美团点评的CRM系统线上生产环境。</p>
+
+<h4 id="toc_9">Young GC日志</h4>
+
+<p>我们先来看看Young GC的日志：</p>
+
+<pre><code>{Heap before GC invocations=12 (full 1):
+ garbage-first heap   total 3145728K, used 336645K [0x0000000700000000, 0x00000007c0000000, 0x00000007c0000000)
+  region size 1024K, 172 young (176128K), 13 survivors (13312K)
+ Metaspace       used 29944K, capacity 30196K, committed 30464K, reserved 1077248K
+  class space    used 3391K, capacity 3480K, committed 3584K, reserved 1048576K
+2014-11-14T17:57:23.654+0800: 27.884: [GC pause (G1 Evacuation Pause) (young)
+Desired survivor size 11534336 bytes, new threshold 15 (max 15)
+- age   1:    5011600 bytes,    5011600 total
+ 27.884: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 1461, predicted base time: 35.25 ms, remaining time: 64.75 ms, target pause time: 100.00 ms]
+ 27.884: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 159 regions, survivors: 13 regions, predicted young region time: 44.09 ms]
+ 27.884: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 159 regions, survivors: 13 regions, old: 0 regions, predicted pause time: 79.34 ms, target pause time: 100.00 ms]
+, 0.0158389 secs]
+   [Parallel Time: 8.1 ms, GC Workers: 4]
+      [GC Worker Start (ms): Min: 27884.5, Avg: 27884.5, Max: 27884.5, Diff: 0.1]
+      [Ext Root Scanning (ms): Min: 0.4, Avg: 0.8, Max: 1.2, Diff: 0.8, Sum: 3.1]
+      [Update RS (ms): Min: 0.0, Avg: 0.3, Max: 0.6, Diff: 0.6, Sum: 1.4]
+         [Processed Buffers: Min: 0, Avg: 2.8, Max: 5, Diff: 5, Sum: 11]
+      [Scan RS (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.1, Sum: 0.3]
+      [Code Root Scanning (ms): Min: 0.0, Avg: 0.1, Max: 0.2, Diff: 0.2, Sum: 0.6]
+      [Object Copy (ms): Min: 4.9, Avg: 5.1, Max: 5.2, Diff: 0.3, Sum: 20.4]
+      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]
+      [GC Worker Other (ms): Min: 0.0, Avg: 0.4, Max: 1.3, Diff: 1.3, Sum: 1.4]
+      [GC Worker Total (ms): Min: 6.4, Avg: 6.8, Max: 7.8, Diff: 1.4, Sum: 27.2]
+      [GC Worker End (ms): Min: 27891.0, Avg: 27891.3, Max: 27892.3, Diff: 1.3]
+   [Code Root Fixup: 0.5 ms]
+   [Code Root Migration: 1.3 ms]
+   [Code Root Purge: 0.0 ms]
+   [Clear CT: 0.2 ms]
+   [Other: 5.8 ms]
+      [Choose CSet: 0.0 ms]
+      [Ref Proc: 5.0 ms]
+      [Ref Enq: 0.1 ms]
+      [Redirty Cards: 0.0 ms]
+      [Free CSet: 0.2 ms]
+   [Eden: 159.0M(159.0M)-&gt;0.0B(301.0M) Survivors: 13.0M-&gt;11.0M Heap: 328.8M(3072.0M)-&gt;167.3M(3072.0M)]
+Heap after GC invocations=13 (full 1):
+ garbage-first heap   total 3145728K, used 171269K [0x0000000700000000, 0x00000007c0000000, 0x00000007c0000000)
+  region size 1024K, 11 young (11264K), 11 survivors (11264K)
+ Metaspace       used 29944K, capacity 30196K, committed 30464K, reserved 1077248K
+  class space    used 3391K, capacity 3480K, committed 3584K, reserved 1048576K
+}
+ [Times: user=0.05 sys=0.01, real=0.02 secs]
+
+</code></pre>
+
+<p>每个过程的作用如下：</p>
+
+<ul>
+<li>  garbage-first heap total 3145728K, used 336645K [0x0000000700000000, 0x00000007c0000000, 0x00000007c0000000)
+这行表示使用了G1垃圾收集器，total heap 3145728K，使用了336645K。</li>
+<li>  region size 1024K, 172 young (176128K), 13 survivors (13312K)
+Region大小为1M，青年代占用了172个（共176128K），幸存区占用了13个（共13312K）。</li>
+<li>  Metaspace used 29944K, capacity 30196K, committed 30464K, reserved 1077248K
+class space used 3391K, capacity 3480K, committed 3584K, reserved 1048576K
+java 8的新特性，去掉永久区，添加了元数据区，这块不是本文重点，不再赘述。需要注意的是，之所以有committed和reserved，是因为没有设置MetaspaceSize=MaxMetaspaceSize。</li>
+<li>  [GC pause (G1 Evacuation Pause) (young)
+GC原因，新生代minor GC。</li>
+<li>  [G1Ergonomics (CSet Construction) start choosing CSet, <u>pending</u>cards: 1461, predicted base time: 35.25 ms, remaining time: 64.75 ms, target pause time: 100.00 ms]
+发生minor GC和full GC时，所有相关region都是要回收的。而发生并发GC时，会根据目标停顿时间动态选择部分垃圾对并多的Region回收，这一步就是选择Region。_pending_cards是关于RSet的Card Table。predicted base time是预测的扫描card table时间。</li>
+<li>  [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 159 regions, survivors: 13 regions, predicted young region time: 44.09 ms]
+这一步是添加Region到collection set，新生代一共159个Region，13个幸存区Region，这也和之前的（172 young (176128K), 13 survivors (13312K)）吻合。预计收集时间是44.09 ms。</li>
+<li>  [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 159 regions, survivors: 13 regions, old: 0 regions, predicted pause time: 79.34 ms, target pause time: 100.00 ms]
+这一步是对上面两步的总结。预计总收集时间79.34ms。</li>
+<li>  [Parallel Time: 8.1 ms, GC Workers: 4]
+由于收集过程是多线程并行（并发）进行，这里是4个线程，总共耗时8.1ms（wall clock time）</li>
+<li>  [GC Worker Start (ms): Min: 27884.5, Avg: 27884.5, Max: 27884.5, Diff: 0.1]
+收集线程开始的时间，使用的是相对时间，Min是最早开始时间，Avg是平均开始时间，Max是最晚开始时间，Diff是Max-Min（此处的0.1貌似有问题）</li>
+<li>  [Ext Root Scanning (ms): Min: 0.4, Avg: 0.8, Max: 1.2, Diff: 0.8, Sum: 3.1]
+扫描Roots花费的时间，Sum表示total cpu time，下同。</li>
+<li>  [Update RS (ms): Min: 0.0, Avg: 0.3, Max: 0.6, Diff: 0.6, Sum: 1.4] [Processed Buffers: Min: 0, Avg: 2.8, Max: 5, Diff: 5, Sum: 11]
+Update RS (ms)是每个线程花费在更新Remembered Set上的时间。</li>
+<li>  [Scan RS (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.1, Sum: 0.3]
+扫描CS中的region对应的RSet，因为RSet是points-into，所以这样实现避免了扫描old generadion region，但是会产生float garbage。</li>
+<li>  [Code Root Scanning (ms): Min: 0.0, Avg: 0.1, Max: 0.2, Diff: 0.2, Sum: 0.6]
+扫描code root耗时。code root指的是经过JIT编译后的代码里，引用了heap中的对象。引用关系保存在RSet中。</li>
+<li>  [Object Copy (ms): Min: 4.9, Avg: 5.1, Max: 5.2, Diff: 0.3, Sum: 20.4]
+拷贝活的对象到新region的耗时。</li>
+<li>  [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]
+线程结束，在结束前，它会检查其他线程是否还有未扫描完的引用，如果有，则&quot;偷&quot;过来，完成后再申请结束，这个时间是线程之前互相同步所花费的时间。</li>
+<li>  [GC Worker Other (ms): Min: 0.0, Avg: 0.4, Max: 1.3, Diff: 1.3, Sum: 1.4]
+花费在其他工作上（未列出）的时间。</li>
+<li>  [GC Worker Total (ms): Min: 6.4, Avg: 6.8, Max: 7.8, Diff: 1.4, Sum: 27.2]
+每个线程花费的时间和。</li>
+<li>  [GC Worker End (ms): Min: 27891.0, Avg: 27891.3, Max: 27892.3, Diff: 1.3]
+每个线程结束的时间。</li>
+<li>  [Code Root Fixup: 0.5 ms]
+用来将code root修正到正确的evacuate之后的对象位置所花费的时间。</li>
+<li>  [Code Root Migration: 1.3 ms]
+更新code root 引用的耗时，code root中的引用因为对象的evacuation而需要更新。</li>
+<li>  [Code Root Purge: 0.0 ms]
+清除code root的耗时，code root中的引用已经失效，不再指向Region中的对象，所以需要被清除。</li>
+<li>  [Clear CT: 0.2 ms]
+清除card table的耗时。</li>
+<li>  [Other: 5.8 ms]
+[Choose CSet: 0.0 ms]
+[Ref Proc: 5.0 ms]
+[Ref Enq: 0.1 ms]
+[Redirty Cards: 0.0 ms]
+[Free CSet: 0.2 ms]
+其他事项共耗时5.8ms，其他事项包括选择CSet，处理已用对象，引用入ReferenceQueues，释放CSet中的region到free list。</li>
+<li>  [Eden: 159.0M(159.0M)-&gt;0.0B(301.0M) Survivors: 13.0M-&gt;11.0M Heap: 328.8M(3072.0M)-&gt;167.3M(3072.0M)]
+新生代清空了，下次扩容到301MB。</li>
+</ul>
+
+<h4 id="toc_10">global concurrent marking 日志</h4>
+
+<p>对于global concurrent marking过程，它的日志如下所示：</p>
+
+<pre><code>66955.252: [G1Ergonomics (Concurrent Cycles) request concurrent cycle initiation, reason: occupancy higher than threshold, occupancy: 1449132032 bytes, allocation request: 579608 bytes, threshold: 1449
+551430 bytes (45.00 %), source: concurrent humongous allocation]
+2014-12-10T11:13:09.532+0800: 66955.252: Application time: 2.5750418 seconds
+ 66955.259: [G1Ergonomics (Concurrent Cycles) request concurrent cycle initiation, reason: requested by GC cause, GC cause: G1 Humongous Allocation]
+{Heap before GC invocations=1874 (full 4):
+ garbage-first heap   total 3145728K, used 1281786K [0x0000000700000000, 0x00000007c0000000, 0x00000007c0000000)
+  region size 1024K, 171 young (175104K), 27 survivors (27648K)
+ Metaspace       used 116681K, capacity 137645K, committed 137984K, reserved 1171456K
+  class space    used 13082K, capacity 16290K, committed 16384K, reserved 1048576K
+ 66955.259: [G1Ergonomics (Concurrent Cycles) initiate concurrent cycle, reason: concurrent cycle initiation requested]
+2014-12-10T11:13:09.539+0800: 66955.259: [GC pause (G1 Humongous Allocation) (young) (initial-mark)
+…….
+2014-12-10T11:13:09.597+0800: 66955.317: [GC concurrent-root-region-scan-start]
+2014-12-10T11:13:09.597+0800: 66955.318: Total time for which application threads were stopped: 0.0655753 seconds
+2014-12-10T11:13:09.610+0800: 66955.330: Application time: 0.0127071 seconds
+2014-12-10T11:13:09.614+0800: 66955.335: Total time for which application threads were stopped: 0.0043882 seconds
+2014-12-10T11:13:09.625+0800: 66955.346: [GC concurrent-root-region-scan-end, 0.0281351 secs]
+2014-12-10T11:13:09.625+0800: 66955.346: [GC concurrent-mark-start]
+2014-12-10T11:13:09.645+0800: 66955.365: Application time: 0.0306801 seconds
+2014-12-10T11:13:09.651+0800: 66955.371: Total time for which application threads were stopped: 0.0061326 seconds
+2014-12-10T11:13:10.212+0800: 66955.933: [GC concurrent-mark-end, 0.5871129 secs]
+2014-12-10T11:13:10.212+0800: 66955.933: Application time: 0.5613792 seconds
+2014-12-10T11:13:10.215+0800: 66955.935: [GC remark 66955.936: [GC ref-proc, 0.0235275 secs], 0.0320865 secs]
+ [Times: user=0.05 sys=0.00, real=0.03 secs]
+2014-12-10T11:13:10.247+0800: 66955.968: Total time for which application threads were stopped: 0.0350098 seconds
+2014-12-10T11:13:10.248+0800: 66955.968: Application time: 0.0001691 seconds
+2014-12-10T11:13:10.250+0800: 66955.970: [GC cleanup 1178M-&gt;632M(3072M), 0.0060632 secs]
+ [Times: user=0.02 sys=0.00, real=0.01 secs]
+2014-12-10T11:13:10.256+0800: 66955.977: Total time for which application threads were stopped: 0.0088462 seconds
+2014-12-10T11:13:10.257+0800: 66955.977: [GC concurrent-cleanup-start]
+2014-12-10T11:13:10.259+0800: 66955.979: [GC concurrent-cleanup-end, 0.0024743 secs
+
+</code></pre>
+
+<p>这次发生global concurrent marking的原因是：humongous allocation，上面提过在巨大对象分配之前，会检测到old generation 使用占比是否超过了 initiating heap occupancy percent（45%），因为<br/>
+1449132032(used)+ 579608(allocation request:) &gt; 1449551430(threshold)，所以触发了本次global concurrent marking。对于具体执行过程，上面的表格已经详细讲解了。值得注意的是上文中所说的initial mark往往伴随着一次YGC，在日志中也有体现：GC pause (G1 Humongous Allocation) (young) (initial-mark)。</p>
+
+<h2 id="toc_11">后记</h2>
+
+<p>因为篇幅的关系，也受限于能力水平，本文只是简单了介绍了G1 GC的基本原理，很多细节没有涉及到，所以说只能算是为研究和使用它的同学打开了一扇门。一个日本人专门写了一本书《<a href="http://tatsu-zine.com/books/g1gc">徹底解剖「G1GC」 アルゴリズ</a>》详细的介绍了G1 GC，这本书也被作者放到了GitHub上，详见参考文献5。另外，莫枢在这方面也研究的比较多，读者可以去<a href="http://hllvm.group.iteye.com/">高级语言虚拟机论坛</a>向他请教，本文的很多内容也是我在此论坛上请教过后整理的。总而言之，G1是一款非常优秀的垃圾收集器，尽管还有些不完美（预测模型还不够智能），但是希望有更多的同学来使用它，研究它，提出好的建议，让它变的更加完善。</p>
+
+<h2 id="toc_12">参考文献</h2>
+
+<ol>
+<li> <a href="http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/G1GettingStarted/index.html">Getting Started with the G1 Garbage Collector</a></li>
+<li> <a href="http://hllvm.group.iteye.com/group/topic/44381">请教G1算法的原理</a></li>
+<li> <a href="http://hllvm.group.iteye.com/group/topic/44529">关于incremental update与SATB的一点理解</a></li>
+<li> <a href="http://www.infoq.com/articles/tuning-tips-G1-GC">Tips for Tuning the Garbage First Garbage Collector</a></li>
+<li> <a href="https://github.com/authorNari/g1gc-impl-book">g1gc-impl-book</a></li>
+<li> <a href="http://www.oracle.com/technetwork/cn/articles/java/g1gc-1984535-zhs.html">垃圾优先型垃圾回收器调优</a></li>
+<li> <a href="https://blogs.oracle.com/poonam/entry/understanding_g1_gc_logs">Understanding G1 GC Logs</a></li>
+<li> <a href="http://www.infoq.com/articles/G1-One-Garbage-Collector-To-Rule-Them-All">G1: One Garbage Collector To Rule Them All</a></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[【转】理解Heap Profling名词-Shallow和Retained Sizes]]></title>
+    <link href="http://www.blacklight.xin/15442380789391.html"/>
+    <updated>2018-12-08T11:01:18+08:00</updated>
+    <id>http://www.blacklight.xin/15442380789391.html</id>
+    <content type="html"><![CDATA[
+<p>所有包含Heap Profling功能的工具（MAT, Yourkit, JProfiler, TPTP等）都会使用到两个名词，一个是Shallow Size，另一个是 Retained Size.这是两个在平时不太常见的名词，本文会对这两个名词做一个详细的解释。</p>
+
+<span id="more"></span><!-- more -->
+
+<p>Shallow Size<br/>
+    对象自身占用的内存大小，不包括它引用的对象。<br/>
+    针对非数组类型的对象，它的大小就是对象与它所有的成员变量大小的总和。当然这里面还会包括一些<a href="http://lib.csdn.net/base/java" title="Java 知识库">Java</a>语言特性的数据存储单元。<br/>
+    针对数组类型的对象，它的大小是数组元素对象的大小总和。</p>
+
+<p>Retained Size<br/>
+    Retained Size=当前对象大小+当前对象可直接或间接引用到的对象的大小总和。(间接引用的含义：A-&gt;B-&gt;C, C就是间接引用)<br/>
+    换句话说，Retained Size就是当前对象被GC后，从Heap上总共能释放掉的内存。不过，释放的时候还要排除被GC Roots直接或间接引用的对象。他们暂时不会被被当做Garbage。</p>
+
+<p><img src="http://img.my.csdn.net/uploads/201301/15/1358243519_6794.png" alt=""/></p>
+
+<p>上图中，GC Roots直接引用了A和B两个对象。</p>
+
+<p>A对象的Retained Size=A对象的Shallow Size</p>
+
+<p>B对象的Retained Size=B对象的Shallow Size + C对象的Shallow Size</p>
+
+<p>这里不包括D对象，因为D对象被GC Roots直接引用。<br/>
+如果GC Roots不引用D对象呢？</p>
+
+<p><img src="http://img.my.csdn.net/uploads/201301/15/1358243533_9844.png" alt=""/></p>
+
+<p>此时,B对象的Retained Size=B对象的Shallow Size + C对象的Shallow Size + D对象的Shallow Size</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[【转】shell 基础二十篇]]></title>
+    <link href="http://www.blacklight.xin/15442379465528.html"/>
+    <updated>2018-12-08T10:59:06+08:00</updated>
+    <id>http://www.blacklight.xin/15442379465528.html</id>
+    <content type="html"><![CDATA[
+<p><a href="http://bbs.chinaunix%5B.NET%5D(http://lib.csdn.net/base/dotnet">http://bbs.chinaunix[.NET](http://lib.csdn.net/base/dotnet</a> “.NET知识库”)/forum.PHP?mod=viewthread&amp;tid=452942</p>
+
+<p>编者按：由 wingger 整理的　shell基础十二篇 以及L_kernel补充的第十三——二十篇，涉及shell　编程及使用的各个方面，又附有大量的例子，极适合初学者系统学习。如果配合網中人的shell 十三問? ，效果更加明显。</p>
+
+<p>这里是其中的第十章 sed. 其他各章可察看相应的 link. 　</p>
+
+<span id="more"></span><!-- more -->
+
+<p>shell基础1：文件安全与权限<br/>
+<a href="http://bbs.chinaunix.net/thread-434579-1-1.html">http://bbs.chinaunix.net/thread-434579-1-1.html</a></p>
+
+<p>附：Linux的用户和用户组管理<br/>
+<a href="http://bbs.chinaunix.net/thread-438660-1-1.html">http://bbs.chinaunix.net/thread-438660-1-1.html</a></p>
+
+<p>shell基础二：查找技巧,find及xargs的使用<br/>
+<a href="http://bbs.chinaunix.net/thread-441883-1-1.html">http://bbs.chinaunix.net/thread-441883-1-1.html</a></p>
+
+<p>shell基础三和四：后台(crontab,at,&amp;,nohup)及(*,?,[]等)<br/>
+<a href="http://bbs.chinaunix.net/thread-442596-1-1.html">http://bbs.chinaunix.net/thread-442596-1-1.html</a></p>
+
+<p>shell基础五：输入和输出(echo,read,cat,管道,tee,重定向等)<br/>
+<a href="http://bbs.chinaunix.net/thread-444209-1-1.html">http://bbs.chinaunix.net/thread-444209-1-1.html</a></p>
+
+<p>shell基础六七：命令执行顺序(||及&amp;&amp;，{}及())和正则表?<br/>
+<a href="http://bbs.chinaunix.net/thread-445229-1-1.html">http://bbs.chinaunix.net/thread-445229-1-1.html</a></p>
+
+<p>shell基础八：文本过滤工具（grep）<br/>
+<a href="http://bbs.chinaunix.net/thread-446683-1-1.html">http://bbs.chinaunix.net/thread-446683-1-1.html</a></p>
+
+<p>shell基础九：awk<br/>
+<a href="http://bbs.chinaunix.net/thread-448687-1-1.html">http://bbs.chinaunix.net/thread-448687-1-1.html</a></p>
+
+<p>shell基础十：sed<br/>
+<a href="http://bbs.chinaunix.net/thread-452942-1-1.html">http://bbs.chinaunix.net/thread-452942-1-1.html</a></p>
+
+<p>shell基础11：文件分类、合并和分割(sort,uniq,join,cut,paste,split)<br/>
+<a href="http://bbs.chinaunix.net/thread-457730-1-1.html">http://bbs.chinaunix.net/thread-457730-1-1.html</a></p>
+
+<p>shell基础十二:tr<br/>
+<a href="http://bbs.chinaunix.net/thread-459099-1-1.html">http://bbs.chinaunix.net/thread-459099-1-1.html</a></p>
+
+<p>感谢L_kernel补充的第十三——二十篇（cjaizss添加）<br/>
+shell基础第十三篇-登录环境<br/>
+<a href="http://bbs.chinaunix.net/thread-1820174-1-1.html">http://bbs.chinaunix.net/thread-1820174-1-1.html</a></p>
+
+<p>shell基础第十四篇-环境和shell变量<br/>
+<a href="http://bbs.chinaunix.net/thread-1820194-1-1.html">http://bbs.chinaunix.net/thread-1820194-1-1.html</a></p>
+
+<p>shell基础第十五篇-引号<br/>
+<a href="http://bbs.chinaunix.net/thread-1820220-1-1.html">http://bbs.chinaunix.net/thread-1820220-1-1.html</a></p>
+
+<p>shell基础第十六篇-shell脚本介绍<br/>
+<a href="http://bbs.chinaunix.net/thread-1820301-1-1.html">http://bbs.chinaunix.net/thread-1820301-1-1.html</a></p>
+
+<p>shell基础学习第十七篇-条件测试<br/>
+<a href="http://bbs.chinaunix.net/thread-1820304-1-1.html">http://bbs.chinaunix.net/thread-1820304-1-1.html</a></p>
+
+<p>shell基础第十八篇-控制流结构<br/>
+<a href="http://bbs.chinaunix.net/thread-1820329-1-1.html">http://bbs.chinaunix.net/thread-1820329-1-1.html</a></p>
+
+<p>shell学习基础第十九篇-shell函数<br/>
+<a href="http://bbs.chinaunix.net/thread-1820454-1-1.html">http://bbs.chinaunix.net/thread-1820454-1-1.html</a></p>
+
+<p>shell基础学习第二十篇-向脚本传递参数<br/>
+<a href="http://bbs.chinaunix.net/thread-1823335-1-1.html">http://bbs.chinaunix.net/thread-1823335-1-1.html</a></p>
+
+<p>其它我的笔记都在我的BLOG上，呵呵，有兴趣的可以去看看</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[mysql 分表分库【转】]]></title>
+    <link href="http://www.blacklight.xin/15442377600364.html"/>
+    <updated>2018-12-08T10:56:00+08:00</updated>
+    <id>http://www.blacklight.xin/15442377600364.html</id>
+    <content type="html"><![CDATA[
+<p>原文地址：<a href="http://wentao365.iteye.com/blog/1740874">http://wentao365.iteye.com/blog/1740874</a></p>
+
+<h1 id="toc_0">单库单表</h1>
+
+<p>单库单表是最常见的数据库设计，例如，有一张用户(user)表放在数据库db中，所有的用户都可以在db库中的user表中查到。 </p>
+
+<span id="more"></span><!-- more -->
+
+<h1 id="toc_1">单库多表</h1>
+
+<p>随着用户数量的增加，user表的数据量会越来越大，当数据量达到一定程度的时候对user表的查询会渐渐的变慢，从而影响整个DB的性能。如果使用mysql, 还有一个更严重的问题是，当需要添加一列的时候，mysql会锁表，期间所有的读写操作只能等待。 </p>
+
+<p>可以通过某种方式将user进行水平的切分，产生两个表结构完全一样的user_0000,user_0001等表，user_0000 + user_0001 + …的数据刚好是一份完整的数据。 </p>
+
+<h1 id="toc_2">多库多表</h1>
+
+<p>随着数据量增加也许单台DB的存储空间不够，随着查询量的增加单台数据库服务器已经没办法支撑。这个时候可以再对数据库进行水平区分。 </p>
+
+<h1 id="toc_3">分库分表规则</h1>
+
+<p>设计表的时候需要确定此表按照什么样的规则进行分库分表。例如，当有新用户时，程序得确定将此用户信息添加到哪个表中；同理，当登录的时候我们得通过用户的账号找到数据库中对应的记录，所有的这些都需要按照某一规则进行。 </p>
+
+<h1 id="toc_4">路由</h1>
+
+<p>通过分库分表规则查找到对应的表和库的过程。如分库分表的规则是user_id mod 4的方式，当用户新注册了一个账号，账号id的123,我们可以通过id mod 4的方式确定此账号应该保存到User_0003表中。当用户123登录的时候，我们通过123 mod 4后确定记录在User_0003中。 <br/>
+分库分表产生的问题，及注意事项 </p>
+
+<ul>
+<li>分库分表维度的问题 </li>
+</ul>
+
+<p>假如用户购买了商品,需要将交易记录保存取来，如果按照用户的纬度分表，则每个用户的交易记录都保存在同一表中，所以很快很方便的查找到某用户的购买情况，但是某商品被购买的情况则很有可能分布在多张表中，查找起来比较麻烦。反之，按照商品维度分表，可以很方便的查找到此商品的购买情况，但要查找到买人的交易记录比较麻烦。 </p>
+
+<p>所以常见的解决方式有： </p>
+
+<pre><code> a.通过扫表的方式解决，此方法基本不可能，效率太低了。 
+
+ b.记录两份数据，一份按照用户纬度分表，一份按照商品维度分表。 
+
+ c.通过搜索引擎解决，但如果实时性要求很高，又得关系到实时搜索。 
+</code></pre>
+
+<ul>
+<li>联合查询的问题 </li>
+</ul>
+
+<p>联合查询基本不可能，因为关联的表有可能不在同一数据库中。 </p>
+
+<ul>
+<li>避免跨库事务 </li>
+</ul>
+
+<p>避免在一个事务中修改db0中的表的时候同时修改db1中的表，一个是操作起来更复杂，效率也会有一定影响。 </p>
+
+<ul>
+<li>尽量把同一组数据放到同一DB服务器上 </li>
+</ul>
+
+<p>例如将卖家a的商品和交易信息都放到db0中，当db1挂了的时候，卖家a相关的东西可以正常使用。也就是说避免数据库中的数据依赖另一数据库中的数据。 </p>
+
+<ul>
+<li>一主多备 </li>
+</ul>
+
+<p>在实际的应用中，绝大部分情况都是读远大于写。Mysql提供了读写分离的机制，所有的写操作都必须对应到Master，读操作可以在Master和Slave机器上进行，Slave与Master的结构完全一样，一个Master可以有多个Slave,甚至Slave下还可以挂Slave,通过此方式可以有效的提高DB集群的QPS.                                                       </p>
+
+<p>所有的写操作都是先在Master上操作，然后同步更新到Slave上，所以从Master同步到Slave机器有一定的延迟，当系统很繁忙的时候，延迟问题会更加严重，Slave机器数量的增加也会使这个问题更加严重。 </p>
+
+<p>此外，可以看出Master是集群的瓶颈，当写操作过多，会严重影响到Master的稳定性，如果Master挂掉，整个集群都将不能正常工作。 </p>
+
+<p>所以，<br/>
+   1. 当读压力很大的时候，可以考虑添加Slave机器的分式解决，但是当Slave机器达到一定的数量就得考虑分库了。 <br/>
+   2. 当写压力很大的时候，就必须得进行分库操作。 </p>
+
+<hr/>
+
+<blockquote>
+<p>MySQL使用为什么要分库分表 <br/>
+可以用说用到MySQL的地方,只要数据量一大, 马上就会遇到一个问题,要分库分表. <br/>
+这里引用一个问题为什么要分库分表呢?MySQL处理不了大的表吗? <br/>
+其实是可以处理的大表的.我所经历的项目中单表物理上文件大小在80G多,单表记录数在5亿以上,而且这个表 <br/>
+属于一个非常核用的表:朋友关系表. </p>
+</blockquote>
+
+<p>但这种方式可以说不是一个最佳方式. 因为面临文件系统如Ext3文件系统对大于大文件处理上也有许多问题. <br/>
+这个层面可以用xfs文件系统进行替换.但MySQL单表太大后有一个问题是不好解决: 表结构调整相关的操作基 <br/>
+本不在可能.所以大项在使用中都会面监着分库分表的应用. </p>
+
+<p>从Innodb本身来讲数据文件的Btree上只有两个锁, 叶子节点锁和子节点锁,可以想而知道,当发生页拆分或是添加 <br/>
+新叶时都会造成表里不能写入数据. <br/>
+所以分库分表还就是一个比较好的选择了. </p>
+
+<p>那么分库分表多少合适呢? </p>
+
+<p><strong>经测试在单表1000万条记录一下,写入读取性能是比较好的. 这样在留点buffer,那么单表全是数据字型的保持在 <br/>
+800万条记录以下, 有字符型的单表保持在500万以下. <br/>
+如果按 100库100表来规划,如用户业务: <br/>
+500万<em>100</em>100 = 50000000万 = 5000亿记录.</strong></p>
+
+<p>心里有一个数了,按业务做规划还是比较容易的.</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[java异常的选择【转载】]]></title>
+    <link href="http://www.blacklight.xin/15442373245165.html"/>
+    <updated>2018-12-08T10:48:44+08:00</updated>
+    <id>http://www.blacklight.xin/15442373245165.html</id>
+    <content type="html"><![CDATA[
+<p>曾经听到过关于老司机和新手程序员的区别，其中最大的一个区别就在于异常的处理。新手程序员总是天真得把世界想得太美好，基本上没想过会出现异常的情况，而一个经验丰富的老司机会把最坏的打算考虑进去，给出相应的解决办法，使得发生异常时对系统的影响降低到最小。对此，我深表认同。现实的情况总是复杂的，而且还有很多不怀好意的人时刻准备攻击你的系统。使用你系统的用户越多，这种潜在的风险也就越大。</p>
+
+<p>异常处理是应对这些风险的最强有力的武器。在Java的世界里，异常有两种：受检异常(checked exception)和非受检异常（unchecked exception）。想必所有的Javaer都使用过这两种异常，但是何时使用哪个异常缺失经常困扰程序员的头疼问题。在此，我分享一下自己的看法，如果你有不同的意见，请留意探讨。</p>
+
+<span id="more"></span><!-- more -->
+
+<h3 id="toc_0">1-如果正常情况下会出现，那么使用Checked-Exception；反之，则使用Unchecked-Exception</h3>
+
+<p>这条准则是我在决定使用Checked Exception还是Unchecked Exception的第一原则。如果API的使用者在正常使用的过程中都会出现异常，那么这种异常就属于Checked Exception。因为这种异常时属于程序执行流程众多分支之一，API的使用者必须意识到这种情况，并做出相应的处理。</p>
+
+<p>举个栗子：</p>
+
+<p>我希望向zookeeper中创建一个节点，那么这种情况就隐含了两个前提条件：</p>
+
+<ul>
+<li>  父节点已经被创建（如果有的话）</li>
+<li>  本节点还未被创建</li>
+</ul>
+
+<p>那么，这个API的签名大致应该是这样：</p>
+
+<pre><code class="language-java">void createNode(String path,byte[] data) throws FatherNodeNotExist, NodeExist;
+
+</code></pre>
+
+<p>API的使用者看到这个签名的定义时就会得到一个强烈的心理暗示，我需要考虑父节点不存在和本节点已存在的情况，那么他就不得不显示的去处理这两种异常。</p>
+
+<p>有的朋友可能会争论说，我正常的情况下不会出现这种情况，因为使用这个API的前提就是先创建好父节点，而后创建本节点，那我就不用抛出两种异常了，使用者也轻松了许多。但事实真的如此吗？我们想当然的认为了使用者是<code>自己人</code>，他们会乖乖的按照我们的想法去先创建父节点，再创建本节点，如果是在一个很局限的使用场景下，每个人都说经过严格培训的，那么你可以去做这样的假设，但是我还是不推荐你这么做，因为这样设计使得系统是脆弱的，不稳定的。如果能通过系统能自己避免这些错误，为什么不呢？况且，如果你把这个API开放给第三方的使用者，那么情况会更糟糕，你根本不知道他们会怎样去使用API，这非常恐怖！</p>
+
+<p>有时候情况会变得很复杂，<code>正常情况</code>的鉴定变得很困难，你肯定会遇到这种时候，此时就需要结合你的业务场景去权衡其中的利弊。这依赖与你的经验和对业务场景的理解，我无法给你一个绝对的建议，那样是不负责任的。</p>
+
+<p>我再举个常见的栗子：用户修改他拥有的资源信息。在菜谱APP中给出一个接口，让用户修改他菜谱的信息。那么这里一个隐含的条件就是用户修改他自己的菜谱信息，他是无权限修改别人的菜谱信息的。那么这个API的签名可能是这样的：</p>
+
+<pre><code class="language-java">void updateMenu(long menuId,long uid,String title,String description...);
+
+</code></pre>
+
+<p>如果用户尝试去修改不属于他的菜谱呢？我们是否需要throws UserPermissionException之类受检异常？我认为是不需要的。判断是这属于正常情况吗？我认为这不算是正常情况。<br/>
+正常情况下，客户端调用修改信息的接口，那么menuId一定是属于这个用户的。如果出现这种情况，要么是你系统设计的就有问题，要么就是不怀好意的人在破坏你的系统。前者需要重新设计我们的系统，而后者我们更不用关系，直接抛出一个RuntimeException就可以，因为他不算正常用户。</p>
+
+<h3 id="toc_1">2. 调用者中能从异常中恢复的，推荐使用受检异常；反之，则使用非受检异常</h3>
+
+<p>注意这里的一个关键词是<code>推荐</code>，决定使用哪种异常最为根本的还是第一条原则。如果第一条原则难以判断时，才考虑调用者。这条原则和<code>Effective Java</code>中的第58条很像，如果有这本书的朋友可以再拿出来读读。</p>
+
+<p>我和<code>Effective Java</code>#58不同的观点在于，这条原则只能是<code>推荐</code>，另外，对于所有不能恢复的情况我都建议使用非受检异常。我对可恢复的理解是，如果API的调用者能够处理你抛出的异常，并给出积极的响应和反馈，并指导它的使用者做出调整，那么这就是可恢复的。不可恢复就是API的调用者无法处理你抛出的异常，或者仅仅只是打个LOG记录一下，不能对它的使用者做出提示，那么都可认为是不可恢复的。</p>
+
+<p>还是最开始的栗子，如果调用<code>createNode</code>的调用者能响应<code>FatherNodeNotExist</code>，并把这种情况反应到终端上，那么使用受检异常是有积极意义的。对于不可恢复的情况，包括编程错误，我建议都是用非受检异常，这样系统能<code>fail fast</code>，把异常对系统的影响降到最低，同时你还能获得一个完整的异常堆栈信息，何乐而不为呢？！</p>
+
+<p>基本上，这两条原则就能帮你决定到底是使用受检异常还是非受检异常了。当然，现实的情况很复杂，需要根据你所处的具体业务场景来判断，经验也是不可或缺的。在设计API的时候多问下自己这是正常情况下出现的吗，调用者可以处理这个异常吗，这会很有帮助的！</p>
+
+<p>异常处理是一个非常大的话题，除了选择<code>checked exception</code>还是<code>unchecked exception</code>以外，还有一些一般的通用原装，例如：</p>
+
+<ul>
+<li>  只抛出与自己有关的异常</li>
+<li>  封装底层异常</li>
+<li>  尽量在抛出异常的同时多携带上下文信息</li>
+</ul>
+
+<p>这些在<code>Effective Java</code>中都有详细的介绍，朋友可以认真读一下这本书，写的非常好！</p>
+
+<p>对异常处理有不同理解的朋友可以给我留言，一起讨论，共同进步！</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[shell 在while中使用ssh的问题]]></title>
@@ -3037,727 +3957,6 @@ export HADOOP_CONF_DIR=XXX
 
 <p>spark-submit 会自动从配置文件中加载默认的属性值传递给你的应用程序。默认读取的是conf/spark-default.conf<br/>
 通过这种方式加载配置属性可以取消spark-submit 上的参数，列如：加入spark.master 在应用程序中已经设置了那么就可以在spark-submit 取消--master 选项。<strong>总之，通过SparkConf 设置的属性具有最高的优先级，其次是通过spark-submit 传递的，最后是配置文件中默认的。</strong></p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[sql 好习惯]]></title>
-    <link href="http://www.blacklight.xin/14714462595894.html"/>
-    <updated>2016-08-17T23:04:19+08:00</updated>
-    <id>http://www.blacklight.xin/14714462595894.html</id>
-    <content type="html"><![CDATA[
-<p>我们做软件开发的，大部分人都离不开跟数据库打交道，特别是erp开发的，跟数据库打交道更是频繁，存储过程动不动就是上千行，如果数据量大，人员流动大，那么我么还能保证下一段时间系统还能流畅的运行吗？我么还能保证下一个人能看懂我么的存储过程吗？那么我结合公司平时的培训和平时个人工作经验和大家分享一下，希望对大家有帮助。</p>
-
-<p>要知道sql语句，我想我们有必要知道sqlserver查询分析器怎么执行我么sql语句的，我么很多人会看执行计划，或者用profile来监视和调优查询语句或者存储过程慢的原因，但是如果我们知道查询分析器的执行逻辑顺序，下手的时候就胸有成竹，那么下手是不是有把握点呢？<br/>
-&lt;!-- more --&gt;</p>
-
-<h2 id="toc_0">一：查询的逻辑执行顺序</h2>
-
-<p>(1) FROM &lt; left_table&gt; </p>
-
-<p>(3) &lt; join_type&gt;  JOIN &lt; right_table&gt;   (2) ON &lt; join_condition&gt; </p>
-
-<p>(4) WHERE &lt; where_condition&gt; </p>
-
-<p>(5) GROUP BY &lt; group_by_list&gt; </p>
-
-<p>(6) WITH {cube | rollup}</p>
-
-<p>(7) HAVING &lt; having_condition&gt; </p>
-
-<p>(8) SELECT  (9) DISTINCT (11) &lt; top_specification&gt;  &lt; select_list&gt; </p>
-
-<p>(10) ORDER BY &lt; order_by_list&gt; </p>
-
-<p><strong>标准的SQL 的解析顺序为:</strong></p>
-
-<p>(1).FROM 子句 组装来自不同数据源的数据</p>
-
-<p>(2).WHERE 子句 基于指定的条件对记录进行筛选</p>
-
-<p>(3).GROUP BY 子句 将数据划分为多个分组</p>
-
-<p>(4).使用聚合函数进行计算</p>
-
-<p>(5).使用HAVING子句筛选分组</p>
-
-<p>(6).计算所有的表达式</p>
-
-<p>(7).使用ORDER BY对结果集进行排序</p>
-
-<h2 id="toc_1">二 执行顺序：</h2>
-
-<p>1.FROM：对FROM子句中前两个表执行笛卡尔积生成虚拟表vt1</p>
-
-<p>2.ON:对vt1表应用ON筛选器只有满足&lt; join_condition&gt; 为真的行才被插入vt2</p>
-
-<p>3.OUTER(join)：如果指定了 OUTER JOIN保留表(preserved table)中未找到的行将行作为外部行添加到vt2 生成t3如果from包含两个以上表则对上一个联结生成的结果表和下一个表重复执行步骤和步骤直接结束</p>
-
-<p>4.WHERE：对vt3应用 WHERE 筛选器只有使&lt; where_condition&gt; 为true的行才被插入vt4</p>
-
-<p>5.GROUP BY：按GROUP BY子句中的列列表对vt4中的行分组生成vt5</p>
-
-<p>6.CUBE|ROLLUP：把超组(supergroups)插入vt6 生成vt6</p>
-
-<p>7.HAVING：对vt6应用HAVING筛选器只有使&lt; having_condition&gt; 为true的组才插入vt7</p>
-
-<p>8.SELECT：处理select列表产生vt8</p>
-
-<p>9.DISTINCT：将重复的行从vt8中去除产生vt9</p>
-
-<p>10.ORDER BY：将vt9的行按order by子句中的列列表排序生成一个游标vc10</p>
-
-<p>11.TOP：从vc10的开始处选择指定数量或比例的行生成vt11 并返回调用者</p>
-
-<p>看到这里，那么用过linqtosql的语法有点相似啊？如果我们我们了解了sqlserver执行顺序，那么我们就接下来进一步养成日常sql好习惯，也就是在实现功能同时有考虑性能的思想，数据库是能进行集合运算的工具，我们应该尽量的利用这个工具，所谓集合运算实际就是批量运算，就是尽量减少在客户端进行大数据量的循环操作，而用SQL语句或者存储过程代替。</p>
-
-<h2 id="toc_2">三、只返回需要的数据</h2>
-
-<p>返回数据到客户端至少需要数据库提取数据、网络传输数据、客户端接收数据以及客户端处理数据等环节，如果返回不需要的数据，就会增加服务器、网络和客户端的无效劳动，其害处是显而易见的，避免这类事件需要注意：</p>
-
-<p>A、横向来看，</p>
-
-<p>(1)不要写SELECT *的语句，而是选择你需要的字段。</p>
-
-<p>(2)当在SQL语句中连接多个表时, 请使用表的别名并把别名前缀于每个Column上.这样一来,就可以减少解析的时间并减少那些由Column歧义引起的语法错误。</p>
-
-<p>如有表table1（ID,col1）和table2 （ID,col2）</p>
-
-<p>Select A.ID, A.col1, B.col2</p>
-
-<p>-- Select A.ID, col1, col2 –不要这么写，不利于将来程序扩展</p>
-
-<p>from table1 A inner join table2 B on A.ID=B.ID Where …</p>
-
-<p>B、纵向来看，</p>
-
-<p>(1)合理写WHERE子句，不要写没有WHERE的SQL语句。</p>
-
-<p>(2) SELECT TOP N * --没有WHERE条件的用此替代 </p>
-
-<h2 id="toc_3">四 ：尽量少做重复的工作</h2>
-
-<p>A、控制同一语句的多次执行，特别是一些基础数据的多次执行是很多程序员很少注意的。</p>
-
-<p>B、减少多次的数据转换，也许需要数据转换是设计的问题，但是减少次数是程序员可以做到的。</p>
-
-<p>C、杜绝不必要的子查询和连接表，子查询在执行计划一般解释成外连接，多余的连接表带来额外的开销。</p>
-
-<p>D、合并对同一表同一条件的多次UPDATE，比如</p>
-
-<p>UPDATE EMPLOYEE SET FNAME=&#39;HAIWER&#39;<br/>
-WHERE EMP_ID=&#39; VPA30890F&#39; UPDATE EMPLOYEE SET LNAME=&#39;YANG&#39;<br/>
-WHERE EMP_ID=&#39; VPA30890F&#39;</p>
-
-<p>这两个语句应该合并成以下一个语句</p>
-
-<p>UPDATE EMPLOYEE SET FNAME=&#39;HAIWER&#39;,LNAME=&#39;YANG&#39;  WHERE EMP_ID=&#39; VPA30890F&#39;</p>
-
-<p>E、UPDATE操作不要拆成DELETE操作+INSERT操作的形式，虽然功能相同，但是性能差别是很大的。</p>
-
-<h2 id="toc_4">五、注意临时表和表变量的用法</h2>
-
-<p>在复杂系统中，临时表和表变量很难避免，关于临时表和表变量的用法，需要注意：</p>
-
-<p>A、如果语句很复杂，连接太多，可以考虑用临时表和表变量分步完成。</p>
-
-<p>B、如果需要多次用到一个大表的同一部分数据，考虑用临时表和表变量暂存这部分数据。</p>
-
-<p>C、如果需要综合多个表的数据，形成一个结果，可以考虑用临时表和表变量分步汇总这多个表的数据。</p>
-
-<p>D、其他情况下，应该控制临时表和表变量的使用。</p>
-
-<p>E、关于临时表和表变量的选择，很多说法是表变量在内存，速度快，应该首选表变量，但是在实际使用中发现，</p>
-
-<p>(1)主要考虑需要放在临时表的数据量，在数据量较多的情况下，临时表的速度反而更快。</p>
-
-<p>(2)执行时间段与预计执行时间(多长)</p>
-
-<p>F、关于临时表产生使用SELECT INTO和CREATE TABLE + INSERT INTO的选择，一般情况下，</p>
-
-<p>SELECT INTO会比CREATE TABLE + INSERT INTO的方法快很多，</p>
-
-<p>但是SELECT INTO会锁定TEMPDB的系统表SYSOBJECTS、SYSINDEXES、SYSCOLUMNS，在多用户并发环境下，容易阻塞其他进程，</p>
-
-<p>所以我的建议是，在并发系统中，尽量使用CREATE TABLE + INSERT INTO，而大数据量的单个语句使用中，使用SELECT INTO。</p>
-
-<h2 id="toc_5">六、子查询的用法（1）</h2>
-
-<p>子查询是一个 SELECT 查询，它嵌套在 SELECT、INSERT、UPDATE、DELETE 语句或其它子查询中。</p>
-
-<p>任何允许使用表达式的地方都可以使用子查询，子查询可以使我们的编程灵活多样，可以用来实现一些特殊的功能。但是在性能上，</p>
-
-<p>往往一个不合适的子查询用法会形成一个性能瓶颈。如果子查询的条件中使用了其外层的表的字段，这种子查询就叫作相关子查询。</p>
-
-<p>相关子查询可以用IN、NOT IN、EXISTS、NOT EXISTS引入。 关于相关子查询，应该注意：</p>
-
-<p>(1)</p>
-
-<p>A、NOT IN、NOT EXISTS的相关子查询可以改用LEFT JOIN代替写法。比如： SELECT PUB_NAME FROM PUBLISHERS WHERE PUB_ID NOT IN (SELECT PUB_ID FROM TITLES WHERE TYPE = &#39;BUSINESS&#39;) 可以改写成： SELECT A.PUB_NAME FROM PUBLISHERS A LEFT JOIN TITLES B ON B.TYPE = &#39;BUSINESS&#39; AND A.PUB_ID=B. PUB_ID WHERE B.PUB_ID IS NULL</p>
-
-<p>(2)</p>
-
-<p>SELECT TITLE FROM TITLES <br/>
-WHERE NOT EXISTS <br/>
- (SELECT TITLE_ID FROM SALES <br/>
-WHERE TITLE_ID = TITLES.TITLE_ID)</p>
-
-<p>可以改写成：</p>
-
-<p>SELECT TITLE <br/>
-FROM TITLES LEFT JOIN SALES <br/>
-ON SALES.TITLE_ID = TITLES.TITLE_ID <br/>
-WHERE SALES.TITLE_ID IS NULL</p>
-
-<p>B、 如果保证子查询没有重复 ，IN、EXISTS的相关子查询可以用INNER JOIN 代替。比如：</p>
-
-<p>SELECT PUB_NAME <br/>
-FROM PUBLISHERS <br/>
-WHERE PUB_ID IN<br/>
- (SELECT PUB_ID <br/>
- FROM TITLES <br/>
- WHERE TYPE = &#39;BUSINESS&#39;)</p>
-
-<p>可以改写成：</p>
-
-<p>SELECT A.PUB_NAME --SELECT DISTINCT A.PUB_NAME <br/>
-FROM PUBLISHERS A INNER JOIN TITLES B <br/>
-ON        B.TYPE = &#39;BUSINESS&#39; AND<br/>
-A.PUB_ID=B. PUB_ID</p>
-
-<p>(3)</p>
-
-<p>C、 IN的相关子查询用EXISTS代替，比如</p>
-
-<p>SELECT PUB_NAME FROM PUBLISHERS <br/>
-WHERE PUB_ID IN<br/>
-(SELECT PUB_ID FROM TITLES WHERE TYPE = &#39;BUSINESS&#39;)</p>
-
-<p>可以用下面语句代替：</p>
-
-<p>SELECT PUB_NAME FROM PUBLISHERS WHERE EXISTS <br/>
-(SELECT 1 FROM TITLES WHERE TYPE = &#39;BUSINESS&#39; AND<br/>
-PUB_ID= PUBLISHERS.PUB_ID)</p>
-
-<p>D、不要用COUNT(*)的子查询判断是否存在记录，最好用LEFT JOIN或者EXISTS，比如有人写这样的语句：</p>
-
-<p>SELECT JOB_DESC FROM JOBS <br/>
-WHERE (SELECT COUNT(*) FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID)=0</p>
-
-<p>应该改成：</p>
-
-<p>SELECT JOBS.JOB_DESC FROM JOBS LEFT JOIN EMPLOYEE<br/><br/>
-ON EMPLOYEE.JOB_ID=JOBS.JOB_ID <br/>
-WHERE EMPLOYEE.EMP_ID IS NULL</p>
-
-<p>SELECT JOB_DESC FROM JOBS <br/>
-WHERE (SELECT COUNT(*) FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID)&lt;&gt;0</p>
-
-<p>应该改成：</p>
-
-<p>SELECT JOB_DESC FROM JOBS <br/>
-WHERE EXISTS (SELECT 1 FROM EMPLOYEE WHERE JOB_ID=JOBS.JOB_ID) </p>
-
-<h2 id="toc_6">七：尽量使用索引</h2>
-
-<p>建立索引后，并不是每个查询都会使用索引，在使用索引的情况下，索引的使用效率也会有很大的差别。只要我们在查询语句中没有强制指定索引，</p>
-
-<p>索引的选择和使用方法是SQLSERVER的优化器自动作的选择，而它选择的根据是查询语句的条件以及相关表的统计信息，这就要求我们在写SQL</p>
-
-<p>语句的时候尽量使得优化器可以使用索引。为了使得优化器能高效使用索引，写语句的时候应该注意：</p>
-
-<p>（1</p>
-
-<p>A、不要对索引字段进行运算，而要想办法做变换，比如</p>
-
-<pre><code>SELECT ID FROM T WHERE NUM/2=100
-应改为:
-SELECT ID FROM T WHERE NUM=100*2
-
-SELECT ID FROM T WHERE NUM/2=NUM1
-如果NUM有索引应改为:
-SELECT ID FROM T WHERE NUM=NUM1*2
-
-如果NUM1有索引则不应该改。
-</code></pre>
-
-<p>(2)</p>
-
-<p>发现过这样的语句：</p>
-
-<pre><code>SELECT 年,月,金额 FROM 结余表  WHERE 100*年+月=2010*100+10
-应该改为：
-
-SELECT 年,月,金额 FROM 结余表 WHERE 年=2010 AND月=10
-</code></pre>
-
-<p>B、 不要对索引字段进行格式转换</p>
-
-<p>日期字段的例子：</p>
-
-<p>WHERE CONVERT(VARCHAR(10), 日期字段,120)=&#39;2010-07-15&#39;</p>
-
-<p>应该改为</p>
-
-<p>WHERE日期字段〉=&#39;2010-07-15&#39;   AND   日期字段&lt;&#39;2010-07-16&#39;</p>
-
-<p>ISNULL转换的例子：</p>
-
-<p>WHERE ISNULL(字段,&#39;&#39;)&lt;&gt;&#39;&#39;应改为:WHERE字段&lt;&gt;&#39;&#39;<br/>
-WHERE ISNULL(字段,&#39;&#39;)=&#39;&#39;不应修改<br/>
-WHERE ISNULL(字段,&#39;F&#39;) =&#39;T&#39;应改为: WHERE字段=&#39;T&#39;<br/>
-WHERE ISNULL(字段,&#39;F&#39;)&lt;&gt;&#39;T&#39;不应修改</p>
-
-<p>(3)</p>
-
-<p>C、 不要对索引字段使用函数</p>
-
-<p>WHERE LEFT(NAME, 3)=&#39;ABC&#39; 或者WHERE SUBSTRING(NAME,1, 3)=&#39;ABC&#39;</p>
-
-<p>应改为: WHERE NAME LIKE &#39;ABC%&#39;</p>
-
-<p>日期查询的例子：</p>
-
-<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)=0<br/>
-应改为:WHERE 日期&gt;=&#39;2010-06-30&#39; AND 日期 &lt;&#39;2010-07-01&#39;</p>
-
-<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&gt;0<br/>
-应改为:WHERE 日期 &lt;&#39;2010-06-30&#39;</p>
-
-<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&gt;=0<br/>
-应改为:WHERE 日期 &lt;&#39;2010-07-01&#39;</p>
-
-<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)<0<br/>
-应改为:WHERE 日期>=&#39;2010-07-01&#39;</p>
-
-<p>WHERE DATEDIFF(DAY, 日期,&#39;2010-06-30&#39;)&lt;=0<br/>
-应改为:WHERE 日期&gt;=&#39;2010-06-30&#39;</p>
-
-<p>D、不要对索引字段进行多字段连接</p>
-
-<p>比如：</p>
-
-<p>WHERE FAME+ &#39;. &#39;+LNAME=&#39;HAIWEI.YANG&#39;</p>
-
-<p>应改为:</p>
-
-<p>WHERE FNAME=&#39;HAIWEI&#39; AND LNAME=&#39;YANG&#39;</p>
-
-<h2 id="toc_7">八：多表连接的连接条件对索引的选择有着重要的意义，所以我们在写连接条件条件的时候需要特别注意。</h2>
-
-<p>A、多表连接的时候，连接条件必须写全，宁可重复，不要缺漏。</p>
-
-<p>B、连接条件尽量使用聚集索引</p>
-
-<p>C、注意ON、WHERE和HAVING部分条件的区别</p>
-
-<p>ON是最先执行， WHERE次之，HAVING最后，因为ON是先把不符合条件的记录过滤后才进行统计，它就可以减少中间运算要处理的数据，按理说应该速度是最快的，WHERE也应该比 HAVING快点的，因为它过滤数据后才进行SUM，在两个表联接时才用ON的，所以在一个表的时候，就剩下WHERE跟HAVING比较了</p>
-
-<p>考虑联接优先顺序：</p>
-
-<p>(1)INNER JOIN<br/>
-(2)LEFT JOIN (注：RIGHT JOIN 用 LEFT JOIN 替代)<br/>
-(3)CROSS JOIN</p>
-
-<p>其它注意和了解的地方有：</p>
-
-<p>A、在IN后面值的列表中，将出现最频繁的值放在最前面，出现得最少的放在最后面，减少判断的次数</p>
-
-<p>B、注意UNION和UNION ALL的区别。--允许重复数据用UNION ALL好  </p>
-
-<p>C、注意使用DISTINCT，在没有必要时不要用</p>
-
-<p>D、TRUNCATE TABLE 与 DELETE 区别</p>
-
-<p>E、减少访问数据库的次数</p>
-
-<p>还有就是我们写存储过程，如果比较长的话，最后用标记符标开，因为这样可读性很好，即使语句写的不怎么样但是语句工整，C# 有region</p>
-
-<p>sql我比较喜欢用的就是</p>
-
-<p>--startof  查询在职人数<br/>
-     sql语句<br/>
-  --end of</p>
-
-<p>正式机器上我们一般不能随便调试程序，但是很多时候程序在我们本机上没问题，但是进正式系统就有问题，但是我们又不能随便在正式机器上操作，那么怎么办呢？我们可以用回滚来调试我们的存储过程或者是sql语句，从而排错。</p>
-
-<p>BEGIN TRAN<br/>
- UPDATE a SET 字段=&#39;&#39;<br/>
-ROLLBACK</p>
-
-<p>作业存储过程我一般会加上下面这段，这样检查错误可以放在存储过程，如果执行错误回滚操作，但是如果程序里面已经有了事务回滚，那么存储过程就不要写事务了，这样会导致事务回滚嵌套降低执行效率，但是我们很多时候可以把检查放在存储过程里，这样有利于我们解读这个存储过程，和排错。</p>
-
-<p>BEGIN TRANSACTION<br/><br/>
---事务回滚开始       </p>
-
-<p>--检查报错<br/>
- IF ( @@ERROR &gt; 0 )<br/><br/>
-                    BEGIN<br/><br/>
---回滚操作<br/>
-                        ROLLBACK TRANSACTION<br/><br/>
-                        RAISERROR(&#39;删除工作报告错误&#39;, 16, 3)<br/><br/>
-                        RETURN<br/><br/>
-                    END         </p>
-
-<p>--结束事务<br/>
-  COMMIT TRANSACTION     </p>
-
-<p>好久没有写博文了，工作项目一个接一个，再加上公司人员流动，新人很多事情接不下来，加班成了家常便饭，仓促写下这些希望对大家有帮助，不对的也欢迎指点，交流互相提高。</p>
-
-<p>有错误的地方欢迎大家拍砖,希望交流和共享。</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[深入浅出 Redis Cluster 原理]]></title>
-    <link href="http://www.blacklight.xin/14714457247718.html"/>
-    <updated>2016-08-17T22:55:24+08:00</updated>
-    <id>http://www.blacklight.xin/14714457247718.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">一、 简介</h2>
-
-<p><img src="media/14714457247718/14714457994808.jpg" alt=""/></p>
-
-<span id="more"></span><!-- more -->
-
-<p>Redis Cluster是一个高性能高可用的分布式系统。由多个Redis实例组成的整体，数据按照Slot存储分布在多个Redis实例上，通过Gossip协议来进行节点之间通信。</p>
-
-<ul>
-<li><p>Redis Cluster功能特点如下：</p>
-
-<pre><code>* 所有的节点相互连接
-* 集群消息通信通过集群总线通信，，集群总线端口大小为客户端服务端口+10000，这个10000是固定值
-* 节点与节点之间通过二进制协议进行通信
-* 客户端和集群节点之间通信和通常一样，通过文本协议进行
-* 集群节点不会代理查询
-* 数据按照Slot存储分布在多个Redis实例上
-* 集群节点挂掉会自动故障转移
-* 可以相对平滑扩/缩容节点
-</code></pre></li>
-</ul>
-
-<h2 id="toc_1">二、 集群通信</h2>
-
-<h3 id="toc_2">2.1 CLUSTER MEET</h3>
-
-<p><img src="media/14714457247718/14714459193034.jpg" alt=""/><br/>
-需要组建一个真正的可工作的集群，我们必须将各个独立的节点连接起来，构成一个包含多个节点的集群。<br/>
-连接各个节点的工作使用CLUSTER MEET命令来完成。<br/>
-CLUSTER MEET <ip> <port></p>
-
-<p><strong>CLUSTERMEET命令实现：</strong></p>
-
-<ul>
-<li>节点 A 会为节点 B 创建一个 clusterNode 结构，并将该结构添加到自己的 clusterState.nodes 字典里面。</li>
-<li>节点A根据CLUSTER MEET命令给定的IP地址和端口号，向节点B发送一条MEET消息。</li>
-<li>节点B接收到节点A发送的MEET消息，节点B会为节点A创建一个clusterNode结构，并将该结构添加到自己的clusterState.nodes字典里面。</li>
-<li>节点B向节点A返回一条PONG消息。</li>
-<li>节点A将受到节点B返回的PONG消息，通过这条PONG消息节点A可以知道节点B已经成功的接收了自己发送的MEET消息。</li>
-<li>之后，节点A将向节点B返回一条PING消息。</li>
-<li>节点B将接收到的节点A返回的PING消息，通过这条PING消息节点B可以知道节点A已经成功的接收到了自己返回的PONG消息，握手完成。</li>
-<li>之后，节点A会将节点B的信息通过Gossip协议传播给集群中的其他节点，让其他节点也与节点B进行握手，最终，经过一段时间后，节点B会被集群中的所有节点认识。</li>
-</ul>
-
-<p><strong>2.2 集群消息处理 clusterProcessPacket</strong></p>
-
-<ul>
-<li>更新接收消息计数器</li>
-<li>查找发送者节点并且不是handshake节点</li>
-<li>更新自己的epoch和slave的offset信息</li>
-<li>处理MEET消息，使加入集群</li>
-<li>从goosip中发现未知节点，发起handshake</li>
-<li>对PING，MEET回复PONG</li>
-<li>根据收到的心跳信息更新自己clusterState中的master-slave，slots信息</li>
-<li>对FAILOVER_AUTH_REQUEST消息，检查并投票</li>
-<li>处理FAIL，FAILOVER_AUTH_ACK，UPDATE信息</li>
-</ul>
-
-<p><img src="media/14714457247718/14714460777902.jpg" alt=""/></p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[java 垃圾回收机制]]></title>
-    <link href="http://www.blacklight.xin/14714451686233.html"/>
-    <updated>2016-08-17T22:46:08+08:00</updated>
-    <id>http://www.blacklight.xin/14714451686233.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">对象引用</h2>
-
-<p>Java中的垃圾回收一般是在Java堆中进行，因为堆中几乎存放了Java中所有的对象实例。谈到Java堆中的垃圾回收，自然要谈到引用。在JDK1.2之前，Java中的引用定义很很纯粹：如果reference类型的数据中存储的数值代表的是另外一块内存的起始地址，就称这块内存代表着一个引用。但在JDK1.2之后，Java对引用的概念进行了扩充，将其分为强引用（Strong Reference）、软引用（Soft Reference）、弱引用（Weak Reference）、虚引用（Phantom Reference）四种，引用强度依次减弱。</p>
-
-<ul>
-<li><p>强引用：如“Object obj = new Object（）”，这类引用是Java程序中最普遍的。只要强引用还存在，垃圾收集器就永远不会回收掉被引用的对象。</p></li>
-<li><p>软引用：它用来描述一些可能还有用，但并非必须的对象。在系统内存不够用时，这类引用关联的对象将被垃圾收集器回收。JDK1.2之后提供了SoftReference类来实现软引用。</p></li>
-<li><p>弱引用：它也是用来描述非需对象的，但它的强度比软引用更弱些，被弱引用关联的对象只能生存岛下一次垃圾收集发生之前。当垃圾收集器工作时，无论当前内存是否足够，都会回收掉只被弱引用关联的对象。在JDK1.2之后，提供了WeakReference类来实现弱引用。</p></li>
-<li><p>虚引用：最弱的一种引用关系，完全不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。为一个对象设置虚引用关联的唯一目的是希望能在这个对象被收集器回收时收到一个系统通知。JDK1.2之后提供了PhantomReference类来实现虚引用。</p></li>
-</ul>
-
-<span id="more"></span><!-- more -->
-
-<h2 id="toc_1">垃圾对象的判定</h2>
-
-<p>Java堆中存放着几乎所有的对象实例，垃圾收集器对堆中的对象进行回收前，要先确定这些对象是否还有用，判定对象是否为垃圾对象有如下算法：</p>
-
-<ul>
-<li>引用计数算法</li>
-</ul>
-
-<p>给对象添加一个引用计数器，每当有一个地方引用它时，计数器值就加1，当引用失效时，计数器值就减1，任何时刻计数器都为0的对象就是不可能再被使用的。</p>
-
-<p>引用计数算法的实现简单，判定效率也很高，在大部分情况下它都是一个不错的选择，当Java语言并没有选择这种算法来进行垃圾回收，主要原因是它很难解决对象之间的相互循环引用问题。</p>
-
-<ul>
-<li>根搜索算法</li>
-</ul>
-
-<p>Java和C#中都是采用根搜索算法来判定对象是否存活的。这种算法的基本思路是通过一系列名为“GC Roots”的对象作为起始点，从这些节点开始向下搜索，搜索所走过的路径称为引用链，当一个对象到GC Roots没有任何引用链相连时，就证明此对象是不可用的。在Java语言里，可作为GC Roots的兑现包括下面几种：</p>
-
-<pre><code>* 虚拟机栈（栈帧中的本地变量表）中引用的对象。
-* 方法区中的类静态属性引用的对象。
-* 方法区中的常量引用的对象。
-* 本地方法栈中JNI（Native方法）的引用对象。
-</code></pre>
-
-<p>实际上，在根搜索算法中，要真正宣告一个对象死亡，至少要经历两次标记过程：如果对象在进行根搜索后发现没有与GC Roots相连接的引用链，那它会被第一次标记并且进行一次筛选，筛选的条件是此对象是否有必要执行finalize（）方法。当对象没有覆盖finalize（）方法，或finalize（）方法已经被虚拟机调用过，虚拟机将这两种情况都视为没有必要执行。如果该对象被判定为有必要执行finalize（）方法，那么这个对象将会被放置在一个名为F-Queue队列中，并在稍后由一条由虚拟机自动建立的、低优先级的Finalizer线程去执行finalize（）方法。finalize（）方法是对象逃脱死亡命运的最后一次机会（因为一个对象的finalize（）方法最多只会被系统自动调用一次），稍后GC将对F-Queue中的对象进行第二次小规模的标记，如果要在finalize（）方法中成功拯救自己，只要在finalize（）方法中让该对象重引用链上的任何一个对象建立关联即可。而如果对象这时还没有关联到任何链上的引用，那它就会被回收掉。</p>
-
-<h2 id="toc_2">垃圾收集算法</h2>
-
-<p>判定除了垃圾对象之后，便可以进行垃圾回收了。下面介绍一些垃圾收集算法，由于垃圾收集算法的实现涉及大量的程序细节，因此这里主要是阐明各算法的实现思想，而不去细论算法的具体实现。</p>
-
-<ul>
-<li>标记—清除算法</li>
-</ul>
-
-<p>标记—清除算法是最基础的收集算法，它分为“标记”和“清除”两个阶段：首先标记出所需回收的对象，在标记完成后统一回收掉所有被标记的对象，它的标记过程其实就是前面的根搜索算法中判定垃圾对象的标记过程。标记—清除算法的执行情况如下图所示：</p>
-
-<p>回收前状态：</p>
-
-<p><img src="media/14714451686233/14714454453059.jpg" alt=""/></p>
-
-<p>回收后状态：</p>
-
-<p><img src="media/14714451686233/14714454536029.jpg" alt=""/></p>
-
-<p>该算法有如下缺点：</p>
-
-<pre><code>* 标记和清除过程的效率都不高。
-* 标记清除后会产生大量不连续的内存碎片，空间碎片太多可能会导致，当程序在以后的运行过程中需要分配较大对象时无法找到足够的连续内存而不得不触发另一次垃圾收集动作。
-</code></pre>
-
-<ul>
-<li>复制算法</li>
-</ul>
-
-<p>复制算法是针对标记—清除算法的缺点，在其基础上进行改进而得到的，它讲课用内存按容量分为大小相等的两块，每次只使用其中的一块，当这一块的内存用完了，就将还存活着的对象复制到另外一块内存上面，然后再把已使用过的内存空间一次清理掉。复制算法有如下优点：</p>
-
-<p>每次只对一块内存进行回收，运行高效。<br/>
-只需移动栈顶指针，按顺序分配内存即可，实现简单。<br/>
-内存回收时不用考虑内存碎片的出现。</p>
-
-<p>它的缺点是：可一次性分配的最大内存缩小了一半。</p>
-
-<p>复制算法的执行情况如下图所示：</p>
-
-<p>回收前状态：<br/>
-<img src="media/14714451686233/14714454964808.jpg" alt=""/></p>
-
-<p>回收后状态：<br/>
-<img src="media/14714451686233/14714455030414.jpg" alt=""/></p>
-
-<ul>
-<li><p>标记—整理算法</p>
-
-<p>复制算法比较适合于新生代，在老年代中，对象存活率比较高，如果执行较多的复制操作，效率将会变低，所以老年代一般会选用其他算法，如标记—整理算法。该算法标记的过程与标记—清除算法中的标记过程一样，但对标记后出的垃圾对象的处理情况有所不同，它不是直接对可回收对象进行清理，而是让所有的对象都向一端移动，然后直接清理掉端边界以外的内存。标记—整理算法的回收情况如下所示：</p></li>
-</ul>
-
-<p>回收前状态：</p>
-
-<p><img src="media/14714451686233/14714455172648.jpg" alt=""/></p>
-
-<p>回收后状态：<br/>
-<img src="media/14714451686233/14714455231926.jpg" alt=""/></p>
-
-<ul>
-<li>分代收集</li>
-</ul>
-
-<p>当前商业虚拟机的垃圾收集 都采用分代收集，它根据对象的存活周期的不同将内存划分为几块，一般是把Java堆分为新生代和老年代。在新生代中，每次垃圾收集时都会发现有大量对象死去，只有少量存活，因此可选用复制算法来完成收集，而老年代中因为对象存活率高、没有额外空间对它进行分配担保，就必须使用标记—清除算法或标记—整理算法来进行回收。</p>
-
-<ul>
-<li>垃圾收集器
-垃圾收集器是内存回收算法的具体实现，Java虚拟机规范中对垃圾收集器应该如何实现并没有任何规定，因此不同厂商、不同版本的虚拟机所提供的垃圾收集器都可能会有很大的差别。Sun  HotSpot虚拟机1.6版包含了如下收集器：Serial、ParNew、Parallel Scavenge、CMS、Serial Old、Parallel Old。这些收集器以不同的组合形式配合工作来完成不同分代区的垃圾收集工作。</li>
-</ul>
-
-<h2 id="toc_3">性能调优</h2>
-
-<p>Java虚拟机的内存管理与垃圾收集是虚拟机结构体系中最重要的组成部分，对程序（尤其服务器端）的性能和稳定性有着非常重要的影响。性能调优需要具体情况具体分析，而且实际分析时可能需要考虑的方面很多，这里仅就一些简单常用的情况作简要介绍。</p>
-
-<ul>
-<li><p>我们可以通过给Java虚拟机分配超大堆（前提是物理机的内存足够大）来提升服务器的响应速度，但分配超大堆的前提是有把握把应用程序的Full GC频率控制得足够低，因为一次Full GC的时间造成比较长时间的停顿。控制Full GC频率的关键是保证应用中绝大多数对象的生存周期不应太长，尤其不能产生批量的、生命周期长的大对象，这样才能保证老年代的稳定。</p></li>
-<li><p>Direct Memory在堆内存外分配，而且二者均受限于物理机内存，且成负相关关系，因此分配超大堆时，如果用到了NIO机制分配使用了很多的Direct Memory，则有可能导致Direct Memory的OutOfMemoryError异常，这时可以通过-XX:MaxDirectMemorySize参数调整Direct Memory的大小。</p></li>
-<li><p>除了Java堆和永久代以及直接内存外，还要注意下面这些区域也会占用较多的内存，这些内存的总和会受到操作系统进程最大内存的限制：</p>
-
-<p>1、线程堆栈：可通过-Xss调整大小，内存不足时抛出StackOverflowError（纵向无法分配，即无法分配新的栈帧）或OutOfMemoryError（横向无法分配，即无法建立新的线程）。</p>
-
-<p>2、Socket缓冲区：每个Socket连接都有Receive和Send两个缓冲区，分别占用大约37KB和25KB的内存。如果无法分配，可能会抛出IOException：Too many open files异常。关于Socket缓冲区的详细介绍参见我的Java网络编程系列中深入剖析Socket的几篇文章。</p>
-
-<p>3、JNI代码：如果代码中使用了JNI调用本地库，那本地库使用的内存也不在堆中。</p>
-
-<p>4、虚拟机和GC：虚拟机和GC的代码执行也要消耗一定的内存。</p></li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[scala base]]></title>
-    <link href="http://www.blacklight.xin/14696149737175.html"/>
-    <updated>2016-07-27T18:22:53+08:00</updated>
-    <id>http://www.blacklight.xin/14696149737175.html</id>
-    <content type="html"><![CDATA[
-<ul>
-<li><p>什么时候应该使用特质而不是抽象类？ 如果你想定义一个类似接口的类型,你可能会在特质和抽象类之间难以取舍。这两种形式都可以让你定义一个类型的一些行为，并要求继承者定义一些其他行为。一些经验法则:</p>
-
-<ul>
-<li><p>优先使用特质。一个类扩展多个特质是很方便的，但却只能扩展一个抽象类</p></li>
-<li><p>如果你需要构造函数参数，使用抽象类。因为抽象类可以定义带参数的构造函数，而特质不行。例如，你不能说trait t(i: Int) {}，参数i是非法的。</p></li>
-</ul></li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[design of schedule]]></title>
-    <link href="http://www.blacklight.xin/14630228188603.html"/>
-    <updated>2016-05-12T11:13:38+08:00</updated>
-    <id>http://www.blacklight.xin/14630228188603.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">总体设计</h2>
-
-<h3 id="toc_1">功能特性：</h3>
-
-<ul>
-<li>master-savle 架构</li>
-<li>支持任务的自动唤醒</li>
-<li>支持依赖配置</li>
-<li>自动重试</li>
-<li>失败，延时报警</li>
-<li>在线编辑脚本</li>
-<li>日志实时显示</li>
-<li>支持hadoop工作流</li>
-<li>简单的配置方式（任务名，执行命令，依赖任务，执行时间【可选】）</li>
-<li><em>资源隔离</em>
-&lt;!-- more --&gt;</li>
-</ul>
-
-<h3 id="toc_2">greathole核心实现</h3>
-
-<p><img src="media/14630228188603/14630285732590.jpg" alt=""/></p>
-
-<ul>
-<li>客户端提交job 到调度中心</li>
-<li>调度中心分配任务给worker 节点</li>
-<li>worker负责具体任务的执行，任务状态判断，报警，子任务唤醒等</li>
-</ul>
-
-<h3 id="toc_3">greathole 数据库设计</h3>
-
-<pre><code>CREATE TABLE `hole_job` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT &#39;任务ID&#39;,
-  `name` varchar(100) NOT NULL COMMENT &#39;任务名称&#39;,
-  `description` varchar(300) DEFAULT &#39;&#39; COMMENT &#39;任务描述&#39;,
-  `crontab` varchar(200) NOT NULL DEFAULT &#39;&#39; COMMENT &#39;任务执行时间,定时任务填写,依赖任务不用填写&#39;,
-  `command` varchar(500) NOT NULL COMMENT &#39;任务启动命令,hadoop ,hive ,shell&#39;,
-  `alarm_lazy_minute` int(10) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;任务启动失败后触发报警的时间 0:立即报警 n:任务重试n分钟后报警&#39;,
-  `alarm_email` varchar(500) DEFAULT NULL COMMENT &#39;依赖报警邮件列表，逗号间隔&#39;,
-  `alarm_phone` varchar(300) DEFAULT NULL COMMENT &#39;依赖报警手机号列表，逗号间隔&#39;,
-  `enable` tinyint(1) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;是否启用 0:未启用 1:启用&#39;,
-  `auto_retry` tinyint(1) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;执行失败后是否自动重试 0:不自动重试 1:执行失败后自动重试,最多重试三次&#39;,
-  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,
-  `params` varchar(1000) NOT NULL DEFAULT &#39;&#39; COMMENT &#39;传递给命令的额外参数&#39;,
-  `task_type` varchar(10) NOT NULL DEFAULT &#39;hadoop,shell...&#39;,
-  `owner` varchar(200) NOT NULL DEFAULT &#39;&#39;,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unq_name` (`name`) USING BTREE
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT=&#39;任务元信息&#39; ;
-
-CREATE TABLE `hole_depend` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `job_id` bigint(20) NOT NULL COMMENT &#39;任务ID&#39;,
-  `depend_job_id` bigint(20) NOT NULL COMMENT &#39;依赖任务ID&#39;,
-  `description` varchar(300) DEFAULT NULL COMMENT &#39;依赖描述&#39;,
-  `depend_date_format` varchar(15) NOT NULL DEFAULT &#39;days ago&#39;  COMMENT &#39;依赖日期计算纬度 minutes,hours,days,months,weeks,years [ago]&#39;,
-  `depend_values` varchar(240) NOT NULL DEFAULT &#39;0&#39; COMMENT &#39;多个依赖值用逗号分割 如:depend_field=hours ago时 1,2表示当前任务前1小时及前2小时的任务实例已执行成功&#39;,
-  `match_minute` tinyint(1) NOT NULL DEFAULT 0 COMMENT &#39;分 依赖匹配 0:不匹配 1:匹配&#39;,
-  `match_hour` tinyint(1) NOT NULL DEFAULT 0 COMMENT &#39;时 依赖匹配 0:不匹配 1:匹配&#39;,
-  `match_day` tinyint(1) NOT NULL DEFAULT 1 COMMENT &#39;日 依赖匹配 0:不匹配 1:匹配&#39;,
-  `match_month` tinyint(1) NOT NULL DEFAULT 1 COMMENT &#39;月 依赖匹配 0:不匹配 1:匹配&#39;,
-  `match_year` tinyint(1) NOT NULL DEFAULT 1 COMMENT &#39;年 依赖匹配 0:不匹配 1:匹配&#39;,
-  `enable` tinyint(1) NOT NULL DEFAULT &#39;1&#39; COMMENT &#39;是否启用 0:未启用 1:启用&#39;,
-  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,
-  PRIMARY KEY (`id`),
-  KEY `idx_meta` (`meta_id`) USING BTREE
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT=&#39;任务依赖配置&#39;;
-
-CREATE TABLE `hole_instance_run` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT &#39;自增id,taskid&#39;,
-  `job_id` bigint(20) NOT NULL COMMENT &#39;jobID&#39;,
-  `minute` char(2) NOT NULL COMMENT &#39;分&#39;,
-  `hour` char(2) NOT NULL COMMENT &#39;时&#39;,
-  `day` char(2) NOT NULL COMMENT &#39;日&#39;,
-  `month` char(2) NOT NULL COMMENT &#39;月&#39;,
-  `year` char(4) NOT NULL COMMENT &#39;年&#39;,
-  `pid` int(11) NOT NULL COMMENT &#39;0:依赖未满足，待重试 !0:正在执行的进程PID&#39;,
-  `alarmed` tinyint(1) NOT NULL COMMENT &#39;是否已触发报警 0:尚未报警 1:已报警&#39;,
-  `exec_count` INT NOT NULL DEFAULT 1 COMMENT &#39;执行次数,用户自动重试限制次数&#39;,
-  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unq_idx` (`meta_id`,`minute`,`hour`,`day`,`month`,`year`) USING BTREE
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT=&#39;执行中的任务实例&#39;;
-
-CREATE TABLE `hole_instance_done` (
-  `id` bigint(20) NOT NULL COMMENT &#39;task_id,hole_instance_done中id&#39;,
-  `meta_id` bigint(20) NOT NULL COMMENT &#39;jobID&#39;,
-  `minute` char(2) NOT NULL COMMENT &#39;分&#39;,
-  `hour` char(2) NOT NULL COMMENT &#39;时&#39;,
-  `day` char(2) NOT NULL COMMENT &#39;日&#39;,
-  `month` char(2) NOT NULL COMMENT &#39;月&#39;,
-  `year` char(4) NOT NULL COMMENT &#39;年&#39;,
-  `stat` bigint(20) NOT NULL COMMENT &#39;0:成功 -1:失败 &gt;0:依赖任务失败(任务实例ID)&#39;,
-  `exec_count` INT NOT NULL DEFAULT 1 COMMENT &#39;执行次数,用户自动重试限制次数&#39;,
-  `start_time` timestamp NOT NULL DEFAULT &#39;0000-00-00 00:00:00&#39; COMMENT &#39;任务开始时间&#39;,
-  `start_time_real` timestamp NOT NULL DEFAULT &#39;0000-00-00 00:00:00&#39; COMMENT &#39;任务实际开始时间&#39;,
-  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间,也是任务的结束时间&#39;,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unq_idx` (`meta_id`,`minute`,`hour`,`day`,`month`,`year`) USING BTREE
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT=&#39;已完成的任务实例&#39;;
-
-create table `hole_job_info`(
-  `id` BIGINT(20) PRIMARY KEY NOT NULL COMMENT &#39;id&#39;,
-  `job_id` BIGINT(20) NOT NULL COMMENT &#39;任务id&#39;,
-  `file_name` BIGINT(20) NOT NULL COMMENT &#39;job 文件名&#39;
-)ENGINE =MyISAM DEFAULT CHARSET=utf8 COMMENT &#39;job运行时的所依赖的文件&#39;;
-
-</code></pre>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[msyql 常用命令]]></title>
-    <link href="http://www.blacklight.xin/14622541510551.html"/>
-    <updated>2016-05-03T13:42:31+08:00</updated>
-    <id>http://www.blacklight.xin/14622541510551.html</id>
-    <content type="html"><![CDATA[
-<p>1.删除主键约束：<br/>
-alter table COLUMNS_V2 drop primary key;<br/>
-2.添加主键约束<br/>
-alter table COLUMNS_V2 add constraint pk_columns_v2 primary key COLUMNS_V2(table_name,DB_NAME,COLUMN_NAME);</p>
 
 ]]></content>
   </entry>
