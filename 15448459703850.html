@@ -162,6 +162,8 @@ ssh-add -K id_rsa
 1.使用ssh-keygen生成秘钥对 过程中不设置任何密码，将公钥放到git上。实现免登陆<br/>
 2.生成过程中设置了密码，使用ssh-agent 来管理，实现免密登陆</p>
 
+<span id="more"></span><!-- more -->
+
 <p>这位同学采用的就是第二种方式，因为在mac中 关机重启后ssh-agent 再次启动时会忘记这个秘钥，所以他想利用开机自启动来执行ssh-add 命令 让私钥对ssh-agent 可见</p>
 
 <p>其实大不必这样做，mac上有专用的方式 自动加载keys到ssh-agent 并且存储把你的密码存储在钥匙链中</p>
