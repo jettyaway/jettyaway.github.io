@@ -129,6 +129,276 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="15448459703850.html">
+                
+                  <h1>ssh 免密登录</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h2 id="toc_0">背景</h2>
+
+<p>最近有同学问我他的开机自启命令不管作用。经过了解之后发现他是想用ssh-agent来管理ssh key。 可是每次关机重启后就失效了. 命令如下</p>
+
+<pre><code>cd /Users/lsr/.ssh
+ssh-add id_rsa
+ssh-add -K id_rsa
+</code></pre>
+
+<p>首先我们来看要解决这个问题有哪些思路<br/>
+1.使用ssh-keygen生成秘钥对 过程中不设置任何密码，将公钥放到git上。实现免登陆<br/>
+2.生成过程中设置了密码，使用ssh-agent 来管理，实现免密登陆</p>
+
+<p>这位同学采用的就是第二种方式，因为在mac中 关机重启后ssh-agent 再次启动时会忘记这个秘钥，所以他想利用开机自启动来执行ssh-add 命令 让私钥对ssh-agent 可见</p>
+
+<p>其实大不必这样做，mac上有专用的方式 自动加载keys到ssh-agent 并且存储把你的密码存储在钥匙链中</p>
+
+<p>先配置~/.ssh/config  如果没有则新建 输入一下命令</p>
+
+<pre><code>Host *
+ AddKeysToAgent yes
+ UseKeychain yes
+ IdentityFile ~/.ssh/id_rsa
+</code></pre>
+
+<p>最后再输入 <strong>ssh-add -K  ~/.ssh/id_rsa</strong>  (id_rsa) 为你的秘钥文件 替换成你的即可</p>
+
+<blockquote>
+<p>-K 选项是MAC ssh-add 的标准，它会在你在你将ssh key 加入到ssh-agent中的时候把你的密码添加到钥匙链中<br/>
+HOST *  表示 对所有的host 都生效，当然我们可以设置一个或者多个具体的host，这样我们想要登录多个服务器的时候不用ssh -i 指定使用哪个秘钥了</p>
+</blockquote>
+
+<p><strong>config 示例：</strong></p>
+
+<pre><code>Host SERVERNAME1
+  IdentitiesOnly yes
+  IdentityFile ~/.ssh/id_rsa_SERVER1
+  # CheckHostIP yes
+  # Port 22
+Host SERVERNAME2
+  IdentitiesOnly yes
+  IdentityFile ~/.ssh/id_rsa_SERVER2
+  # CheckHostIP no
+  # Port 2177
+ControlMaster auto
+ControlPath /tmp/%r@%h:%p
+</code></pre>
+
+<p>可以通过man ssh_config查看配置项</p>
+
+<h2 id="toc_1">SSH agents</h2>
+
+<p><strong>背景</strong><br/>
+由于在配置了公钥认证的情况下，为方便起见，一般都不设置私钥密码，即只要持有 私钥就可登录系统。因此私钥文件泄漏带来的风险就非常大了。因此，对私钥文件应 仅在可信的环境下才能以无密码的方式存储，其他情况下应该以强密码保护。如果最 初生成密钥是没有设置密码，可以通过 ssh-keygen -p -f test 重新设置密码。</p>
+
+<p>SSH 对这种情况已经有所考虑，并提供了相应的辅助程序做认证代理。OpenSSH 的程序名为 ssh-agent，PuTTY 的程序名为 pageant。其基本思想是预先加载私钥在 内存之中，在记载的过程之中如果私钥有密码，会请求用户输入密码。这样以后的 SSH 连接就不需要频繁的输入私钥的密码。</p>
+
+<p><strong>什么是SSH agents</strong><br/>
+如果您的私钥使用密码短语来加密了的话，每一次使用 SSH 密钥对进行登录的时候，您都必须输入正确的密码短语。</p>
+
+<p>而 SSH agent 程序能够将您的已解密的私钥缓存起来，在需要的时候提供给您的 SSH 客户端。这样子，您就只需要将私钥加入 SSH agent 缓存的时候输入一次密码短语就可以了。这为您经常使用 SSH 连接提供了不少便利。</p>
+
+<p>SSH agent 一般会设置成在登录会话的时候自动启动，并在整个会话中保持运行。</p>
+
+<p><strong>ssh-agent</strong></p>
+
+<p>ssh-agent 是 OpenSSH 自带的一个 SSH agent，它可以直接作为 SSH agent 来使用，或者作为其他 SSH agent 的后端。ssh-agent 运行时会自动 fork 它自身，然收打印出其所需的环境变量。</p>
+
+<p><strong>使用方法</strong><br/>
+在命令行输入ssh-agent</p>
+
+<pre><code>SSH_AUTH_SOCK=/var/folders/j0/b1dsp5c13gb49g58_5bl51480000gn/T//ssh-GAG80SVQvwz1/agent.7411; export SSH_AUTH_SOCK;
+SSH_AGENT_PID=7412; export SSH_AGENT_PID;
+echo Agent pid 7412;
+</code></pre>
+
+<p>ssh-agent 运行时会自动 fork 它自身，然收打印出其所需的环境变量</p>
+
+<p>启动ssh-agent</p>
+
+<pre><code>eval $(ssh-agent)
+</code></pre>
+
+<p>可以将上述 命令放在~/.bash_profile(个人) 或者 /etc/profile(所有用户) 以实现开机自启</p>
+
+<p>ssh-agent 启动之后还需要将私钥添加到它的缓存中</p>
+
+<pre><code>ssh-add ~/.ssh/id_rsa
+</code></pre>
+
+<p>自然这个命令也可以添加到profile文件中以时间登陆shell的时候自动添加</p>
+
+<blockquote>
+<p>如果你的私钥设置了密码，ssh-add 会提示你输入密码</p>
+</blockquote>
+
+<h2 id="toc_2">使用 ssh-agent 进行转发</h2>
+
+<p>假设有3台机器 A B C 都配置A 对B，C 都配置好了免密登录。现在想通过A 登录B 之后再免密登录C。有一下几种方法</p>
+
+<ul>
+<li>将A的私钥拷贝到B上</li>
+<li>使用ssh-agent 进行转发</li>
+</ul>
+
+<p>第一种的缺点是安全漏洞太大，如果有人进入你的系统那么整个内网都可以进入。而ssh-agent可以不用上述操作就可以免密登录C</p>
+
+<p>使用方式如上面一节介绍，最好添加以下配置</p>
+
+<p>个人</p>
+
+<pre><code>echo &quot;ForwardAgent yes&quot; &gt;&gt;~/.ssh/config
+</code></pre>
+
+<p>or 全局</p>
+
+<pre><code>echo &quot;ForwardAgent yes&quot; &gt;&gt;/etc/ssh/config
+</code></pre>
+
+<p>最后一步修改所有机器上的ssh 配置 加入上面的配置，让他们都对ssh-agent 进行转发</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/12/15</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='liunx.html'>linux</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15445417601514.html">
+                
+                  <h1>kafka彻底删除topic</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<h1 id="toc_0">如果只是用kafka-topics.sh的delete命令删除topic，会有两种情况：</h1>
+
+<ol>
+<li> 如果当前topic没有使用过即没有传输过信息：可以彻底删除</li>
+<li> 如果当前topic有使用过即有过传输过信息：并没有真正删除topic只是把这个topic标记为删除（marked for deletion）。</li>
+</ol>
+
+<p>要彻底把情况2中的topic删除必须把kafka中与当前topic相关的数据目录和zookeeper与当前topic相关的路径一并</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15445417601514.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2018/12/11</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='kafka.html'>kafka</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15442419292306.html">
+                
+                  <h1>java 服务 内部开发规范</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2018/12/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='java.html'>java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="15442410598248.html">
+                
+                  <h1>闭环你的java应用</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p> </p>
+
+<h2 id="toc_0">背景</h2>
+
+<p>还记得我们曾经经历过的上线部署流程吗？是否为此感到痛苦和纠结。在之前接触过的部署方式中，遇到了以下问题：</p>
+
+<ul>
+<li>部署上线靠人工管理，不是工具自动化发布</li>
+<li>目录结构没有规范，通过-classpath 任意指定jar</li>
+<li>简单直接上fat jar ，全部都打在一个jar中</li>
+<li>如果是web应用还要提前装好容器 如tomcat才能使用</li>
+<li><p>线上参数修改要麻烦运维</p>
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15442410598248.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2018/12/8</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='java.html'>java</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="15442384370091.html">
                 
                   <h1>spark 内存调优【转】</h1>
@@ -3478,31 +3748,31 @@ Markdown 的語法有個主要的目的：用來作為一種網路內容的<em>�
 	      
 		      
 			      <li class="post">
+			        <a href="15448459703850.html">ssh 免密登录</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15445417601514.html">kafka彻底删除topic</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15442419292306.html">java 服务 内部开发规范</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15442410598248.html">闭环你的java应用</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
 			        <a href="15442384370091.html">spark 内存调优【转】</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="15442383252409.html">【转】Java Hotspot G1 GC的一些关键技术</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="15442380789391.html">【转】理解Heap Profling名词-Shallow和Retained Sizes</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="15442379465528.html">【转】shell 基础二十篇</a>
-			      </li>
-		     
-		  
-		      
-			      <li class="post">
-			        <a href="15442377600364.html">mysql 分表分库【转】</a>
 			      </li>
 		     
 		  

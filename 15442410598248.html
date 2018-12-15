@@ -1,0 +1,815 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  闭环你的java应用 - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>闭环你的java应用</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2018/12/8</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='java.html'>java</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <p> </p>
+
+<h2 id="toc_0">背景</h2>
+
+<p>还记得我们曾经经历过的上线部署流程吗？是否为此感到痛苦和纠结。在之前接触过的部署方式中，遇到了以下问题：</p>
+
+<ul>
+<li>部署上线靠人工管理，不是工具自动化发布</li>
+<li>目录结构没有规范，通过-classpath 任意指定jar</li>
+<li>简单直接上fat jar ，全部都打在一个jar中</li>
+<li>如果是web应用还要提前装好容器 如tomcat才能使用</li>
+<li><p>线上参数修改要麻烦运维</p>
+
+<span id="more"></span><!-- more -->
+
+<p>其中还有回滚问题 如果没有自动化运维平台那么回滚是一件非常头痛的事情。不论前后端都是这样</p>
+
+<p>这里不能一一列举部署中出现的问题，但是我们这里只关注闭环java应用带来的好处。我们将从以下几个方面进行介绍</p></li>
+<li><p>部署应用的流程</p></li>
+<li><p>什么是闭环java应用&amp;优点</p></li>
+<li><p>实现方式</p></li>
+</ul>
+
+<h2 id="toc_1">部署应用流程</h2>
+
+<p><img src="media/15442410598248/15445776222931.jpg" alt=""/></p>
+
+<p>从上图中可以看出由三个部分构成</p>
+
+<p><strong>项目</strong></p>
+
+<p>你的工程项目 包括源代码 配置文件 启停脚本 等等，并且我们安装一定的目录规范来进行开发</p>
+
+<p>非web 工程</p>
+
+<p><img src="media/15442410598248/15445779472630.jpg" alt=""/></p>
+
+<p>执行 <strong>mvn clean package -P dev</strong>  后打包效果如下</p>
+
+<p><img src="media/15442410598248/15446262170690.jpg" alt=""/></p>
+
+<p>web 工程</p>
+
+<p><img src="media/15442410598248/15445795503573.jpg" alt=""/></p>
+
+<p>执行打包命令后 效果如下：</p>
+
+<p><img src="media/15442410598248/15445799757990.jpg" alt=""/></p>
+
+<p><strong>自动化发布系统</strong></p>
+
+<p>自动化发布系统是其中重要的一环，它的基本功能包括应用的打包，抽取，部署代码，包管理和命令的执行等。</p>
+
+<p>除了这些功能外，还有版本管理，混滚，灰度发布，分组管理机器（不同机房的配置不一样），配置中心功能（动态修改配置参数，或者脚本，jvm参数等等）。一般在相对大的公司都会有专门的团队来开发这些功能</p>
+
+<p><strong>宿主机</strong></p>
+
+<p>宿主机就是我们代码运行的机器，默认配置应当最小化，比如只包含运维管理用的agent和指定版本的jdk 等。一些非必要安装的软件应当由应用程序以配置文件的方式指定</p>
+
+<p><strong>总结</strong></p>
+
+<p>通过这三方面的共同协作使我们能够更好的统一管理、发布、回滚我们的应用</p>
+
+<h2 id="toc_2">动手闭环你的应用</h2>
+
+<p>这里的闭环是指，你的Java应用程序，配置文件，启停脚本等都在java程序里维护，修改任何的参数配置文件，或者容器的类型都不需要登录宿主机来修改。宿主机只提供基本统一的运行环境即可。比如我们所有的服务默认都只提供jdk8.tomcat等web容器默认不安装，如有需求，通过配置文件进行指定即可。</p>
+
+<p>通过闭环我们的Java应用我们能得到以下好处</p>
+
+<ul>
+<li>统一修改应用程序代码、配置文件、运行环境</li>
+<li>将程序的控制权掌握在我们的手中，减少和运维的沟通成本</li>
+</ul>
+
+<h2 id="toc_3">构建非web应用</h2>
+
+<p><strong>项目结构</strong><br/>
+<img src="media/15442410598248/15446281157173.jpg" alt=""/></p>
+
+<p>本例是一个普通的java 服务，一次运行。创建类似RPC服务也是一样的</p>
+
+<p><strong>maven依赖 pom配置</strong></p>
+
+<ul>
+<li>profile</li>
+</ul>
+
+<pre><code>&lt;profiles&gt;
+
+        &lt;profile&gt;
+            &lt;id&gt;production&lt;/id&gt;
+            &lt;properties&gt;
+                &lt;deploy.type&gt;production&lt;/deploy.type&gt;
+            &lt;/properties&gt;
+        &lt;/profile&gt;
+        &lt;profile&gt;
+            &lt;id&gt;staging&lt;/id&gt;
+            &lt;properties&gt;
+                &lt;deploy.type&gt;staging&lt;/deploy.type&gt;
+            &lt;/properties&gt;
+        &lt;/profile&gt;
+        &lt;profile&gt;
+            &lt;id&gt;test&lt;/id&gt;
+            &lt;properties&gt;
+                &lt;deploy.type&gt;test&lt;/deploy.type&gt;
+            &lt;/properties&gt;
+        &lt;/profile&gt;
+        &lt;profile&gt;
+            &lt;id&gt;dev&lt;/id&gt;
+            &lt;properties&gt;
+                &lt;deploy.type&gt;dev&lt;/deploy.type&gt;
+            &lt;/properties&gt;
+            &lt;activation&gt;
+                &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;
+            &lt;/activation&gt;
+        &lt;/profile&gt;
+    &lt;/profiles&gt;
+</code></pre>
+
+<ul>
+<li>assembly插件</li>
+</ul>
+
+<pre><code>&lt;build&gt;
+        &lt;finalName&gt;bigdata-persistence&lt;/finalName&gt;
+        &lt;resources&gt;
+            &lt;resource&gt;
+                &lt;directory&gt;src/main/resources&lt;/directory&gt;
+                &lt;filtering&gt;true&lt;/filtering&gt;
+            &lt;/resource&gt;
+
+            &lt;resource&gt;
+                &lt;directory&gt;src/main/resources.${deploy.type}&lt;/directory&gt;
+                &lt;filtering&gt;true&lt;/filtering&gt;
+                &lt;targetPath&gt;config&lt;/targetPath&gt;
+            &lt;/resource&gt;
+        &lt;/resources&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-jar-plugin&lt;/artifactId&gt;
+                &lt;version&gt;2.4&lt;/version&gt;
+                &lt;!-- The configuration of the plugin --&gt;
+                &lt;configuration&gt;
+                    &lt;!-- Configuration of the archiver --&gt;
+                    &lt;archive&gt;
+                        &lt;addMavenDescriptor&gt;false&lt;/addMavenDescriptor&gt;
+                        &lt;manifest&gt;
+                            &lt;addClasspath&gt;true&lt;/addClasspath&gt;
+                            &lt;classpathPrefix&gt;lib/&lt;/classpathPrefix&gt;
+                            &lt;mainClass&gt;xxx.Bootstrap&lt;/mainClass&gt;
+                        &lt;/manifest&gt;
+                        &lt;manifestEntries&gt;
+                            &lt;Class-Path&gt;.&lt;/Class-Path&gt;
+                        &lt;/manifestEntries&gt;
+                    &lt;/archive&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-assembly-plugin&lt;/artifactId&gt;
+                &lt;version&gt;2.4&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;descriptors&gt;
+                        &lt;descriptor&gt;src/main/assembly/assembly.xml&lt;/descriptor&gt;
+                    &lt;/descriptors&gt;
+                &lt;/configuration&gt;
+                &lt;executions&gt;
+                    &lt;execution&gt;
+                        &lt;id&gt;single&lt;/id&gt;
+                        &lt;phase&gt;package&lt;/phase&gt;
+                        &lt;goals&gt;
+                            &lt;goal&gt;single&lt;/goal&gt;
+                        &lt;/goals&gt;
+                    &lt;/execution&gt;
+                &lt;/executions&gt;
+            &lt;/plugin&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+                &lt;version&gt;3.1&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;source&gt;1.8&lt;/source&gt;
+                    &lt;target&gt;1.8&lt;/target&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+</code></pre>
+
+<ul>
+<li>assembly配置文件</li>
+</ul>
+
+<pre><code>&lt;assembly&gt;
+    &lt;id&gt;bin&lt;/id&gt;
+    &lt;!-- 最终打包成一个用于发布的zip文件 --&gt;
+    &lt;formats&gt;
+        &lt;format&gt;zip&lt;/format&gt;
+    &lt;/formats&gt;
+
+    &lt;!-- Adds dependencies to zip package under lib directory --&gt;
+    &lt;dependencySets&gt;
+        &lt;dependencySet&gt;
+            &lt;!--
+               不使用项目的artifact，第三方jar不要解压，打包进zip文件的lib目录
+           --&gt;
+            &lt;useProjectArtifact&gt;false&lt;/useProjectArtifact&gt;
+            &lt;outputDirectory&gt;lib&lt;/outputDirectory&gt;
+            &lt;unpack&gt;false&lt;/unpack&gt;
+        &lt;/dependencySet&gt;
+    &lt;/dependencySets&gt;
+
+    &lt;fileSets&gt;
+        &lt;!-- 把项目相关的说明文件，打包进zip文件的根目录 --&gt;
+        &lt;fileSet&gt;
+            &lt;directory&gt;${project.basedir}&lt;/directory&gt;
+            &lt;outputDirectory&gt;/&lt;/outputDirectory&gt;
+            &lt;includes&gt;
+                &lt;include&gt;README*&lt;/include&gt;
+                &lt;include&gt;LICENSE*&lt;/include&gt;
+                &lt;include&gt;NOTICE*&lt;/include&gt;
+                &lt;include&gt;NOTICE*&lt;/include&gt;
+            &lt;/includes&gt;
+        &lt;/fileSet&gt;
+
+        &lt;!-- 把项目自己编译出来的jar文件，打包进zip文件的根目录 --&gt;
+        &lt;fileSet&gt;
+            &lt;directory&gt;${project.build.directory}&lt;/directory&gt;
+            &lt;outputDirectory&gt;&lt;/outputDirectory&gt;
+            &lt;includes&gt;
+                &lt;include&gt;*.jar&lt;/include&gt;
+            &lt;/includes&gt;
+        &lt;/fileSet&gt;
+
+        &lt;fileSet&gt;
+            &lt;directory&gt;src/main/script&lt;/directory&gt;
+            &lt;outputDirectory&gt;/script&lt;/outputDirectory&gt;
+            &lt;includes&gt;
+                &lt;include&gt;**&lt;/include&gt;
+            &lt;/includes&gt;
+        &lt;/fileSet&gt;
+    &lt;/fileSets&gt;
+&lt;/assembly&gt;
+</code></pre>
+
+<p>执行mvn clean package -P prod  生成目录如下图</p>
+
+<p><img src="media/15442410598248/15446284656942.jpg" alt=""/></p>
+
+<p>解压缩后</p>
+
+<p><img src="media/15442410598248/15446285112256.jpg" alt=""/></p>
+
+<p>我这里是将所需要的文件统一打包成zip 然后自动化发布系统会根据我的部署脚本解压到相应的目录位置</p>
+
+<p><strong>启动类</strong></p>
+
+<pre><code>public class Bootstrap {
+
+    private static Map&lt;String, IPersistence&gt; map;
+
+
+    static {
+        List&lt;IPersistence&gt; persistenceList = Lists.newArrayList();
+        persistenceList.add(new AfentiDynamicPersistence());
+        persistenceList.add(new AfentiDynamicCallPersistence());
+        persistenceList.add(new AfentiReportUserPersistence());
+        persistenceList.add(new AfentiLittleReport());
+        persistenceList.add(new WrongQuestionPersistence());
+        persistenceList.add(new WrongQuestionPersistenceNew());
+        map = persistenceList.stream().collect(Collectors.toMap(p -&gt; p.getClass().getSimpleName(), p -&gt; p));
+    }
+
+    public static void main(String[] args) {
+        if (args.length &lt; 3) {
+            System.out.println(&quot;must at least three param[className,filePath,prefix]&quot;);
+            System.exit(1);
+        }
+        String className = args[0];
+        String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
+        map.get(className).start(newArgs);
+    }
+</code></pre>
+
+<p><strong>启动脚本</strong></p>
+
+<pre><code>#!/usr/bin/env bash
+source /etc/profile
+
+
+export JAVA_HOME=/data/soft/jdk1.8.0_45
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JAVA_HOME/jre/lib/rt.jar
+
+to_day=`date +%Y-%m-%d`
+
+if [ $# -gt 0  ];then
+    to_day=`date +%Y-%m-%d -d &quot;$1&quot;`
+fi
+
+
+JAR_PATH=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;;pwd)/../../../bigdata-persistence.jar&quot;
+LOG_PATH=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;;pwd)/../../../logs&quot;
+if [ ! -f ${JAR_PATH} ];then
+   echo &quot;not found jar file.&quot;
+   exit 10
+fi
+
+_BASE_PATH_=&quot;/data/hadoop/tmp/afenti/dynamic/${to_day}&quot;
+_dynamic_opened_class_file_=&quot;${_BASE_PATH_}/_afenti_dynamic_opended_class.txt&quot;
+_dynamic_opened_school_file_=&quot;${_BASE_PATH_}/_afenti_dynamic_opended_school.txt&quot;
+_dynamic_call_class_file_=&quot;${_BASE_PATH_}/_afenti_dynamic_call_class_.txt&quot;
+_dynamic_call_school_file_=&quot;${_BASE_PATH_}/_afenti_dynamic_call_school_.txt&quot;
+
+java -jar &quot;${JAR_PATH}&quot; &quot;AfentiDynamicPersistence&quot; &quot;${_dynamic_opened_class_file_}&quot; &quot;class#&quot; || ( echo &quot;xxx&quot;;exit 11  )
+java -jar &quot;${JAR_PATH}&quot; &quot;AfentiDynamicPersistence&quot; &quot;${_dynamic_opened_school_file_}&quot; &quot;school#&quot; || ( echo &quot;xxx&quot;;exit 12  )
+java -jar &quot;${JAR_PATH}&quot; &quot;AfentiDynamicCallPersistence&quot; &quot;${_dynamic_call_class_file_}&quot; &quot;class#call#&quot; || ( echo &quot;xxx&quot;;exit 13  )
+java -jar &quot;${JAR_PATH}&quot; &quot;AfentiDynamicCallPersistence&quot; &quot;${_dynamic_call_school_file_}&quot; &quot;school#call#&quot; || ( echo &quot;xxx&quot;;exit 14  )
+</code></pre>
+
+<h2 id="toc_4">构建web应用</h2>
+
+<h2 id="toc_5">通过springboot来构建非web/web应用</h2>
+
+<p><strong>工程目录</strong><br/>
+<img src="media/15442410598248/15448460273985.jpg" alt=""/><br/>
+<strong>maven 依赖</strong><br/>
+<code><br/>
+&lt;dependency&gt;<br/>
+   &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;<br/>
+   &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;<br/>
+&lt;/dependency&gt;<br/>
+</code></p>
+
+<p><strong>修改springboot的打包方式为assembly</strong></p>
+
+<p>springboot 提供了默认的打包方式</p>
+
+<pre><code>&lt;plugin&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+&lt;/plugin&gt;
+
+</code></pre>
+
+<p>修改为assembly打包方式 方便自己管理</p>
+
+<pre><code>&lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-jar-plugin&lt;/artifactId&gt;
+                &lt;version&gt;2.4&lt;/version&gt;
+                &lt;!-- The configuration of the plugin --&gt;
+                &lt;configuration&gt;
+                    &lt;!-- Configuration of the archiver --&gt;
+                    &lt;archive&gt;
+                        &lt;addMavenDescriptor&gt;false&lt;/addMavenDescriptor&gt;
+                        &lt;manifest&gt;
+                            &lt;addClasspath&gt;true&lt;/addClasspath&gt;
+                            &lt;classpathPrefix&gt;lib/&lt;/classpathPrefix&gt;
+                            &lt;mainClass&gt;xxxx.Application&lt;/mainClass&gt;
+                        &lt;/manifest&gt;
+                        &lt;manifestEntries&gt;
+                            &lt;Class-Path&gt;.&lt;/Class-Path&gt;
+                        &lt;/manifestEntries&gt;
+                    &lt;/archive&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-assembly-plugin&lt;/artifactId&gt;
+                &lt;version&gt;2.4&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;descriptors&gt;
+                        &lt;descriptor&gt;src/main/assembly/assembly.xml&lt;/descriptor&gt;
+                    &lt;/descriptors&gt;
+                &lt;/configuration&gt;
+                &lt;executions&gt;
+                    &lt;execution&gt;
+                        &lt;id&gt;single&lt;/id&gt;
+                        &lt;phase&gt;package&lt;/phase&gt;
+                        &lt;goals&gt;
+                            &lt;goal&gt;single&lt;/goal&gt;
+                        &lt;/goals&gt;
+                    &lt;/execution&gt;
+                &lt;/executions&gt;
+            &lt;/plugin&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+                &lt;version&gt;3.1&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;source&gt;1.8&lt;/source&gt;
+                    &lt;target&gt;1.8&lt;/target&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+</code></pre>
+
+<p>打包结果如下：<br/>
+<img src="media/15442410598248/15448471173969.jpg" alt=""/></p>
+
+<p><strong>启动类</strong><br/>
+```<br/>
+@EnableAutoConfiguration(exclude = {MultipartAutoConfiguration.class})<br/>
+@ComponentScan(&quot;com.vox_learning.phoniex.web&quot;)<br/>
+@EnableDiscoveryClient<br/>
+@EnableFeignClients<br/>
+@EnableAdminServer<br/>
+@EnableHystrix<br/>
+@EnableHystrixDashboard<br/>
+public class Application {</p>
+
+<pre><code>public static void main(String[] args) {
+    SpringApplication.run(Application.class, args);
+}
+</code></pre>
+
+<p>}<br/>
+```<br/>
+<strong>启动脚本</strong></p>
+
+<pre><code>export JAVA_HOME=&quot;/usr/java/jdk1.8.0_45/&quot;
+export PATH=&quot;${JAVA_HOME}/bin/&quot;:$PATH
+echo `java -version`
+nohup java -agentlib:jdwp=transport=dt_socket,address=12345,server=y,suspend=n -jar phoniex-web.jar &gt;logs/phoniex-web.log 2&gt;&amp;1 &amp;
+</code></pre>
+
+<h2 id="toc_6">总结</h2>
+
+<ul>
+<li>多种方式 结合docker</li>
+<li>闭环的好处
+*</li>
+</ul>
+
+<p>springboot的好处就是化繁为简需要的功能按需添加 并且实现了零配置。从头开始搭建一个新工程还是比较容易的。打包方式我们也可以使用之前的assembly方式来闭环我们的应用。我们还可以结合docker ，一个docker 直接部署一个jvm，实现弹性快速部署。</p>
+
+<p>创建闭环的java应用可以让我们更容易的管理自己的项目 修改jvm 参数，修改容器配置文件，部署方式等工作。</p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="15442419292306.html" 
+          title="Previous Post: java 服务 内部开发规范">&laquo; java 服务 内部开发规范</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="15442384370091.html" 
+          title="Next Post: spark 内存调优【转】">spark 内存调优【转】 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15448459703850.html">ssh 免密登录</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15445417601514.html">kafka彻底删除topic</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15442419292306.html">java 服务 内部开发规范</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15442410598248.html">闭环你的java应用</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15442384370091.html">spark 内存调优【转】</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

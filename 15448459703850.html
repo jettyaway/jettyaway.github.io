@@ -1,0 +1,495 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  ssh 免密登录 - IT framer
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="IT framer" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:www.blacklight.xin ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; IT framer</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+       
+       <li><a href="index.html">HOME</a></li>
+    <li><a href="archives.html">Archives</a></li>
+    <li><a href="about.html">ABOUT</a></li>
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="flume.html">flume</a></li>
+        
+            <li><a href="java.html">java</a></li>
+        
+            <li><a href="kafka.html">kafka</a></li>
+        
+            <li><a href="awk.html">awk</a></li>
+        
+            <li><a href="storm.html">storm</a></li>
+        
+            <li><a href="spark.html">spark</a></li>
+        
+            <li><a href="redis.html">redis</a></li>
+        
+            <li><a href="liunx.html">linux</a></li>
+        
+            <li><a href="zookeeper.html">zookeeper</a></li>
+        
+            <li><a href="hive.html">hive</a></li>
+        
+            <li><a href="maven.html">maven</a></li>
+        
+            <li><a href="shell.html">shell</a></li>
+        
+            <li><a href="docker.html">docker</a></li>
+        
+            <li><a href="mysql.html">mysql</a></li>
+        
+            <li><a href="datahole.html">datahole</a></li>
+        
+            <li><a href="scala.html">scala</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>ssh 免密登录</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2018/12/15</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='liunx.html'>linux</a></span>
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <h2 id="toc_0">背景</h2>
+
+<p>最近有同学问我他的开机自启命令不管作用。经过了解之后发现他是想用ssh-agent来管理ssh key。 可是每次关机重启后就失效了. 命令如下</p>
+
+<pre><code>cd /Users/lsr/.ssh
+ssh-add id_rsa
+ssh-add -K id_rsa
+</code></pre>
+
+<p>首先我们来看要解决这个问题有哪些思路<br/>
+1.使用ssh-keygen生成秘钥对 过程中不设置任何密码，将公钥放到git上。实现免登陆<br/>
+2.生成过程中设置了密码，使用ssh-agent 来管理，实现免密登陆</p>
+
+<p>这位同学采用的就是第二种方式，因为在mac中 关机重启后ssh-agent 再次启动时会忘记这个秘钥，所以他想利用开机自启动来执行ssh-add 命令 让私钥对ssh-agent 可见</p>
+
+<p>其实大不必这样做，mac上有专用的方式 自动加载keys到ssh-agent 并且存储把你的密码存储在钥匙链中</p>
+
+<p>先配置~/.ssh/config  如果没有则新建 输入一下命令</p>
+
+<pre><code>Host *
+ AddKeysToAgent yes
+ UseKeychain yes
+ IdentityFile ~/.ssh/id_rsa
+</code></pre>
+
+<p>最后再输入 <strong>ssh-add -K  ~/.ssh/id_rsa</strong>  (id_rsa) 为你的秘钥文件 替换成你的即可</p>
+
+<blockquote>
+<p>-K 选项是MAC ssh-add 的标准，它会在你在你将ssh key 加入到ssh-agent中的时候把你的密码添加到钥匙链中<br/>
+HOST *  表示 对所有的host 都生效，当然我们可以设置一个或者多个具体的host，这样我们想要登录多个服务器的时候不用ssh -i 指定使用哪个秘钥了</p>
+</blockquote>
+
+<p><strong>config 示例：</strong></p>
+
+<pre><code>Host SERVERNAME1
+  IdentitiesOnly yes
+  IdentityFile ~/.ssh/id_rsa_SERVER1
+  # CheckHostIP yes
+  # Port 22
+Host SERVERNAME2
+  IdentitiesOnly yes
+  IdentityFile ~/.ssh/id_rsa_SERVER2
+  # CheckHostIP no
+  # Port 2177
+ControlMaster auto
+ControlPath /tmp/%r@%h:%p
+</code></pre>
+
+<p>可以通过man ssh_config查看配置项</p>
+
+<h2 id="toc_1">SSH agents</h2>
+
+<p><strong>背景</strong><br/>
+由于在配置了公钥认证的情况下，为方便起见，一般都不设置私钥密码，即只要持有 私钥就可登录系统。因此私钥文件泄漏带来的风险就非常大了。因此，对私钥文件应 仅在可信的环境下才能以无密码的方式存储，其他情况下应该以强密码保护。如果最 初生成密钥是没有设置密码，可以通过 ssh-keygen -p -f test 重新设置密码。</p>
+
+<p>SSH 对这种情况已经有所考虑，并提供了相应的辅助程序做认证代理。OpenSSH 的程序名为 ssh-agent，PuTTY 的程序名为 pageant。其基本思想是预先加载私钥在 内存之中，在记载的过程之中如果私钥有密码，会请求用户输入密码。这样以后的 SSH 连接就不需要频繁的输入私钥的密码。</p>
+
+<p><strong>什么是SSH agents</strong><br/>
+如果您的私钥使用密码短语来加密了的话，每一次使用 SSH 密钥对进行登录的时候，您都必须输入正确的密码短语。</p>
+
+<p>而 SSH agent 程序能够将您的已解密的私钥缓存起来，在需要的时候提供给您的 SSH 客户端。这样子，您就只需要将私钥加入 SSH agent 缓存的时候输入一次密码短语就可以了。这为您经常使用 SSH 连接提供了不少便利。</p>
+
+<p>SSH agent 一般会设置成在登录会话的时候自动启动，并在整个会话中保持运行。</p>
+
+<p><strong>ssh-agent</strong></p>
+
+<p>ssh-agent 是 OpenSSH 自带的一个 SSH agent，它可以直接作为 SSH agent 来使用，或者作为其他 SSH agent 的后端。ssh-agent 运行时会自动 fork 它自身，然收打印出其所需的环境变量。</p>
+
+<p><strong>使用方法</strong><br/>
+在命令行输入ssh-agent</p>
+
+<pre><code>SSH_AUTH_SOCK=/var/folders/j0/b1dsp5c13gb49g58_5bl51480000gn/T//ssh-GAG80SVQvwz1/agent.7411; export SSH_AUTH_SOCK;
+SSH_AGENT_PID=7412; export SSH_AGENT_PID;
+echo Agent pid 7412;
+</code></pre>
+
+<p>ssh-agent 运行时会自动 fork 它自身，然收打印出其所需的环境变量</p>
+
+<p>启动ssh-agent</p>
+
+<pre><code>eval $(ssh-agent)
+</code></pre>
+
+<p>可以将上述 命令放在~/.bash_profile(个人) 或者 /etc/profile(所有用户) 以实现开机自启</p>
+
+<p>ssh-agent 启动之后还需要将私钥添加到它的缓存中</p>
+
+<pre><code>ssh-add ~/.ssh/id_rsa
+</code></pre>
+
+<p>自然这个命令也可以添加到profile文件中以时间登陆shell的时候自动添加</p>
+
+<blockquote>
+<p>如果你的私钥设置了密码，ssh-add 会提示你输入密码</p>
+</blockquote>
+
+<h2 id="toc_2">使用 ssh-agent 进行转发</h2>
+
+<p>假设有3台机器 A B C 都配置A 对B，C 都配置好了免密登录。现在想通过A 登录B 之后再免密登录C。有一下几种方法</p>
+
+<ul>
+<li>将A的私钥拷贝到B上</li>
+<li>使用ssh-agent 进行转发</li>
+</ul>
+
+<p>第一种的缺点是安全漏洞太大，如果有人进入你的系统那么整个内网都可以进入。而ssh-agent可以不用上述操作就可以免密登录C</p>
+
+<p>使用方式如上面一节介绍，最好添加以下配置</p>
+
+<p>个人</p>
+
+<pre><code>echo &quot;ForwardAgent yes&quot; &gt;&gt;~/.ssh/config
+</code></pre>
+
+<p>or 全局</p>
+
+<pre><code>echo &quot;ForwardAgent yes&quot; &gt;&gt;/etc/ssh/config
+</code></pre>
+
+<p>最后一步修改所有机器上的ssh 配置 加入上面的配置，让他们都对ssh-agent 进行转发</p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="15445417601514.html" 
+          title="Next Post: kafka彻底删除topic">kafka彻底删除topic &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="asset/img/icon.jpg" /></div>
+            
+                <h1>IT framer</h1>
+                <div class="site-des">just in the dark hole</div>
+                <div class="social">
+
+<a target="_blank" class="google" href="https://plus.google.com/u/0/?tab=wX" rel="author" title="Google+">Google+</a>
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/jettyaway" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:727913675@qq.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="flume.html"><strong>flume</strong></a>
+        
+            <a href="java.html"><strong>java</strong></a>
+        
+            <a href="kafka.html"><strong>kafka</strong></a>
+        
+            <a href="awk.html"><strong>awk</strong></a>
+        
+            <a href="storm.html"><strong>storm</strong></a>
+        
+            <a href="spark.html"><strong>spark</strong></a>
+        
+            <a href="redis.html"><strong>redis</strong></a>
+        
+            <a href="liunx.html"><strong>linux</strong></a>
+        
+            <a href="zookeeper.html"><strong>zookeeper</strong></a>
+        
+            <a href="hive.html"><strong>hive</strong></a>
+        
+            <a href="maven.html"><strong>maven</strong></a>
+        
+            <a href="shell.html"><strong>shell</strong></a>
+        
+            <a href="docker.html"><strong>docker</strong></a>
+        
+            <a href="mysql.html"><strong>mysql</strong></a>
+        
+            <a href="datahole.html"><strong>datahole</strong></a>
+        
+            <a href="scala.html"><strong>scala</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15448459703850.html">ssh 免密登录</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15445417601514.html">kafka彻底删除topic</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15442419292306.html">java 服务 内部开发规范</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15442410598248.html">闭环你的java应用</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15442384370091.html">spark 内存调优【转】</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    <script src="asset/chart/all-min.js"></script><script type="text/javascript">$(function(){    var mwebii=0;    var mwebChartEleId = 'mweb-chart-ele-';    $('pre>code').each(function(){        mwebii++;        var eleiid = mwebChartEleId+mwebii;        if($(this).hasClass('language-sequence')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = Diagram.parse($(this).text());            diagram.drawSVG(eleiid,{theme: 'simple'});        }else if($(this).hasClass('language-flow')){            var ele = $(this).addClass('nohighlight').parent();            $('<div id="'+eleiid+'"></div>').insertAfter(ele);            ele.hide();            var diagram = flowchart.parse($(this).text());            diagram.drawSVG(eleiid);        }    });});</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+
+  </body>
+</html>

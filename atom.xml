@@ -4,13 +4,644 @@
   <title><![CDATA[IT framer]]></title>
   <link href="http://www.blacklight.xin/atom.xml" rel="self"/>
   <link href="http://www.blacklight.xin/"/>
-  <updated>2018-12-07T23:30:43+08:00</updated>
+  <updated>2018-12-08T11:14:34+08:00</updated>
   <id>http://www.blacklight.xin/</id>
   <author>
     <name><![CDATA[]]></name>
     
   </author>
   <generator uri="http://www.mweb.im/">MWeb</generator>
+  
+  <entry>
+    <title type="html"><![CDATA[ssh 免密登录]]></title>
+    <link href="http://www.blacklight.xin/15448459703850.html"/>
+    <updated>2018-12-15T11:52:50+08:00</updated>
+    <id>http://www.blacklight.xin/15448459703850.html</id>
+    <content type="html"><![CDATA[
+<h2 id="toc_0">背景</h2>
+
+<p>最近有同学问我他的开机自启命令不管作用。经过了解之后发现他是想用ssh-agent来管理ssh key。 可是每次关机重启后就失效了. 命令如下</p>
+
+<pre><code>cd /Users/lsr/.ssh
+ssh-add id_rsa
+ssh-add -K id_rsa
+</code></pre>
+
+<p>首先我们来看要解决这个问题有哪些思路<br/>
+1.使用ssh-keygen生成秘钥对 过程中不设置任何密码，将公钥放到git上。实现免登陆<br/>
+2.生成过程中设置了密码，使用ssh-agent 来管理，实现免密登陆</p>
+
+<p>这位同学采用的就是第二种方式，因为在mac中 关机重启后ssh-agent 再次启动时会忘记这个秘钥，所以他想利用开机自启动来执行ssh-add 命令 让私钥对ssh-agent 可见</p>
+
+<p>其实大不必这样做，mac上有专用的方式 自动加载keys到ssh-agent 并且存储把你的密码存储在钥匙链中</p>
+
+<p>先配置~/.ssh/config  如果没有则新建 输入一下命令</p>
+
+<pre><code>Host *
+ AddKeysToAgent yes
+ UseKeychain yes
+ IdentityFile ~/.ssh/id_rsa
+</code></pre>
+
+<p>最后再输入 <strong>ssh-add -K  ~/.ssh/id_rsa</strong>  (id_rsa) 为你的秘钥文件 替换成你的即可</p>
+
+<blockquote>
+<p>-K 选项是MAC ssh-add 的标准，它会在你在你将ssh key 加入到ssh-agent中的时候把你的密码添加到钥匙链中<br/>
+HOST *  表示 对所有的host 都生效，当然我们可以设置一个或者多个具体的host，这样我们想要登录多个服务器的时候不用ssh -i 指定使用哪个秘钥了</p>
+</blockquote>
+
+<p><strong>config 示例：</strong></p>
+
+<pre><code>Host SERVERNAME1
+  IdentitiesOnly yes
+  IdentityFile ~/.ssh/id_rsa_SERVER1
+  # CheckHostIP yes
+  # Port 22
+Host SERVERNAME2
+  IdentitiesOnly yes
+  IdentityFile ~/.ssh/id_rsa_SERVER2
+  # CheckHostIP no
+  # Port 2177
+ControlMaster auto
+ControlPath /tmp/%r@%h:%p
+</code></pre>
+
+<p>可以通过man ssh_config查看配置项</p>
+
+<h2 id="toc_1">SSH agents</h2>
+
+<p><strong>背景</strong><br/>
+由于在配置了公钥认证的情况下，为方便起见，一般都不设置私钥密码，即只要持有 私钥就可登录系统。因此私钥文件泄漏带来的风险就非常大了。因此，对私钥文件应 仅在可信的环境下才能以无密码的方式存储，其他情况下应该以强密码保护。如果最 初生成密钥是没有设置密码，可以通过 ssh-keygen -p -f test 重新设置密码。</p>
+
+<p>SSH 对这种情况已经有所考虑，并提供了相应的辅助程序做认证代理。OpenSSH 的程序名为 ssh-agent，PuTTY 的程序名为 pageant。其基本思想是预先加载私钥在 内存之中，在记载的过程之中如果私钥有密码，会请求用户输入密码。这样以后的 SSH 连接就不需要频繁的输入私钥的密码。</p>
+
+<p><strong>什么是SSH agents</strong><br/>
+如果您的私钥使用密码短语来加密了的话，每一次使用 SSH 密钥对进行登录的时候，您都必须输入正确的密码短语。</p>
+
+<p>而 SSH agent 程序能够将您的已解密的私钥缓存起来，在需要的时候提供给您的 SSH 客户端。这样子，您就只需要将私钥加入 SSH agent 缓存的时候输入一次密码短语就可以了。这为您经常使用 SSH 连接提供了不少便利。</p>
+
+<p>SSH agent 一般会设置成在登录会话的时候自动启动，并在整个会话中保持运行。</p>
+
+<p><strong>ssh-agent</strong></p>
+
+<p>ssh-agent 是 OpenSSH 自带的一个 SSH agent，它可以直接作为 SSH agent 来使用，或者作为其他 SSH agent 的后端。ssh-agent 运行时会自动 fork 它自身，然收打印出其所需的环境变量。</p>
+
+<p><strong>使用方法</strong><br/>
+在命令行输入ssh-agent</p>
+
+<pre><code>SSH_AUTH_SOCK=/var/folders/j0/b1dsp5c13gb49g58_5bl51480000gn/T//ssh-GAG80SVQvwz1/agent.7411; export SSH_AUTH_SOCK;
+SSH_AGENT_PID=7412; export SSH_AGENT_PID;
+echo Agent pid 7412;
+</code></pre>
+
+<p>ssh-agent 运行时会自动 fork 它自身，然收打印出其所需的环境变量</p>
+
+<p>启动ssh-agent</p>
+
+<pre><code>eval $(ssh-agent)
+</code></pre>
+
+<p>可以将上述 命令放在~/.bash_profile(个人) 或者 /etc/profile(所有用户) 以实现开机自启</p>
+
+<p>ssh-agent 启动之后还需要将私钥添加到它的缓存中</p>
+
+<pre><code>ssh-add ~/.ssh/id_rsa
+</code></pre>
+
+<p>自然这个命令也可以添加到profile文件中以时间登陆shell的时候自动添加</p>
+
+<blockquote>
+<p>如果你的私钥设置了密码，ssh-add 会提示你输入密码</p>
+</blockquote>
+
+<h2 id="toc_2">使用 ssh-agent 进行转发</h2>
+
+<p>假设有3台机器 A B C 都配置A 对B，C 都配置好了免密登录。现在想通过A 登录B 之后再免密登录C。有一下几种方法</p>
+
+<ul>
+<li>将A的私钥拷贝到B上</li>
+<li>使用ssh-agent 进行转发</li>
+</ul>
+
+<p>第一种的缺点是安全漏洞太大，如果有人进入你的系统那么整个内网都可以进入。而ssh-agent可以不用上述操作就可以免密登录C</p>
+
+<p>使用方式如上面一节介绍，最好添加以下配置</p>
+
+<p>个人</p>
+
+<pre><code>echo &quot;ForwardAgent yes&quot; &gt;&gt;~/.ssh/config
+</code></pre>
+
+<p>or 全局</p>
+
+<pre><code>echo &quot;ForwardAgent yes&quot; &gt;&gt;/etc/ssh/config
+</code></pre>
+
+<p>最后一步修改所有机器上的ssh 配置 加入上面的配置，让他们都对ssh-agent 进行转发</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[kafka彻底删除topic]]></title>
+    <link href="http://www.blacklight.xin/15445417601514.html"/>
+    <updated>2018-12-11T23:22:40+08:00</updated>
+    <id>http://www.blacklight.xin/15445417601514.html</id>
+    <content type="html"><![CDATA[
+<h1 id="toc_0">如果只是用kafka-topics.sh的delete命令删除topic，会有两种情况：</h1>
+
+<ol>
+<li> 如果当前topic没有使用过即没有传输过信息：可以彻底删除</li>
+<li> 如果当前topic有使用过即有过传输过信息：并没有真正删除topic只是把这个topic标记为删除（marked for deletion）。</li>
+</ol>
+
+<p>要彻底把情况2中的topic删除必须把kafka中与当前topic相关的数据目录和zookeeper与当前topic相关的路径一并</p>
+
+<span id="more"></span><!-- more -->
+
+<h1 id="toc_1">删除kafka相关的数据目录</h1>
+
+<p>数据目录请参考目标机器上的kafka配置：server.properties -&gt; log.dirs=xxxx</p>
+
+<pre><code>su rm -r /xxx/test*
+</code></pre>
+
+<h1 id="toc_2">删除kafka topic</h1>
+
+<pre><code class="language-shell">/home/kafka/bin/kafka-topics.sh --delete --zookeeper zkhost:2181 --topic test
+</code></pre>
+
+<h1 id="toc_3">删除zookeeper相关的路径</h1>
+
+<h2 id="toc_4">删除topic test的consumer group，如果有消费记录的话</h2>
+
+<pre><code>rmr /kafka/consumers/test-group
+
+rmr /kafka/config/topics/test
+rmr /kafka/brokers/topics/test
+rmr /kafka/admin/delete_topics/test
+
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[java 服务 内部开发规范]]></title>
+    <link href="http://www.blacklight.xin/15442419292306.html"/>
+    <updated>2018-12-08T12:05:29+08:00</updated>
+    <id>http://www.blacklight.xin/15442419292306.html</id>
+    <content type="html"><![CDATA[
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[闭环你的java应用]]></title>
+    <link href="http://www.blacklight.xin/15442410598248.html"/>
+    <updated>2018-12-08T11:50:59+08:00</updated>
+    <id>http://www.blacklight.xin/15442410598248.html</id>
+    <content type="html"><![CDATA[
+<p> </p>
+
+<h2 id="toc_0">背景</h2>
+
+<p>还记得我们曾经经历过的上线部署流程吗？是否为此感到痛苦和纠结。在之前接触过的部署方式中，遇到了以下问题：</p>
+
+<ul>
+<li>部署上线靠人工管理，不是工具自动化发布</li>
+<li>目录结构没有规范，通过-classpath 任意指定jar</li>
+<li>简单直接上fat jar ，全部都打在一个jar中</li>
+<li>如果是web应用还要提前装好容器 如tomcat才能使用</li>
+<li><p>线上参数修改要麻烦运维</p>
+
+<span id="more"></span><!-- more -->
+
+<p>其中还有回滚问题 如果没有自动化运维平台那么回滚是一件非常头痛的事情。不论前后端都是这样</p>
+
+<p>这里不能一一列举部署中出现的问题，但是我们这里只关注闭环java应用带来的好处。我们将从以下几个方面进行介绍</p></li>
+<li><p>部署应用的流程</p></li>
+<li><p>什么是闭环java应用&amp;优点</p></li>
+<li><p>实现方式</p></li>
+</ul>
+
+<h2 id="toc_1">部署应用流程</h2>
+
+<p><img src="media/15442410598248/15445776222931.jpg" alt=""/></p>
+
+<p>从上图中可以看出由三个部分构成</p>
+
+<p><strong>项目</strong></p>
+
+<p>你的工程项目 包括源代码 配置文件 启停脚本 等等，并且我们安装一定的目录规范来进行开发</p>
+
+<p>非web 工程</p>
+
+<p><img src="media/15442410598248/15445779472630.jpg" alt=""/></p>
+
+<p>执行 <strong>mvn clean package -P dev</strong>  后打包效果如下</p>
+
+<p><img src="media/15442410598248/15446262170690.jpg" alt=""/></p>
+
+<p>web 工程</p>
+
+<p><img src="media/15442410598248/15445795503573.jpg" alt=""/></p>
+
+<p>执行打包命令后 效果如下：</p>
+
+<p><img src="media/15442410598248/15445799757990.jpg" alt=""/></p>
+
+<p><strong>自动化发布系统</strong></p>
+
+<p>自动化发布系统是其中重要的一环，它的基本功能包括应用的打包，抽取，部署代码，包管理和命令的执行等。</p>
+
+<p>除了这些功能外，还有版本管理，混滚，灰度发布，分组管理机器（不同机房的配置不一样），配置中心功能（动态修改配置参数，或者脚本，jvm参数等等）。一般在相对大的公司都会有专门的团队来开发这些功能</p>
+
+<p><strong>宿主机</strong></p>
+
+<p>宿主机就是我们代码运行的机器，默认配置应当最小化，比如只包含运维管理用的agent和指定版本的jdk 等。一些非必要安装的软件应当由应用程序以配置文件的方式指定</p>
+
+<p><strong>总结</strong></p>
+
+<p>通过这三方面的共同协作使我们能够更好的统一管理、发布、回滚我们的应用</p>
+
+<h2 id="toc_2">动手闭环你的应用</h2>
+
+<p>这里的闭环是指，你的Java应用程序，配置文件，启停脚本等都在java程序里维护，修改任何的参数配置文件，或者容器的类型都不需要登录宿主机来修改。宿主机只提供基本统一的运行环境即可。比如我们所有的服务默认都只提供jdk8.tomcat等web容器默认不安装，如有需求，通过配置文件进行指定即可。</p>
+
+<p>通过闭环我们的Java应用我们能得到以下好处</p>
+
+<ul>
+<li>统一修改应用程序代码、配置文件、运行环境</li>
+<li>将程序的控制权掌握在我们的手中，减少和运维的沟通成本</li>
+</ul>
+
+<h2 id="toc_3">构建非web应用</h2>
+
+<p><strong>项目结构</strong><br/>
+<img src="media/15442410598248/15446281157173.jpg" alt=""/></p>
+
+<p>本例是一个普通的java 服务，一次运行。创建类似RPC服务也是一样的</p>
+
+<p><strong>maven依赖 pom配置</strong></p>
+
+<ul>
+<li>profile</li>
+</ul>
+
+<pre><code>&lt;profiles&gt;
+
+        &lt;profile&gt;
+            &lt;id&gt;production&lt;/id&gt;
+            &lt;properties&gt;
+                &lt;deploy.type&gt;production&lt;/deploy.type&gt;
+            &lt;/properties&gt;
+        &lt;/profile&gt;
+        &lt;profile&gt;
+            &lt;id&gt;staging&lt;/id&gt;
+            &lt;properties&gt;
+                &lt;deploy.type&gt;staging&lt;/deploy.type&gt;
+            &lt;/properties&gt;
+        &lt;/profile&gt;
+        &lt;profile&gt;
+            &lt;id&gt;test&lt;/id&gt;
+            &lt;properties&gt;
+                &lt;deploy.type&gt;test&lt;/deploy.type&gt;
+            &lt;/properties&gt;
+        &lt;/profile&gt;
+        &lt;profile&gt;
+            &lt;id&gt;dev&lt;/id&gt;
+            &lt;properties&gt;
+                &lt;deploy.type&gt;dev&lt;/deploy.type&gt;
+            &lt;/properties&gt;
+            &lt;activation&gt;
+                &lt;activeByDefault&gt;true&lt;/activeByDefault&gt;
+            &lt;/activation&gt;
+        &lt;/profile&gt;
+    &lt;/profiles&gt;
+</code></pre>
+
+<ul>
+<li>assembly插件</li>
+</ul>
+
+<pre><code>&lt;build&gt;
+        &lt;finalName&gt;bigdata-persistence&lt;/finalName&gt;
+        &lt;resources&gt;
+            &lt;resource&gt;
+                &lt;directory&gt;src/main/resources&lt;/directory&gt;
+                &lt;filtering&gt;true&lt;/filtering&gt;
+            &lt;/resource&gt;
+
+            &lt;resource&gt;
+                &lt;directory&gt;src/main/resources.${deploy.type}&lt;/directory&gt;
+                &lt;filtering&gt;true&lt;/filtering&gt;
+                &lt;targetPath&gt;config&lt;/targetPath&gt;
+            &lt;/resource&gt;
+        &lt;/resources&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-jar-plugin&lt;/artifactId&gt;
+                &lt;version&gt;2.4&lt;/version&gt;
+                &lt;!-- The configuration of the plugin --&gt;
+                &lt;configuration&gt;
+                    &lt;!-- Configuration of the archiver --&gt;
+                    &lt;archive&gt;
+                        &lt;addMavenDescriptor&gt;false&lt;/addMavenDescriptor&gt;
+                        &lt;manifest&gt;
+                            &lt;addClasspath&gt;true&lt;/addClasspath&gt;
+                            &lt;classpathPrefix&gt;lib/&lt;/classpathPrefix&gt;
+                            &lt;mainClass&gt;xxx.Bootstrap&lt;/mainClass&gt;
+                        &lt;/manifest&gt;
+                        &lt;manifestEntries&gt;
+                            &lt;Class-Path&gt;.&lt;/Class-Path&gt;
+                        &lt;/manifestEntries&gt;
+                    &lt;/archive&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-assembly-plugin&lt;/artifactId&gt;
+                &lt;version&gt;2.4&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;descriptors&gt;
+                        &lt;descriptor&gt;src/main/assembly/assembly.xml&lt;/descriptor&gt;
+                    &lt;/descriptors&gt;
+                &lt;/configuration&gt;
+                &lt;executions&gt;
+                    &lt;execution&gt;
+                        &lt;id&gt;single&lt;/id&gt;
+                        &lt;phase&gt;package&lt;/phase&gt;
+                        &lt;goals&gt;
+                            &lt;goal&gt;single&lt;/goal&gt;
+                        &lt;/goals&gt;
+                    &lt;/execution&gt;
+                &lt;/executions&gt;
+            &lt;/plugin&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+                &lt;version&gt;3.1&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;source&gt;1.8&lt;/source&gt;
+                    &lt;target&gt;1.8&lt;/target&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+</code></pre>
+
+<ul>
+<li>assembly配置文件</li>
+</ul>
+
+<pre><code>&lt;assembly&gt;
+    &lt;id&gt;bin&lt;/id&gt;
+    &lt;!-- 最终打包成一个用于发布的zip文件 --&gt;
+    &lt;formats&gt;
+        &lt;format&gt;zip&lt;/format&gt;
+    &lt;/formats&gt;
+
+    &lt;!-- Adds dependencies to zip package under lib directory --&gt;
+    &lt;dependencySets&gt;
+        &lt;dependencySet&gt;
+            &lt;!--
+               不使用项目的artifact，第三方jar不要解压，打包进zip文件的lib目录
+           --&gt;
+            &lt;useProjectArtifact&gt;false&lt;/useProjectArtifact&gt;
+            &lt;outputDirectory&gt;lib&lt;/outputDirectory&gt;
+            &lt;unpack&gt;false&lt;/unpack&gt;
+        &lt;/dependencySet&gt;
+    &lt;/dependencySets&gt;
+
+    &lt;fileSets&gt;
+        &lt;!-- 把项目相关的说明文件，打包进zip文件的根目录 --&gt;
+        &lt;fileSet&gt;
+            &lt;directory&gt;${project.basedir}&lt;/directory&gt;
+            &lt;outputDirectory&gt;/&lt;/outputDirectory&gt;
+            &lt;includes&gt;
+                &lt;include&gt;README*&lt;/include&gt;
+                &lt;include&gt;LICENSE*&lt;/include&gt;
+                &lt;include&gt;NOTICE*&lt;/include&gt;
+                &lt;include&gt;NOTICE*&lt;/include&gt;
+            &lt;/includes&gt;
+        &lt;/fileSet&gt;
+
+        &lt;!-- 把项目自己编译出来的jar文件，打包进zip文件的根目录 --&gt;
+        &lt;fileSet&gt;
+            &lt;directory&gt;${project.build.directory}&lt;/directory&gt;
+            &lt;outputDirectory&gt;&lt;/outputDirectory&gt;
+            &lt;includes&gt;
+                &lt;include&gt;*.jar&lt;/include&gt;
+            &lt;/includes&gt;
+        &lt;/fileSet&gt;
+
+        &lt;fileSet&gt;
+            &lt;directory&gt;src/main/script&lt;/directory&gt;
+            &lt;outputDirectory&gt;/script&lt;/outputDirectory&gt;
+            &lt;includes&gt;
+                &lt;include&gt;**&lt;/include&gt;
+            &lt;/includes&gt;
+        &lt;/fileSet&gt;
+    &lt;/fileSets&gt;
+&lt;/assembly&gt;
+</code></pre>
+
+<p>执行mvn clean package -P prod  生成目录如下图</p>
+
+<p><img src="media/15442410598248/15446284656942.jpg" alt=""/></p>
+
+<p>解压缩后</p>
+
+<p><img src="media/15442410598248/15446285112256.jpg" alt=""/></p>
+
+<p>我这里是将所需要的文件统一打包成zip 然后自动化发布系统会根据我的部署脚本解压到相应的目录位置</p>
+
+<p><strong>启动类</strong></p>
+
+<pre><code>public class Bootstrap {
+
+    private static Map&lt;String, IPersistence&gt; map;
+
+
+    static {
+        List&lt;IPersistence&gt; persistenceList = Lists.newArrayList();
+        persistenceList.add(new AfentiDynamicPersistence());
+        persistenceList.add(new AfentiDynamicCallPersistence());
+        persistenceList.add(new AfentiReportUserPersistence());
+        persistenceList.add(new AfentiLittleReport());
+        persistenceList.add(new WrongQuestionPersistence());
+        persistenceList.add(new WrongQuestionPersistenceNew());
+        map = persistenceList.stream().collect(Collectors.toMap(p -&gt; p.getClass().getSimpleName(), p -&gt; p));
+    }
+
+    public static void main(String[] args) {
+        if (args.length &lt; 3) {
+            System.out.println(&quot;must at least three param[className,filePath,prefix]&quot;);
+            System.exit(1);
+        }
+        String className = args[0];
+        String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
+        map.get(className).start(newArgs);
+    }
+</code></pre>
+
+<p><strong>启动脚本</strong></p>
+
+<pre><code>#!/usr/bin/env bash
+source /etc/profile
+
+
+export JAVA_HOME=/data/soft/jdk1.8.0_45
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JAVA_HOME/jre/lib/rt.jar
+
+to_day=`date +%Y-%m-%d`
+
+if [ $# -gt 0  ];then
+    to_day=`date +%Y-%m-%d -d &quot;$1&quot;`
+fi
+
+
+JAR_PATH=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;;pwd)/../../../bigdata-persistence.jar&quot;
+LOG_PATH=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;;pwd)/../../../logs&quot;
+if [ ! -f ${JAR_PATH} ];then
+   echo &quot;not found jar file.&quot;
+   exit 10
+fi
+
+_BASE_PATH_=&quot;/data/hadoop/tmp/afenti/dynamic/${to_day}&quot;
+_dynamic_opened_class_file_=&quot;${_BASE_PATH_}/_afenti_dynamic_opended_class.txt&quot;
+_dynamic_opened_school_file_=&quot;${_BASE_PATH_}/_afenti_dynamic_opended_school.txt&quot;
+_dynamic_call_class_file_=&quot;${_BASE_PATH_}/_afenti_dynamic_call_class_.txt&quot;
+_dynamic_call_school_file_=&quot;${_BASE_PATH_}/_afenti_dynamic_call_school_.txt&quot;
+
+java -jar &quot;${JAR_PATH}&quot; &quot;AfentiDynamicPersistence&quot; &quot;${_dynamic_opened_class_file_}&quot; &quot;class#&quot; || ( echo &quot;xxx&quot;;exit 11  )
+java -jar &quot;${JAR_PATH}&quot; &quot;AfentiDynamicPersistence&quot; &quot;${_dynamic_opened_school_file_}&quot; &quot;school#&quot; || ( echo &quot;xxx&quot;;exit 12  )
+java -jar &quot;${JAR_PATH}&quot; &quot;AfentiDynamicCallPersistence&quot; &quot;${_dynamic_call_class_file_}&quot; &quot;class#call#&quot; || ( echo &quot;xxx&quot;;exit 13  )
+java -jar &quot;${JAR_PATH}&quot; &quot;AfentiDynamicCallPersistence&quot; &quot;${_dynamic_call_school_file_}&quot; &quot;school#call#&quot; || ( echo &quot;xxx&quot;;exit 14  )
+</code></pre>
+
+<h2 id="toc_4">构建web应用</h2>
+
+<h2 id="toc_5">通过springboot来构建非web/web应用</h2>
+
+<p><strong>工程目录</strong><br/>
+<img src="media/15442410598248/15448460273985.jpg" alt=""/><br/>
+<strong>maven 依赖</strong><br/>
+<code><br/>
+&lt;dependency&gt;<br/>
+   &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;<br/>
+   &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;<br/>
+&lt;/dependency&gt;<br/>
+</code></p>
+
+<p><strong>修改springboot的打包方式为assembly</strong></p>
+
+<p>springboot 提供了默认的打包方式</p>
+
+<pre><code>&lt;plugin&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+&lt;/plugin&gt;
+
+</code></pre>
+
+<p>修改为assembly打包方式 方便自己管理</p>
+
+<pre><code>&lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-jar-plugin&lt;/artifactId&gt;
+                &lt;version&gt;2.4&lt;/version&gt;
+                &lt;!-- The configuration of the plugin --&gt;
+                &lt;configuration&gt;
+                    &lt;!-- Configuration of the archiver --&gt;
+                    &lt;archive&gt;
+                        &lt;addMavenDescriptor&gt;false&lt;/addMavenDescriptor&gt;
+                        &lt;manifest&gt;
+                            &lt;addClasspath&gt;true&lt;/addClasspath&gt;
+                            &lt;classpathPrefix&gt;lib/&lt;/classpathPrefix&gt;
+                            &lt;mainClass&gt;xxxx.Application&lt;/mainClass&gt;
+                        &lt;/manifest&gt;
+                        &lt;manifestEntries&gt;
+                            &lt;Class-Path&gt;.&lt;/Class-Path&gt;
+                        &lt;/manifestEntries&gt;
+                    &lt;/archive&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-assembly-plugin&lt;/artifactId&gt;
+                &lt;version&gt;2.4&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;descriptors&gt;
+                        &lt;descriptor&gt;src/main/assembly/assembly.xml&lt;/descriptor&gt;
+                    &lt;/descriptors&gt;
+                &lt;/configuration&gt;
+                &lt;executions&gt;
+                    &lt;execution&gt;
+                        &lt;id&gt;single&lt;/id&gt;
+                        &lt;phase&gt;package&lt;/phase&gt;
+                        &lt;goals&gt;
+                            &lt;goal&gt;single&lt;/goal&gt;
+                        &lt;/goals&gt;
+                    &lt;/execution&gt;
+                &lt;/executions&gt;
+            &lt;/plugin&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+                &lt;version&gt;3.1&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;source&gt;1.8&lt;/source&gt;
+                    &lt;target&gt;1.8&lt;/target&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+</code></pre>
+
+<p>打包结果如下：<br/>
+<img src="media/15442410598248/15448471173969.jpg" alt=""/></p>
+
+<p><strong>启动类</strong><br/>
+```<br/>
+@EnableAutoConfiguration(exclude = {MultipartAutoConfiguration.class})<br/>
+@ComponentScan(&quot;com.vox_learning.phoniex.web&quot;)<br/>
+@EnableDiscoveryClient<br/>
+@EnableFeignClients<br/>
+@EnableAdminServer<br/>
+@EnableHystrix<br/>
+@EnableHystrixDashboard<br/>
+public class Application {</p>
+
+<pre><code>public static void main(String[] args) {
+    SpringApplication.run(Application.class, args);
+}
+</code></pre>
+
+<p>}<br/>
+```<br/>
+<strong>启动脚本</strong></p>
+
+<pre><code>export JAVA_HOME=&quot;/usr/java/jdk1.8.0_45/&quot;
+export PATH=&quot;${JAVA_HOME}/bin/&quot;:$PATH
+echo `java -version`
+nohup java -agentlib:jdwp=transport=dt_socket,address=12345,server=y,suspend=n -jar phoniex-web.jar &gt;logs/phoniex-web.log 2&gt;&amp;1 &amp;
+</code></pre>
+
+<h2 id="toc_6">总结</h2>
+
+<ul>
+<li>多种方式 结合docker</li>
+<li>闭环的好处
+*</li>
+</ul>
+
+<p>springboot的好处就是化繁为简需要的功能按需添加 并且实现了零配置。从头开始搭建一个新工程还是比较容易的。打包方式我们也可以使用之前的assembly方式来闭环我们的应用。我们还可以结合docker ，一个docker 直接部署一个jvm，实现弹性快速部署。</p>
+
+<p>创建闭环的java应用可以让我们更容易的管理自己的项目 修改jvm 参数，修改容器配置文件，部署方式等工作。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[spark 内存调优【转】]]></title>
@@ -3414,549 +4045,6 @@ sourceContextMap，channelContextMap，sinkContextMap，sinkGroupContextMap。�
 <p>东西比较简单，容易消化。</p>
 
 <p>未完，待续。。。欢迎补充</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[剖析spark-shell]]></title>
-    <link href="http://www.blacklight.xin/14822419760078.html"/>
-    <updated>2016-12-20T21:52:56+08:00</updated>
-    <id>http://www.blacklight.xin/14822419760078.html</id>
-    <content type="html"><![CDATA[
-<p>我们首先来看看spark-shell 到底做了什么，spark-shell 中有一段脚本内容如下:</p>
-
-<pre><code>function main() {
-  if $cygwin; then
-    # Workaround for issue involving JLine and Cygwin
-    # (see http://sourceforge.net/p/jline/bugs/40/).
-    # If you&#39;re using the Mintty terminal emulator in Cygwin, may need to set the
-    # &quot;Backspace sends ^H&quot; setting in &quot;Keys&quot; section of the Mintty options
-    # (see https://github.com/sbt/sbt/issues/562).
-    stty -icanon min 1 -echo &gt; /dev/null 2&gt;&amp;1
-    export SPARK_SUBMIT_OPTS=&quot;$SPARK_SUBMIT_OPTS -Djline.terminal=unix&quot;
-    &quot;${SPARK_HOME}&quot;/bin/spark-submit --class org.apache.spark.repl.Main --name &quot;Spark shell&quot; &quot;$@&quot;
-    stty icanon echo &gt; /dev/null 2&gt;&amp;1
-  else
-    export SPARK_SUBMIT_OPTS
-    &quot;${SPARK_HOME}&quot;/bin/spark-submit --class org.apache.spark.repl.Main --name &quot;Spark shell&quot; &quot;$@&quot;
-  fi
-}
-</code></pre>
-
-<span id="more"></span><!-- more -->
-
-<p>在上面的脚本中，实际上市执行了spark-submit,查看spark-submit代码：</p>
-
-<pre><code>if [ -z &quot;${SPARK_HOME}&quot; ]; then
-  export SPARK_HOME=&quot;$(cd &quot;`dirname &quot;$0&quot;`&quot;/..; pwd)&quot;
-fi
-
-# disable randomized hash for string in Python 3.3+
-export PYTHONHASHSEED=0
-
-exec &quot;${SPARK_HOME}&quot;/bin/spark-class org.apache.spark.deploy.SparkSubmit &quot;$@&quot;
-</code></pre>
-
-<p>非常简单，执行spark-class 并传入参数.继续查看spark-class 脚本内容:</p>
-
-<pre><code>if [ -z &quot;${SPARK_HOME}&quot; ]; then
-  export SPARK_HOME=&quot;$(cd &quot;`dirname &quot;$0&quot;`&quot;/..; pwd)&quot;
-fi
-
-. &quot;${SPARK_HOME}&quot;/bin/load-spark-env.sh
-</code></pre>
-
-<blockquote>
-<p>执行load-spark-env.sh 加载环境变量，稍后在讨论这个脚本</p>
-</blockquote>
-
-<pre><code>......
-build_command() {
-  &quot;$RUNNER&quot; -Xmx128m -cp &quot;$LAUNCH_CLASSPATH&quot; org.apache.spark.launcher.Main &quot;$@&quot;
-  printf &quot;%d\0&quot; $?
-}
-......
-CMD=()
-while IFS= read -d &#39;&#39; -r ARG; do
-  CMD+=(&quot;$ARG&quot;)
-done &lt; &lt;(build_command &quot;$@&quot;)
-......
-CMD=(&quot;${CMD[@]:0:$LAST}&quot;)
-exec &quot;${CMD[@]}&quot;
-
-</code></pre>
-
-<p>c从上面可以看出执行了org.apache.spark.launcher.Main ,继续打开org.apache.spark.launcher.Main 查看代码</p>
-
-<pre><code>public static void main(String[] argsArray) throws Exception {
-    checkArgument(argsArray.length &gt; 0, &quot;Not enough arguments: missing class name.&quot;);
-
-    List&lt;String&gt; args = new ArrayList&lt;&gt;(Arrays.asList(argsArray));
-    String className = args.remove(0);
-
-    boolean printLaunchCommand = !isEmpty(System.getenv(&quot;SPARK_PRINT_LAUNCH_COMMAND&quot;));
-    AbstractCommandBuilder builder;
-    if (className.equals(&quot;org.apache.spark.deploy.SparkSubmit&quot;)) {
-      try {
-        builder = new SparkSubmitCommandBuilder(args);
-      } catch (IllegalArgumentException e) {
-        printLaunchCommand = false;
-        System.err.println(&quot;Error: &quot; + e.getMessage());
-        System.err.println();
-
-        MainClassOptionParser parser = new MainClassOptionParser();
-        try {
-          parser.parse(args);
-        } catch (Exception ignored) {
-          // Ignore parsing exceptions.
-        }
-
-        List&lt;String&gt; help = new ArrayList&lt;&gt;();
-        if (parser.className != null) {
-          help.add(parser.CLASS);
-          help.add(parser.className);
-        }
-        help.add(parser.USAGE_ERROR);
-        builder = new SparkSubmitCommandBuilder(help);
-      }
-    } else {
-      builder = new SparkClassCommandBuilder(className, args);
-    }
-
-    Map&lt;String, String&gt; env = new HashMap&lt;&gt;();
-    List&lt;String&gt; cmd = builder.buildCommand(env);
-    if (printLaunchCommand) {
-      System.err.println(&quot;Spark Command: &quot; + join(&quot; &quot;, cmd));
-      System.err.println(&quot;========================================&quot;);
-    }
-
-    if (isWindows()) {
-      System.out.println(prepareWindowsCommand(cmd, env));
-    } else {
-      // In bash, use NULL as the arg separator since it cannot be used in an argument.
-      List&lt;String&gt; bashCmd = prepareBashCommand(cmd, env);
-      for (String c : bashCmd) {
-        System.out.print(c);
-        System.out.print(&#39;\0&#39;);
-      }
-    }
-  }
-</code></pre>
-
-<p>从上面的分析我们可知,spark-submit 传递给spark-class 的参数为org.apache.spark.deploy.SparkSubmit,所以在org.apache.spark.launcher.Main 执行的应该是</p>
-
-<pre><code>builder = new SparkSubmitCommandBuilder(args);
-</code></pre>
-
-<p>设置一些参数信息</p>
-
-<p>继续往下执行<strong>builder.buildCommand(env);</strong> 查看 buildCommand 内容</p>
-
-<pre><code>@Override
-  public List&lt;String&gt; buildCommand(Map&lt;String, String&gt; env)
-      throws IOException, IllegalArgumentException {
-    if (PYSPARK_SHELL.equals(appResource) &amp;&amp; isAppResourceReq) {
-      return buildPySparkShellCommand(env);
-    } else if (SPARKR_SHELL.equals(appResource) &amp;&amp; isAppResourceReq) {
-      return buildSparkRCommand(env);
-    } else {
-      return buildSparkSubmitCommand(env);
-    }
-  }
-</code></pre>
-
-<p>判断启动时的哪种环境py,shell,or submit 然后构建命令，继续查看<strong>buildSparkSubmitCommand</strong>函数</p>
-
-<p>其中有如下代码:</p>
-
-<pre><code>...
-addPermGenSizeOpt(cmd);
-    cmd.add(&quot;org.apache.spark.deploy.SparkSubmit&quot;);
-    cmd.addAll(buildSparkSubmitArgs());
-    return cmd;
-</code></pre>
-
-<p>好了继续查看org.apache.spark.deploy.SparkSubmit</p>
-
-<p>spark main 线程dump 信息</p>
-
-<pre><code>&quot;main&quot; #1 prio=5 os_prio=31 tid=0x00007f807180c800 nid=0x1c03 runnable [0x0000700003b08000]
-   java.lang.Thread.State: RUNNABLE
-    at java.io.FileInputStream.read0(Native Method)
-    at java.io.FileInputStream.read(FileInputStream.java:207)
-    at jline.internal.NonBlockingInputStream.read(NonBlockingInputStream.java:169)
-    - locked &lt;0x00000007830bf508&gt; (a jline.internal.NonBlockingInputStream)
-    at jline.internal.NonBlockingInputStream.read(NonBlockingInputStream.java:137)
-    at jline.internal.NonBlockingInputStream.read(NonBlockingInputStream.java:246)
-    at jline.internal.InputStreamReader.read(InputStreamReader.java:261)
-    - locked &lt;0x00000007830bf508&gt; (a jline.internal.NonBlockingInputStream)
-    at jline.internal.InputStreamReader.read(InputStreamReader.java:198)
-    - locked &lt;0x00000007830bf508&gt; (a jline.internal.NonBlockingInputStream)
-    at jline.console.ConsoleReader.readCharacter(ConsoleReader.java:2145)
-    at jline.console.ConsoleReader.readLine(ConsoleReader.java:2349)
-    at jline.console.ConsoleReader.readLine(ConsoleReader.java:2269)
-    at scala.tools.nsc.interpreter.jline.InteractiveReader.readOneLine(JLineReader.scala:57)
-    at scala.tools.nsc.interpreter.InteractiveReader$$anonfun$readLine$2.apply(InteractiveReader.scala:37)
-    at scala.tools.nsc.interpreter.InteractiveReader$$anonfun$readLine$2.apply(InteractiveReader.scala:37)
-    at scala.tools.nsc.interpreter.InteractiveReader$.restartSysCalls(InteractiveReader.scala:44)
-    at scala.tools.nsc.interpreter.InteractiveReader$class.readLine(InteractiveReader.scala:37)
-    at scala.tools.nsc.interpreter.jline.InteractiveReader.readLine(JLineReader.scala:28)
-    at scala.tools.nsc.interpreter.ILoop.readOneLine(ILoop.scala:404)
-        at scala.tools.nsc.interpreter.ILoop.loop(ILoop.scala:413)
-    at scala.tools.nsc.interpreter.ILoop$$anonfun$process$1.apply$mcZ$sp(ILoop.scala:923)
-    at scala.tools.nsc.interpreter.ILoop$$anonfun$process$1.apply(ILoop.scala:909)
-    at scala.tools.nsc.interpreter.ILoop$$anonfun$process$1.apply(ILoop.scala:909)
-    at scala.reflect.internal.util.ScalaClassLoader$.savingContextLoader(ScalaClassLoader.scala:97)
-    at scala.tools.nsc.interpreter.ILoop.process(ILoop.scala:909)
-    at org.apache.spark.repl.Main$.doMain(Main.scala:68)
-    at org.apache.spark.repl.Main$.main(Main.scala:51)
-    at org.apache.spark.repl.Main.main(Main.scala)
-    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-    at java.lang.reflect.Method.invoke(Method.java:497)
-    at org.apache.spark.deploy.SparkSubmit$.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:736)
-    at org.apache.spark.deploy.SparkSubmit$.doRunMain$1(SparkSubmit.scala:185)
-    at org.apache.spark.deploy.SparkSubmit$.submit(SparkSubmit.scala:210)
-    at org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:124)
-    at org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)
-
-   Locked ownable synchronizers:
-    - None
-
-</code></pre>
-
-<p>从堆栈中信息中我们可以看出程序的调用顺序:SparkSubmit.main =&gt; repl.Main.main =&gt; ILoop.process<br/>
-ILoop.process 中如下代码:</p>
-
-<pre><code>def process(settings: Settings): Boolean = savingContextLoader {
-    this.settings = settings
-    createInterpreter()
-
-    // sets in to some kind of reader depending on environmental cues
-    in = in0.fold(chooseReader(settings))(r =&gt; SimpleReader(r, out, interactive = true))
-    globalFuture = future {
-      intp.initializeSynchronous()
-      loopPostInit()
-      !intp.reporter.hasErrors
-    }
-    loadFiles(settings)
-    printWelcome()
-
-    try loop() match {
-      case LineResults.EOF =&gt; out print Properties.shellInterruptedString
-      case _               =&gt;
-    }
-    catch AbstractOrMissingHandler()
-    finally closeInterpreter()
-
-    true
-  }
-</code></pre>
-
-<p>在process中我们发现调用了loadFiles并且打印Welcome信息</p>
-
-<p>SparkLoop 继承了loadFiles并且复写了loadFiles 方法 如下:</p>
-
-<pre><code>override def loadFiles(settings: Settings): Unit = {
-    initializeSpark()
-    super.loadFiles(settings)
-  }
-</code></pre>
-
-<p>在loadFiles中调度initalizeSpark ,查看源码如下:</p>
-
-<pre><code>def initializeSpark() {
-    intp.beQuietDuring {
-      processLine(&quot;&quot;&quot;
-        @transient val spark = if (org.apache.spark.repl.Main.sparkSession != null) {
-            org.apache.spark.repl.Main.sparkSession
-          } else {
-            org.apache.spark.repl.Main.createSparkSession()
-          }
-        @transient val sc = {
-          val _sc = spark.sparkContext
-          _sc.uiWebUrl.foreach(webUrl =&gt; println(s&quot;Spark context Web UI available at ${webUrl}&quot;))
-          println(&quot;Spark context available as &#39;sc&#39; &quot; +
-            s&quot;(master = ${_sc.master}, app id = ${_sc.applicationId}).&quot;)
-          println(&quot;Spark session available as &#39;spark&#39;.&quot;)
-          _sc
-        }
-        &quot;&quot;&quot;)
-      processLine(&quot;import org.apache.spark.SparkContext._&quot;)
-      processLine(&quot;import spark.implicits._&quot;)
-      processLine(&quot;import spark.sql&quot;)
-      processLine(&quot;import org.apache.spark.sql.functions._&quot;)
-      replayCommandStack = Nil // remove above commands from session history.
-    }
-  }
-</code></pre>
-
-<p>从上面可以看出，如果SparkSession 已存在，那么直接返回，否则调用<strong>createSparkSession</strong></p>
-
-<p>最后从SparkSession中返回SparkContext 查看<strong>createSparkSession</strong>源码</p>
-
-<pre><code>def createSparkSession(): SparkSession = {
-    val execUri = System.getenv(&quot;SPARK_EXECUTOR_URI&quot;)
-    conf.setIfMissing(&quot;spark.app.name&quot;, &quot;Spark shell&quot;)
-    // SparkContext will detect this configuration and register it with the RpcEnv&#39;s
-    // file server, setting spark.repl.class.uri to the actual URI for executors to
-    // use. This is sort of ugly but since executors are started as part of SparkContext
-    // initialization in certain cases, there&#39;s an initialization order issue that prevents
-    // this from being set after SparkContext is instantiated.
-    conf.set(&quot;spark.repl.class.outputDir&quot;, outputDir.getAbsolutePath())
-    if (execUri != null) {
-      conf.set(&quot;spark.executor.uri&quot;, execUri)
-    }
-    if (System.getenv(&quot;SPARK_HOME&quot;) != null) {
-      conf.setSparkHome(System.getenv(&quot;SPARK_HOME&quot;))
-    }
-
-    val builder = SparkSession.builder.config(conf)
-    if (conf.get(CATALOG_IMPLEMENTATION.key, &quot;hive&quot;).toLowerCase == &quot;hive&quot;) {
-      if (SparkSession.hiveClassesArePresent) {
-        // In the case that the property is not set at all, builder&#39;s config
-        // does not have this value set to &#39;hive&#39; yet. The original default
-        // behavior is that when there are hive classes, we use hive catalog.
-        sparkSession = builder.enableHiveSupport().getOrCreate()
-        logInfo(&quot;Created Spark session with Hive support&quot;)
-      } else {
-        // Need to change it back to &#39;in-memory&#39; if no hive classes are found
-        // in the case that the property is set to hive in spark-defaults.conf
-        builder.config(CATALOG_IMPLEMENTATION.key, &quot;in-memory&quot;)
-        sparkSession = builder.getOrCreate()
-        logInfo(&quot;Created Spark session&quot;)
-      }
-    } else {
-      // In the case that the property is set but not to &#39;hive&#39;, the internal
-      // default is &#39;in-memory&#39;. So the sparkSession will use in-memory catalog.
-      sparkSession = builder.getOrCreate()
-      logInfo(&quot;Created Spark session&quot;)
-    }
-    sparkContext = sparkSession.sparkContext
-    Signaling.cancelOnInterrupt(sparkContext)
-    sparkSession
-  }
-</code></pre>
-
-<p>这里最后使用SparkConf 设置一些必要的参数并且通过Builder 创建sparkSession 并且判断是否需要启用Hive的支持。</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[spark 源码编译流程]]></title>
-    <link href="http://www.blacklight.xin/14815990344230.html"/>
-    <updated>2016-12-13T11:17:14+08:00</updated>
-    <id>http://www.blacklight.xin/14815990344230.html</id>
-    <content type="html"><![CDATA[
-<p>已v2.0.2 版本为列进行源码编译</p>
-
-<ol>
-<li>从github 上clone源码 <strong>git clone git://git.apache.org/spark.git</strong></li>
-<li>切换到v2.0.2 <strong>git checkout v2.0.2 -b dev_2.0.2</strong></li>
-<li>build/mvn -DskipTests install 此部分等待时间最长，下面必要的软件和jar包</li>
-<li>给idea 装scala 插件，具体就不说了，要是网速不好可以下载下来，选择从磁盘安装<a href="https://plugins.jetbrains.com/?idea">idea plugin</a></li>
-<li>导入idea，在官方文档上有下面一些话</li>
-</ol>
-
-<span id="more"></span><!-- more -->
-
-<blockquote>
-<p>Some of the modules have pluggable source directories based on Maven profiles (i.e. to support both Scala 2.11 and 2.10 or to allow cross building against different versions of Hive). In some cases IntelliJ’s does not correctly detect use of the maven-build-plugin to add source directories. In these cases, you may need to add source locations explicitly to compile the entire project. If so, open the “Project Settings” and select “Modules”. Based on your selected Maven profiles, you may need to add source folders to the following modules:<br/>
-<strong>spark-hive: add v0.13.1/src/main/scala</strong><br/>
-<strong>spark-streaming-flume-sink: add target\scala-2.10\src_managed\main\compiled_avro</strong></p>
-</blockquote>
-
-<p>意思就是idea 在某些情况下不能正确的决定source 目录，需要我们手动标记。我的情况是spark-streaming-flume-sink 这个moudle没有正确的标记出来，手动标记一下source 就行。<br/>
-不然运行example时候回报classnotfound</p>
-
-<ol>
-<li>在运行过程中发现找不到guava中的类,clipse jetty 类找不到等，找打spark—parent-2.11下的pom </li>
-</ol>
-
-<p><img src="media/14815990344230/14816790522215.jpg" alt=""/><br/>
-如下图所示，将guava 和jetty 相关的依赖scope 都改成compile<br/>
-<img src="media/14815990344230/14816791028761.jpg" alt=""/></p>
-
-<p>重新运行example中的列子，正确执行。</p>
-
-<p>开始你的源码之旅吧！</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[maven 遇到不能下载问题]]></title>
-    <link href="http://www.blacklight.xin/14813767804827.html"/>
-    <updated>2016-12-10T21:33:00+08:00</updated>
-    <id>http://www.blacklight.xin/14813767804827.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">问题描述</h2>
-
-<pre><code>Caused by: org.eclipse.aether.transfer.ArtifactTransferException: Could not transfer artifact org.apache.spark:spark-core_2.11:pom:2.0.2 from/to central (https://repo.maven.apache.org/maven2): sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
-</code></pre>
-
-<h2 id="toc_1">原因</h2>
-
-<p>maven 用的默认配置，中央仓库https：xxx，所以改成<a href="http://repo.maven.apache.org/maven2%EF%BC%8C%E9%97%AE%E9%A2%98%E5%8D%B3%E5%8F%AF%E8%A7%A3%E5%86%B3">http://repo.maven.apache.org/maven2，问题即可解决</a></p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[提交spark应用]]></title>
-    <link href="http://www.blacklight.xin/14812978853380.html"/>
-    <updated>2016-12-09T23:38:05+08:00</updated>
-    <id>http://www.blacklight.xin/14812978853380.html</id>
-    <content type="html"><![CDATA[
-<h2 id="toc_0">提交应用</h2>
-
-<p>在bin目录中spark-submit 脚本用于向集群启动你的应用，通过统一的接口，可以支持所有spark 支持的clusterManager，所以你没有必要为你的每个应用坐一些特殊的配置。</p>
-
-<span id="more"></span><!-- more -->
-
-<h2 id="toc_1">打包你的应用程序</h2>
-
-<p>如果你的代码依赖与其他的项目，为了分发所有代码到集群，需要把他们和你的应用打包在一起，所以你可以打一个assembly jar 或者&quot;uber jar&quot; 包含你的代码和依赖。sbt和maven 都有assembly 插件。在创建assembly jar 时，将hadoop和spark的依赖设置成为provided，这些依赖在运行时cluster已经包含了，所以不需要用户打包进来。</p>
-
-<h2 id="toc_2">Loading Configuration from a File</h2>
-
-<p>spark-submit 会自动从配置文件中加载默认的属性值传递给你的应用程序。默认读取的是conf/spark-default.conf<br/>
-通过这种方式加载配置属性可以取消spark-submit 上的参数，列如：加入spark.master 在应用程序中已经设置了那么就可以在spark-submit 取消--master 选项。<strong>总之，通过SparkConf 设置的属性具有最高的优先级，其次是通过spark-submit 传递的，最后是配置文件中默认的。</strong></p>
-
-<h2 id="toc_3">用spark-submit 启动你的应用</h2>
-
-<p>一旦你的应用打包好了，你就可以用spark-submit 脚本启动你的应用了。这个脚本会设置spark的classpath和它的依赖。并且可以支持spark所支持的所有<strong>clusterManager</strong> 和 <strong>deployMode</strong></p>
-
-<pre><code class="language-shell">./bin/spark-submit \
-  --class &lt;main-class&gt; \
-  --master &lt;master-url&gt; \
-  --deploy-mode &lt;deploy-mode&gt; \
-  --conf &lt;key&gt;=&lt;value&gt; \
-  ... # other options
-  &lt;application-jar&gt; \
-  [application-arguments]
-</code></pre>
-
-<p>下面讲解一些通用的选项：</p>
-
-<ul>
-<li>--class:程序的切入点（eg:org.apache.spark.examples.SparkPi）</li>
-<li>--master:集群的master url（eg.spark://xxx.xxx.xxx.xxx:xxx）</li>
-<li>--deploy-mode:决定你的driver程序是否在worker node（cluster模式下），或者作为一个外部client（clinet 模式）<strong>默认值是client</strong></li>
-<li>--conf 以key=value的形式设置任意的spark properties，如果value包含空格，用双引号括起来，</li>
-<li><application-jar> 你的应用程序和依赖的jar的路径，URL 必须对集群是全局可见的，列如:hdfs://  或者 a file:// 路径必须在所有的node都可见</li>
-<li>application-arguments 如果有额外的参数需要传递给你的main程序，请用这个选项</li>
-</ul>
-
-<p>一个常用的提交应用的策略是通过一个网关机器(<strong>gateway machine</strong>),并且这个机器在物理位置上接近你的worker node，这种方式client模式是非常适合的。在client 模式下，dirver直接被spark-submit启动扮演集群一个client的角色。应用的输出都在console上，因此这种模式非常十分的适合那些需要REPL的应用（比如Spark shell）.</p>
-
-<p>有一个可用选项可以指定clusterManager，在standalone集群中，cluster 模式下，你可以指定--supervise 以确保driver程序非正常退出的情况下自动重启driver。--help 显示所有可用的选项。</p>
-
-<p><strong>下面是一些可用的选项</strong></p>
-
-<pre><code class="language-shell"># Run application locally on 8 cores
-./bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master local[8] \
-  /path/to/examples.jar \
-  100
-
-# Run on a Spark standalone cluster in client deploy mode
-./bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master spark://207.184.161.138:7077 \
-  --executor-memory 20G \
-  --total-executor-cores 100 \
-  /path/to/examples.jar \
-  1000
-
-# Run on a Spark standalone cluster in cluster deploy mode with supervise
-./bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master spark://207.184.161.138:7077 \
-  --deploy-mode cluster \
-  --supervise \
-  --executor-memory 20G \
-  --total-executor-cores 100 \
-  /path/to/examples.jar \
-  1000
-
-# Run on a YARN cluster
-export HADOOP_CONF_DIR=XXX
-./bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master yarn \
-  --deploy-mode cluster \  # can be client for client mode
-  --executor-memory 20G \
-  --num-executors 50 \
-  /path/to/examples.jar \
-  1000
-
-# Run a Python application on a Spark standalone cluster
-./bin/spark-submit \
-  --master spark://207.184.161.138:7077 \
-  examples/src/main/python/pi.py \
-  1000
-
-# Run on a Mesos cluster in cluster deploy mode with supervise
-./bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master mesos://207.184.161.138:7077 \
-  --deploy-mode cluster \
-  --supervise \
-  --executor-memory 20G \
-  --total-executor-cores 100 \
-  http://path/to/examples.jar \
-  1000
-</code></pre>
-
-<h2 id="toc_4">Master URLS</h2>
-
-<p>master url 可以是以下的格式：</p>
-
-<table>
-<thead>
-<tr>
-<th>MasterURL</th>
-<th>解释</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>local</td>
-<td>本地模式一个worker线程（没有并发）</td>
-</tr>
-<tr>
-<td>local[k]</td>
-<td>本地模式K个worker线程（设置成你机器的core数）</td>
-</tr>
-<tr>
-<td>local[*]</td>
-<td>本地模式多个worker线程数—&gt;你机器的逻辑core数量</td>
-</tr>
-<tr>
-<td>spark://HOST:PORT</td>
-<td>连接到一个spark standalone 集群，端口号必须是master指定的，7007是默认的</td>
-</tr>
-<tr>
-<td>mesos://HOST:PORT</td>
-<td>连接到一个Messon集群</td>
-</tr>
-<tr>
-<td>yarn</td>
-<td>连接到一个yarn集群。—deploy-mode 指定client或者cluster模式，集群地址通过HADOOP_CONF_DIR or YARN_CONF_DIR 自动发现</td>
-</tr>
-</tbody>
-</table>
-
-<h2 id="toc_5">通过文件配置</h2>
-
-<p>spark-submit 会自动从配置文件中加载默认的属性值传递给你的应用程序。默认读取的是conf/spark-default.conf<br/>
-通过这种方式加载配置属性可以取消spark-submit 上的参数，列如：加入spark.master 在应用程序中已经设置了那么就可以在spark-submit 取消--master 选项。<strong>总之，通过SparkConf 设置的属性具有最高的优先级，其次是通过spark-submit 传递的，最后是配置文件中默认的。</strong></p>
 
 ]]></content>
   </entry>
